@@ -1,0 +1,242 @@
+[
+ {
+  "id": "f02",
+  "name": "Female_Adult_02",
+  "gender": "f",
+  "style": "casual",
+  "label": "Ponytail, white knit, denim skirt",
+  "file": "/assets/characters/rocketbox/f02.glb",
+  "height": 1.735,
+  "tris": [
+   8940,
+   4616
+  ],
+  "bytes": 1130424,
+  "hair": true
+ },
+ {
+  "id": "f03",
+  "name": "Female_Adult_03",
+  "gender": "f",
+  "style": "casual",
+  "label": "Black bob, plum top",
+  "file": "/assets/characters/rocketbox/f03.glb",
+  "height": 1.739,
+  "tris": [
+   9208,
+   5072
+  ],
+  "bytes": 1120292,
+  "hair": true
+ },
+ {
+  "id": "f05",
+  "name": "Female_Adult_05",
+  "gender": "f",
+  "style": "smart",
+  "label": "Dark bob, pink blazer",
+  "file": "/assets/characters/rocketbox/f05.glb",
+  "height": 1.736,
+  "tris": [
+   8288,
+   4604
+  ],
+  "bytes": 1070108,
+  "hair": true
+ },
+ {
+  "id": "f07",
+  "name": "Female_Adult_07",
+  "gender": "f",
+  "style": "casual",
+  "label": "Brown jacket, jeans, boots",
+  "file": "/assets/characters/rocketbox/f07.glb",
+  "height": 1.723,
+  "tris": [
+   8308,
+   4442
+  ],
+  "bytes": 1143796,
+  "hair": true
+ },
+ {
+  "id": "f09",
+  "name": "Female_Adult_09",
+  "gender": "f",
+  "style": "smart",
+  "label": "Taupe cardigan, slacks",
+  "file": "/assets/characters/rocketbox/f09.glb",
+  "height": 1.735,
+  "tris": [
+   9032,
+   4779
+  ],
+  "bytes": 1099764,
+  "hair": true
+ },
+ {
+  "id": "f15",
+  "name": "Female_Adult_15",
+  "gender": "f",
+  "style": "smart",
+  "label": "Blue blouse, pencil skirt",
+  "file": "/assets/characters/rocketbox/f15.glb",
+  "height": 1.739,
+  "tris": [
+   9832,
+   5357
+  ],
+  "bytes": 1014164,
+  "hair": true
+ },
+ {
+  "id": "f17",
+  "name": "Female_Adult_17",
+  "gender": "f",
+  "style": "casual",
+  "label": "Blonde bun, green tee",
+  "file": "/assets/characters/rocketbox/f17.glb",
+  "height": 1.751,
+  "tris": [
+   8516,
+   4534
+  ],
+  "bytes": 1035524,
+  "hair": true
+ },
+ {
+  "id": "fp2",
+  "name": "Female_Party_02",
+  "gender": "f",
+  "style": "casual",
+  "label": "Curls, patterned top",
+  "file": "/assets/characters/rocketbox/fp2.glb",
+  "height": 1.79,
+  "tris": [
+   9874,
+   5756
+  ],
+  "bytes": 1351056,
+  "hair": true
+ },
+ {
+  "id": "m03",
+  "name": "Male_Adult_03",
+  "gender": "m",
+  "style": "smart",
+  "label": "Silver hair, tweed blazer",
+  "file": "/assets/characters/rocketbox/m03.glb",
+  "height": 1.807,
+  "tris": [
+   7200,
+   3703
+  ],
+  "bytes": 1353856,
+  "hair": true
+ },
+ {
+  "id": "m04",
+  "name": "Male_Adult_04",
+  "gender": "m",
+  "style": "casual",
+  "label": "Afro, dark jacket",
+  "file": "/assets/characters/rocketbox/m04.glb",
+  "height": 1.869,
+  "tris": [
+   8684,
+   4686
+  ],
+  "bytes": 1127216,
+  "hair": true
+ },
+ {
+  "id": "m08",
+  "name": "Male_Adult_08",
+  "gender": "m",
+  "style": "smart",
+  "label": "Sky-blue shirt, chinos",
+  "file": "/assets/characters/rocketbox/m08.glb",
+  "height": 1.826,
+  "tris": [
+   7364,
+   3832
+  ],
+  "bytes": 994096,
+  "hair": true
+ },
+ {
+  "id": "m09",
+  "name": "Male_Adult_09",
+  "gender": "m",
+  "style": "casual",
+  "label": "Long hair, navy tee",
+  "file": "/assets/characters/rocketbox/m09.glb",
+  "height": 1.822,
+  "tris": [
+   7428,
+   3852
+  ],
+  "bytes": 1069152,
+  "hair": true
+ },
+ {
+  "id": "m12",
+  "name": "Male_Adult_12",
+  "gender": "m",
+  "style": "casual",
+  "label": "Denim jacket",
+  "file": "/assets/characters/rocketbox/m12.glb",
+  "height": 1.807,
+  "tris": [
+   6722,
+   3361
+  ],
+  "bytes": 870656,
+  "hair": false
+ },
+ {
+  "id": "m14",
+  "name": "Male_Adult_14",
+  "gender": "m",
+  "style": "smart",
+  "label": "Grey shirt, belt, khakis",
+  "file": "/assets/characters/rocketbox/m14.glb",
+  "height": 1.796,
+  "tris": [
+   6842,
+   3420
+  ],
+  "bytes": 849680,
+  "hair": false
+ },
+ {
+  "id": "m16",
+  "name": "Male_Adult_16",
+  "gender": "m",
+  "style": "casual",
+  "label": "Blond, blue tee",
+  "file": "/assets/characters/rocketbox/m16.glb",
+  "height": 1.809,
+  "tris": [
+   7064,
+   3532
+  ],
+  "bytes": 732856,
+  "hair": false
+ },
+ {
+  "id": "m17",
+  "name": "Male_Adult_17",
+  "gender": "m",
+  "style": "casual",
+  "label": "Cap, blue hoodie",
+  "file": "/assets/characters/rocketbox/m17.glb",
+  "height": 1.812,
+  "tris": [
+   7084,
+   3541
+  ],
+  "bytes": 949568,
+  "hair": false
+ }
+]

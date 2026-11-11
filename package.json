@@ -1,0 +1,52 @@
+{
+  "name": "cast",
+  "private": true,
+  "version": "0.1.0",
+  "description": "A little 3D town where your AI coding agents live and work: a web GUI for cast-agent, the coding agent in agent/.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JirapatWov/cast-town.git"
+  },
+  "homepage": "https://casttown.dev",
+  "bugs": {
+    "url": "https://github.com/JirapatWov/cast-town/issues"
+  },
+  "type": "module",
+  "engines": {
+    "bun": ">=1.3.14"
+  },
+  "scripts": {
+    "start": "bun run server/index.ts",
+    "build": "bun run build:web && bun run build:agent",
+    "build:web": "vite build --config web/vite.config.ts && bun run scripts/release/third-party-licenses.ts",
+    "build:agent": "bash agent/cast/build.sh",
+    "build:server": "bun build --compile --no-compile-autoload-dotenv --no-compile-autoload-bunfig server/index.ts --outfile dist/cast-server",
+    "build:mac-kit": "bash scripts/mac/build-kit.sh",
+    "dev": "vite --config web/vite.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p web/sw/tsconfig.json",
+    "test": "bun test tests",
+    "compat:agent": "bun run scripts/omp-compat/run.ts",
+    "gen:omp-logins": "bun run scripts/gen-omp-login-providers.ts",
+    "pair": "bun run scripts/pair.ts",
+    "release:snapshot": "bash scripts/release/snapshot.sh"
+  },
+  "dependencies": {
+    "@xterm/addon-fit": "0.11.0",
+    "@xterm/addon-unicode11": "0.9.0",
+    "@xterm/addon-web-links": "0.12.0",
+    "@xterm/xterm": "6.0.0",
+    "diff2html": "3.4.56",
+    "highlight.js": "11.11.1",
+    "marked": "18.1.2",
+    "n8ao": "2.0.1",
+    "postprocessing": "6.39.5",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/three": "0.186.0",
+    "typescript": "5",
+    "vite": "8.3.5"
+  }
+}

@@ -1,0 +1,2886 @@
+{
+ "generated": "2026-11-01T13:56:50Z",
+ "totalBytes": 107825554,
+ "fileCount": 229,
+ "about": "assets: one entry per file under web/public/assets (what the app serves), path relative to the repository root; totalBytes sums them (this file excluded). date: the day the file was fetched or built. source: where it came from (URL + the processing applied); license: its licence (see also THIRD-PARTY-NOTICES.md at the repository root).",
+ "assets": [
+  {
+   "path": "web/public/assets/animations/License_UAL1.txt",
+   "size": 332,
+   "source": "https://quaternius.itch.io/universal-animation-library (free \"Standard\" zip -> Unreal-Godot/UAL1_Standard.glb, then gltf-transform resample)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/animations/quaternius-ual/License_UAL1.txt"
+  },
+  {
+   "path": "web/public/assets/animations/UAL1_resampled.glb",
+   "size": 1294312,
+   "source": "https://quaternius.itch.io/universal-animation-library (free \"Standard\" zip -> Unreal-Godot/UAL1_Standard.glb, then gltf-transform resample)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "animation library + mannequin mesh",
+   "triangles": 13744,
+   "skinned": true,
+   "joints": 65,
+   "clips": [
+    "Crouch_Idle_Loop(2.93s)",
+    "Fixing_Kneeling(5.2s)",
+    "Idle_Loop(2.5s)",
+    "Idle_Talking_Loop(2.93s)",
+    "Interact(2s)",
+    "Sitting_Enter(1.3s)",
+    "Sitting_Exit(1.03s)",
+    "Sitting_Idle_Loop(1.67s)",
+    "Sitting_Talking_Loop(2.93s)",
+    "Walk_Formal_Loop(1.33s)",
+    "Walk_Loop(1.33s)"
+   ],
+   "extensions": [],
+   "bboxM": [
+    1.944,
+    1.829,
+    0.37
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/animations/quaternius-ual/UAL1_resampled.glb (see source) → kept only the clips the app plays (11: CLIPS in web/src/people/library.ts); full pack in git history (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/animations/UAL2_resampled.glb",
+   "size": 962624,
+   "source": "https://quaternius.itch.io/universal-animation-library-2 (free \"Standard\" zip -> Unreal-Godot/UAL2_Standard.glb, then gltf-transform resample)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "animation library + mannequin mesh",
+   "triangles": 13744,
+   "skinned": true,
+   "joints": 65,
+   "clips": [
+    "Consume(1.33s)",
+    "Farm_Watering(3.8s)",
+    "Idle_FoldArms_Loop(2.5s)",
+    "Idle_No_Loop(2.5s)",
+    "Idle_Rail_Loop(2.5s)",
+    "Idle_TalkingPhone_Loop(2.93s)",
+    "Yes(2.5s)"
+   ],
+   "extensions": [],
+   "bboxM": [
+    1.944,
+    1.829,
+    0.37
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/animations/quaternius-ual/UAL2_resampled.glb (see source) → kept only the clips the app plays (7: CLIPS in web/src/people/library.ts); full pack in git history (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/characters/License_Standard.txt",
+   "size": 806,
+   "source": "https://quaternius.itch.io/universal-base-characters (free \"Standard\" zip -> Base Characters/Godot - UE/Superhero_Male_FullBody.gltf; fixed 2 missing *_png.png texture refs; textures resized to 1024, baseColor/rough -> WebP)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/License_Standard.txt"
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/catalog.json",
+   "size": 4188,
+   "source": "generated",
+   "license": "MIT — Microsoft Rocketbox (metadata about the GLBs beside it)",
+   "note": "avatar catalogue (ids, heights, triangle counts) written by tools/characters/build.mjs",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters/build.mjs"
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f02.glb",
+   "size": 1130424,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_02 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Ponytail, white knit, denim skirt; female, casual",
+   "triangles": 8940,
+   "trianglesLod1": 4616,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f03.glb",
+   "size": 1120292,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_03 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Black bob, plum top; female, casual",
+   "triangles": 9208,
+   "trianglesLod1": 5072,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f05.glb",
+   "size": 1070108,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_05 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Dark bob, pink blazer; female, smart",
+   "triangles": 8288,
+   "trianglesLod1": 4604,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f07.glb",
+   "size": 1143796,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_07 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Brown jacket, jeans, boots; female, casual",
+   "triangles": 8308,
+   "trianglesLod1": 4442,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f09.glb",
+   "size": 1099764,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_09 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Taupe cardigan, slacks; female, smart",
+   "triangles": 9032,
+   "trianglesLod1": 4779,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f15.glb",
+   "size": 1014164,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_15 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Blue blouse, pencil skirt; female, smart",
+   "triangles": 9832,
+   "trianglesLod1": 5357,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/f17.glb",
+   "size": 1035524,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_17 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Blonde bun, green tee; female, casual",
+   "triangles": 8516,
+   "trianglesLod1": 4534,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/fp2.glb",
+   "size": 1351056,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Party_02 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Curls, patterned top; female, casual",
+   "triangles": 9874,
+   "trianglesLod1": 5756,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/LICENSE-Rocketbox.txt",
+   "size": 1066,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Female_Adult_02 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-29",
+   "pipeline": "bundled licence text"
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m03.glb",
+   "size": 1353856,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_03 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Silver hair, tweed blazer; male, smart",
+   "triangles": 7200,
+   "trianglesLod1": 3703,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m04.glb",
+   "size": 1127216,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_04 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Afro, dark jacket; male, casual",
+   "triangles": 8684,
+   "trianglesLod1": 4686,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m08.glb",
+   "size": 994096,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_08 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Sky-blue shirt, chinos; male, smart",
+   "triangles": 7364,
+   "trianglesLod1": 3832,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m09.glb",
+   "size": 1069152,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_09 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Long hair, navy tee; male, casual",
+   "triangles": 7428,
+   "trianglesLod1": 3852,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m12.glb",
+   "size": 870656,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_12 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Denim jacket; male, casual",
+   "triangles": 6722,
+   "trianglesLod1": 3361,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m14.glb",
+   "size": 849680,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_14 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Grey shirt, belt, khakis; male, smart",
+   "triangles": 6842,
+   "trianglesLod1": 3420,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m16.glb",
+   "size": 732856,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_16 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Blond, blue tee; male, casual",
+   "triangles": 7064,
+   "trianglesLod1": 3532,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/rocketbox/m17.glb",
+   "size": 949568,
+   "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Adults/Male_Adult_17 (Export/*.fbx + Textures/*.tga)",
+   "license": "MIT — Microsoft Rocketbox (LICENSE-Rocketbox.txt next to the GLBs)",
+   "date": "2026-10-29",
+   "pipeline": "tools/characters (FBX2glTF 0.9.7 → bones renamed to UE names → body+head atlas, spec→roughness, hair MASK → LOD1 50 % → WebP + meshopt)",
+   "note": "Cap, blue hoodie; male, casual",
+   "triangles": 7084,
+   "trianglesLod1": 3541,
+   "skinned": true,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "EXT_texture_webp"
+   ]
+  },
+  {
+   "path": "web/public/assets/characters/Superhero_Female_FullBody.glb",
+   "size": 4682580,
+   "source": "https://quaternius.itch.io/universal-base-characters (free \"Standard\" zip -> Base Characters/Godot - UE/Superhero_Female_FullBody.gltf; fixed 2 missing *_png.png texture refs; textures resized to 1024, baseColor/rough -> WebP)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "base body in underwear; UAL rig",
+   "triangles": 15060,
+   "skinned": true,
+   "joints": 65,
+   "clips": [],
+   "extensions": [
+    "EXT_texture_webp"
+   ],
+   "bboxM": [
+    1.669,
+    1.775,
+    0.303
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/Superhero_Female_FullBody.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/characters/Superhero_Male_FullBody.glb",
+   "size": 4478552,
+   "source": "https://quaternius.itch.io/universal-base-characters (free \"Standard\" zip -> Base Characters/Godot - UE/Superhero_Male_FullBody.gltf; fixed 2 missing *_png.png texture refs; textures resized to 1024, baseColor/rough -> WebP)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "base body in underwear; UAL rig",
+   "triangles": 14318,
+   "skinned": true,
+   "joints": 65,
+   "clips": [],
+   "extensions": [
+    "EXT_texture_webp"
+   ],
+   "bboxM": [
+    1.859,
+    1.82,
+    0.291
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/Superhero_Male_FullBody.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/characters/T_Superhero_Female_Light_BaseColor_1k.webp",
+   "size": 26480,
+   "source": "https://quaternius.itch.io/universal-base-characters (Standard zip -> Base Characters/Textures/*Light*.png, resized 1024 WebP)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "light skin baseColor variant",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/T_Superhero_Female_Light_BaseColor_1k.webp (see source)"
+  },
+  {
+   "path": "web/public/assets/characters/T_Superhero_Male_Ligh_1k.webp",
+   "size": 27436,
+   "source": "https://quaternius.itch.io/universal-base-characters (Standard zip -> Base Characters/Textures/*Light*.png, resized 1024 WebP)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "light skin baseColor variant",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/T_Superhero_Male_Ligh_1k.webp (see source)"
+  },
+  {
+   "path": "web/public/assets/characters/UBC_Hairstyles.glb",
+   "size": 4628800,
+   "source": "https://quaternius.itch.io/universal-base-characters (Standard zip -> Hairstyles/Rigged to Head Bone/glTF; 8 files merged, one scene each)",
+   "license": "CC0 — Quaternius (bundled License*.txt) †",
+   "note": "scenes: Hair_Long, Hair_Buns, Hair_SimpleParted, Hair_Buzzed, Hair_BuzzedFemale, Hair_Beard, Eyebrows_Regular, Eyebrows_Female",
+   "triangles": 12649,
+   "skinned": true,
+   "joints": 65,
+   "clips": [],
+   "extensions": [
+    "EXT_texture_webp"
+   ],
+   "bboxM": [
+    0.245,
+    0.276,
+    0.27
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/characters/quaternius-ubc/UBC_Hairstyles.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/hdri/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+   "size": 1429904,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy of the 2k sky (engine/sky.ts)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/hdri/kloofendal_48d_partly_cloudy_puresky_2k.hdr → 2×2 box filter to 1k (RGBE) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/hdri/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+   "size": 5451493,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloofendal_48d_partly_cloudy_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven",
+   "note": "unclipped sun, peak 72.6k; sun dir (0.554,0.742,0.378) elev 47.9deg",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/hdri/kloofendal_48d_partly_cloudy_puresky_2k.hdr (see source)"
+  },
+  {
+   "path": "web/public/assets/hdri/kloppenheim_06_puresky_1k.hdr",
+   "size": 1185512,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloppenheim_06_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy of the 2k sky (engine/sky.ts)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/hdri/kloppenheim_06_puresky_2k.hdr → 2×2 box filter to 1k (RGBE) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/hdri/kloppenheim_06_puresky_2k.hdr",
+   "size": 4434394,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/kloppenheim_06_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven",
+   "note": "golden hour; sun dir (0.827,0.327,0.458) elev 19.1deg, sun color ~(1,0.69,0.38)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/hdri/kloppenheim_06_puresky_2k.hdr (see source)"
+  },
+  {
+   "path": "web/public/assets/hdri/lebombo_1k.hdr",
+   "size": 1476953,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/lebombo_1k.hdr",
+   "license": "CC0 — Poly Haven",
+   "note": "interior (living room, windows); use as environment only",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/hdri/lebombo_1k.hdr (see source)"
+  },
+  {
+   "path": "web/public/assets/hdri/qwantani_moonrise_puresky_1k.hdr",
+   "size": 1273390,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/qwantani_moonrise_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven (Greg Zaal, Jarod Guest)",
+   "note": "phone copy of the 2k sky (engine/sky.ts)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/hdri/qwantani_moonrise_puresky_2k.hdr → 2×2 box filter to 1k (RGBE) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/hdri/qwantani_moonrise_puresky_2k.hdr",
+   "size": 4916599,
+   "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/2k/qwantani_moonrise_puresky_2k.hdr",
+   "license": "CC0 — Poly Haven (Greg Zaal, Jarod Guest)",
+   "note": "night sky (moonrise, clear); moon dir (0.785,0.239,0.572) elev 13.8deg, peak 111.7k; exposure-normalized: use backgroundIntensity ~0.11. Served as web/public/assets/hdri/qwantani_moonrise_puresky_2k.hdr (engine/sky.ts night)",
+   "date": "2026-10-29",
+   "pipeline": "copied unchanged from assets-cache/hdri/qwantani_moonrise_puresky_2k.hdr (see source)"
+  },
+  {
+   "path": "web/public/assets/props-city/metal_trash_can_1k.glb",
+   "size": 651500,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_trash_can/metal_trash_can_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "bbox includes lid placed beside the can; scale ~0.6",
+   "triangles": 13960,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.847,
+    0.906,
+    0.556
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-city/metal_trash_can_1k.glb (see source) → textures → WebP (≤512 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-city/painted_wooden_bench_1k.glb",
+   "size": 321892,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/painted_wooden_bench/painted_wooden_bench_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 630,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.165,
+    0.889,
+    0.497
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-city/painted_wooden_bench_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-city/street_lamp_01_1k.glb",
+   "size": 948368,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/street_lamp_01/street_lamp_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 30610,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.704,
+    3.871,
+    0.386
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-city/street_lamp_01_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-city/utility_box_01_1k.glb",
+   "size": 210612,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/utility_box_01/utility_box_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 4404,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.52,
+    1.12,
+    0.432
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-city/utility_box_01_1k.glb (see source) → textures → WebP (≤512 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/classic_laptop_1k.glb",
+   "size": 2180780,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/classic_laptop/classic_laptop_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 14450,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.652,
+    0.543,
+    0.486
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/classic_laptop_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/desk_lamp_arm_01_1k.glb",
+   "size": 2874180,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/desk_lamp_arm_01/desk_lamp_arm_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 24102,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.202,
+    0.893,
+    0.614
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/desk_lamp_arm_01_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/dining_chair_02_1k.glb",
+   "size": 920128,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dining_chair_02/dining_chair_02_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 22013,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.434,
+    0.973,
+    0.576
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/dining_chair_02_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/dining_table_1k.glb",
+   "size": 415532,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/dining_table/dining_table_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 1048,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    2.256,
+    0.877,
+    1.39
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/dining_table_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/drawer_cabinet_1k.glb",
+   "size": 1140032,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/drawer_cabinet/drawer_cabinet_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 26406,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.141,
+    1.881,
+    0.488
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/drawer_cabinet_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/electric_stove_1k.glb",
+   "size": 2477944,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/electric_stove/electric_stove_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 13914,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.503,
+    0.859,
+    0.648
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/electric_stove_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/bathroomSink.glb",
+   "size": 22536,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 316,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.34,
+    0.56,
+    0.29
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/bathroomSink.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/bathtub.glb",
+   "size": 35500,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 602,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.19,
+    0.42,
+    0.56
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/bathtub.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/bedDouble.glb",
+   "size": 23368,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 264,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.956,
+    0.375,
+    1.125
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/bedDouble.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/cabinetTelevision.glb",
+   "size": 10524,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 154,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.8,
+    0.31,
+    0.25
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/cabinetTelevision.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/chairDesk.glb",
+   "size": 39016,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 588,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.335,
+    0.608,
+    0.314
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/chairDesk.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/computerKeyboard.glb",
+   "size": 3476,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 32,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.282,
+    0.028,
+    0.118
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/computerKeyboard.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/computerMouse.glb",
+   "size": 5868,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 71,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.05,
+    0.024,
+    0.085
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/computerMouse.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/computerScreen.glb",
+   "size": 6404,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 72,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.393,
+    0.294,
+    0.104
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/computerScreen.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/desk.glb",
+   "size": 15048,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 198,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.734,
+    0.384,
+    0.392
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/desk.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenCabinet.glb",
+   "size": 10444,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 114,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.43,
+    0.45,
+    0.45
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenCabinet.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenCabinetDrawer.glb",
+   "size": 15384,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 174,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.43,
+    0.45,
+    0.45
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenCabinetDrawer.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenCabinetUpper.glb",
+   "size": 8168,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 80,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.43,
+    0.39,
+    0.22
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenCabinetUpper.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenCoffeeMachine.glb",
+   "size": 13332,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 166,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.19,
+    0.177,
+    0.24
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenCoffeeMachine.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenFridgeLarge.glb",
+   "size": 30632,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 436,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.52,
+    0.92,
+    0.406
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenFridgeLarge.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenMicrowave.glb",
+   "size": 11248,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 152,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.29,
+    0.18,
+    0.23
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenMicrowave.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenSink.glb",
+   "size": 23480,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 318,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.43,
+    0.49,
+    0.45
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenSink.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/kitchenStove.glb",
+   "size": 54324,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 830,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.43,
+    0.45,
+    0.45
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/kitchenStove.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/lampSquareFloor.glb",
+   "size": 5624,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 60,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.12,
+    0.86,
+    0.12
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/lampSquareFloor.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/License.txt",
+   "size": 614,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/License.txt"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/loungeDesignSofa.glb",
+   "size": 9128,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 116,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.12,
+    0.4,
+    0.41
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/loungeDesignSofa.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/loungeSofa.glb",
+   "size": 9644,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 128,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.98,
+    0.46,
+    0.41
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/loungeSofa.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/pottedPlant.glb",
+   "size": 7576,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 60,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.212,
+    0.654,
+    0.241
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/pottedPlant.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/rugRectangle.glb",
+   "size": 3188,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 28,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.57,
+    0.01,
+    0.92
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/rugRectangle.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/televisionModern.glb",
+   "size": 6368,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 72,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.685,
+    0.455,
+    0.128
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/televisionModern.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/toilet.glb",
+   "size": 18112,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 230,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.313,
+    0.451,
+    0.477
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/toilet.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/kenney-furniture-kit/washer.glb",
+   "size": 48104,
+   "source": "https://kenney.nl/media/pages/assets/furniture-kit/440e0608a4-1677580847/kenney_furniture-kit.zip (Models/GLTF format/)",
+   "license": "CC0 — Kenney",
+   "note": "KHR_materials_unlit -> swap to MeshStandardMaterial; scale ~1.6-2x",
+   "triangles": 720,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.39,
+    0.47,
+    0.39
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/kenney-furniture-kit/washer.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/khronos/GlamVelvetSofa.glb",
+   "size": 603108,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/GlamVelvetSofa/glTF-Binary/GlamVelvetSofa.glb",
+   "license": "CC-BY 4.0: Eric Chadwick / Wayfair, LLC (2021)",
+   "note": "ships KHR_lights_punctual (hide lights); 5 fabric variants",
+   "triangles": 4196,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [
+    "KHR_texture_transform"
+   ],
+   "bboxM": [
+    2.188,
+    0.788,
+    1.023
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/khronos/GlamVelvetSofa.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/khronos/LICENSE_GlamVelvetSofa.md",
+   "size": 782,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/GlamVelvetSofa/glTF-Binary/GlamVelvetSofa.glb",
+   "license": "CC-BY 4.0: Eric Chadwick / Wayfair, LLC (2021)",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/khronos/LICENSE_GlamVelvetSofa.md"
+  },
+  {
+   "path": "web/public/assets/props-interior/khronos/LICENSE_SheenChair.md",
+   "size": 773,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb",
+   "license": "CC0 1.0: Eric Chadwick / Wayfair, LLC (2020)",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/khronos/LICENSE_SheenChair.md"
+  },
+  {
+   "path": "web/public/assets/props-interior/khronos/SheenChair.glb",
+   "size": 4125648,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb",
+   "license": "CC0 1.0: Eric Chadwick / Wayfair, LLC (2020)",
+   "note": "sheen + 2 variants",
+   "triangles": 39936,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [
+    "KHR_texture_transform"
+   ],
+   "bboxM": [
+    0.827,
+    0.686,
+    0.57
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/khronos/SheenChair.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/metal_office_desk_1k.glb",
+   "size": 1600260,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/metal_office_desk/metal_office_desk_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 6898,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    2,
+    0.788,
+    0.947
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/metal_office_desk_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/modern_arm_chair_01_1k.glb",
+   "size": 529096,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modern_arm_chair_01/modern_arm_chair_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 8916,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.82,
+    1.023,
+    0.987
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/modern_arm_chair_01_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/modern_ceiling_lamp_01_1k.glb",
+   "size": 193532,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modern_ceiling_lamp_01/modern_ceiling_lamp_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 5602,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.432,
+    0.952,
+    0.432
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/modern_ceiling_lamp_01_1k.glb (see source) → textures → WebP (≤512 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/modern_coffee_table_01_1k.glb",
+   "size": 288408,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modern_coffee_table_01/modern_coffee_table_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 4504,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.6,
+    0.39,
+    1.202
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/modern_coffee_table_01_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/modern_wooden_cabinet_1k.glb",
+   "size": 2850304,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/modern_wooden_cabinet/modern_wooden_cabinet_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 24976,
+   "skinned": false,
+   "joints": 0,
+   "clips": [
+    "modern_wooden_cabinet_body(3.75s)",
+    "modern_wooden_cabinet_path_l(3.75s)",
+    "modern_wooden_cabinet_path_r(3.75s)"
+   ],
+   "extensions": [],
+   "bboxM": [
+    2.44,
+    0.68,
+    0.52
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/modern_wooden_cabinet_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/ceramic_vase_02.glb",
+   "size": 115384,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/ceramic_vase_02/ceramic_vase_02_1k.gltf (+bin/1k jpg textures)",
+   "license": "CC0 — Poly Haven (James Ray Cock)",
+   "note": "Poly Haven \"Ceramic Vase 02\"; house decor (rooms/kinds.ts, corridor.ts)",
+   "skinned": false,
+   "triangles": 4560,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 copy -> weld -> simplify(ratio 0.3) -> resize 512px -> webp q82 -> meshopt"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/classic_laptop.glb",
+   "size": 201260,
+   "source": "derived from web/public/assets/props-interior/classic_laptop_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 5053,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.35) -> resize 512px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/desk_lamp_arm_01.glb",
+   "size": 209096,
+   "source": "derived from web/public/assets/props-interior/desk_lamp_arm_01_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 6311,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.25) -> resize 512px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/dining_chair_02.glb",
+   "size": 259028,
+   "source": "derived from web/public/assets/props-interior/dining_chair_02_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 6602,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.3) -> resize 1024px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/drawer_cabinet.glb",
+   "size": 285008,
+   "source": "derived from web/public/assets/props-interior/drawer_cabinet_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 7915,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.3) -> resize 1024px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/modern_wooden_cabinet.glb",
+   "size": 427088,
+   "source": "derived from web/public/assets/props-interior/modern_wooden_cabinet_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 12008,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.3) -> resize 1024px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/potted_plant_02.glb",
+   "size": 690956,
+   "source": "derived from web/public/assets/props-interior/potted_plant_02_1k.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 — Poly Haven",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 15331,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.22) -> resize 1024px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/SheenChair.glb",
+   "size": 628740,
+   "source": "derived from web/public/assets/props-interior/khronos/SheenChair.glb (same upstream as its MANIFEST entry)",
+   "license": "CC0 1.0: Eric Chadwick / Wayfair, LLC (2020)",
+   "note": "lighter copy of the existing prop (fewer tris, smaller textures); loaded instead of the original by house/furniture/kit.ts (OPTIMIZED map)",
+   "skinned": false,
+   "triangles": 11979,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 weld -> simplify(ratio 0.3) -> resize 1024px -> webp q82 -> meshopt (EXT_meshopt_compression)"
+  },
+  {
+   "path": "web/public/assets/props-interior/opt/wicker_basket_02.glb",
+   "size": 229580,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wicker_basket_02/wicker_basket_02_1k.gltf (+bin/1k jpg textures)",
+   "license": "CC0 — Poly Haven (Kuutti Siitonen)",
+   "note": "Poly Haven \"Wicker Basket 02\"; house decor (rooms/kinds.ts, corridor.ts)",
+   "skinned": false,
+   "triangles": 5694,
+   "date": "2026-10-29",
+   "pipeline": "gltf-transform 4.5.1 copy -> weld -> simplify(ratio 0.3) -> resize 512px -> webp q82 -> meshopt"
+  },
+  {
+   "path": "web/public/assets/props-interior/potted_plant_02_1k.glb",
+   "size": 2632148,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/potted_plant_02/potted_plant_02_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 69806,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.701,
+    0.841,
+    0.657
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/potted_plant_02_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/potted_plant_04_1k.glb",
+   "size": 618200,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/potted_plant_04/potted_plant_04_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 8929,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.168,
+    0.267,
+    0.185
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/potted_plant_04_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/sofa_02_1k.glb",
+   "size": 425576,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/sofa_02/sofa_02_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 2728,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.807,
+    0.709,
+    0.818
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/sofa_02_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/steel_frame_shelves_01_1k.glb",
+   "size": 1596392,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/steel_frame_shelves_01/steel_frame_shelves_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "authored 10x too large: scale 0.1",
+   "triangles": 4348,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    10.974,
+    21.405,
+    5.021
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/steel_frame_shelves_01_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/Television_01_1k.glb",
+   "size": 530228,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/Television_01/Television_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 1918,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.6,
+    0.457,
+    0.471
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/Television_01_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/props-interior/throw_pillows_01_1k.glb",
+   "size": 1056368,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/throw_pillows_01/throw_pillows_01_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 6362,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.022,
+    0.45,
+    0.627
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/throw_pillows_01_1k.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/wall_clock_1k.glb",
+   "size": 190916,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wall_clock/wall_clock_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 3658,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    0.32,
+    0.32,
+    0.047
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/props-interior/wall_clock_1k.glb (see source) → textures → WebP (≤512 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/props-interior/wooden_bookshelf_worn_1k.glb",
+   "size": 2776140,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Models/gltf/1k/wooden_bookshelf_worn/wooden_bookshelf_worn_1k.gltf (+bin/1k jpg textures, packed to GLB with gltf-transform)",
+   "license": "CC0 — Poly Haven",
+   "note": "",
+   "triangles": 10106,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.374,
+    2.063,
+    0.581
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/props-interior/wooden_bookshelf_worn_1k.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/512/Grass004_1K-JPG_AmbientOcclusion.webp",
+   "size": 90824,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_AmbientOcclusion.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/512/Grass004_1K-JPG_Color.webp",
+   "size": 88184,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_Color.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/512/Grass004_1K-JPG_NormalGL.webp",
+   "size": 108066,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_NormalGL.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/512/Grass004_1K-JPG_Roughness.webp",
+   "size": 79312,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_Roughness.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_AmbientOcclusion.webp",
+   "size": 394910,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_Grass004/Grass004_1K-JPG_AmbientOcclusion.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_Color.webp",
+   "size": 308008,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_Grass004/Grass004_1K-JPG_Color.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_NormalGL.webp",
+   "size": 473894,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_Grass004/Grass004_1K-JPG_NormalGL.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_Grass004/Grass004_1K-JPG_Roughness.webp",
+   "size": 348964,
+   "source": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip -> Grass004_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_Grass004/Grass004_1K-JPG_Roughness.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/512/PavingStones150_1K-JPG_AmbientOcclusion.webp",
+   "size": 31642,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_AmbientOcclusion.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/512/PavingStones150_1K-JPG_Color.webp",
+   "size": 23462,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_Color.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/512/PavingStones150_1K-JPG_NormalGL.webp",
+   "size": 39336,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_NormalGL.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/512/PavingStones150_1K-JPG_Roughness.webp",
+   "size": 21746,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_Roughness.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_AmbientOcclusion.webp",
+   "size": 94916,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_PavingStones150/PavingStones150_1K-JPG_AmbientOcclusion.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_Color.webp",
+   "size": 81500,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_PavingStones150/PavingStones150_1K-JPG_Color.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_NormalGL.webp",
+   "size": 134846,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_PavingStones150/PavingStones150_1K-JPG_NormalGL.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_PavingStones150/PavingStones150_1K-JPG_Roughness.webp",
+   "size": 85184,
+   "source": "https://ambientcg.com/get?file=PavingStones150_1K-JPG.zip -> PavingStones150_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_PavingStones150/PavingStones150_1K-JPG_Roughness.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/512/WoodFloor051_1K-JPG_AmbientOcclusion.webp",
+   "size": 2448,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_AmbientOcclusion.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/512/WoodFloor051_1K-JPG_Color.webp",
+   "size": 20622,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Color.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/512/WoodFloor051_1K-JPG_NormalGL.webp",
+   "size": 3158,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_NormalGL.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/512/WoodFloor051_1K-JPG_Roughness.webp",
+   "size": 12338,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Roughness.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_AmbientOcclusion.webp",
+   "size": 5528,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_AmbientOcclusion.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_AmbientOcclusion.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Color.webp",
+   "size": 75250,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_Color.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Color.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_NormalGL.webp",
+   "size": 21918,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_NormalGL.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_NormalGL.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Roughness.webp",
+   "size": 42246,
+   "source": "https://ambientcg.com/get?file=WoodFloor051_1K-JPG.zip -> WoodFloor051_1K-JPG_Roughness.jpg",
+   "license": "CC0 — ambientCG",
+   "note": "",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/acg_WoodFloor051/WoodFloor051_1K-JPG_Roughness.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/512/asphalt_02_arm_1k.webp",
+   "size": 49790,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/asphalt_02/asphalt_02_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/512/asphalt_02_diff_1k.webp",
+   "size": 80578,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/asphalt_02/asphalt_02_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/512/asphalt_02_nor_gl_1k.webp",
+   "size": 79964,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/asphalt_02/asphalt_02_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/asphalt_02_arm_1k.webp",
+   "size": 211642,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/asphalt_02/asphalt_02_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/asphalt_02_diff_1k.webp",
+   "size": 364966,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/asphalt_02/asphalt_02_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/asphalt_02/asphalt_02_nor_gl_1k.webp",
+   "size": 422346,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/asphalt_02/asphalt_02_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/asphalt_02/asphalt_02_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/512/concrete_pavement_arm_1k.webp",
+   "size": 8372,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/concrete_pavement/concrete_pavement_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/512/concrete_pavement_diff_1k.webp",
+   "size": 40314,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/concrete_pavement/concrete_pavement_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/512/concrete_pavement_nor_gl_1k.webp",
+   "size": 64262,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/concrete_pavement/concrete_pavement_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/concrete_pavement_arm_1k.webp",
+   "size": 65464,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/concrete_pavement/concrete_pavement_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/concrete_pavement_diff_1k.webp",
+   "size": 213998,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/concrete_pavement/concrete_pavement_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/concrete_pavement/concrete_pavement_nor_gl_1k.webp",
+   "size": 416620,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/concrete_pavement/concrete_pavement_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/concrete_pavement/concrete_pavement_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/512/caban_arm_1k.webp",
+   "size": 62050,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/caban/caban_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/512/caban_diff_1k.webp",
+   "size": 5500,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/caban/caban_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/512/caban_nor_gl_1k.webp",
+   "size": 13590,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/caban/caban_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/caban_arm_1k.webp",
+   "size": 371276,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Caban\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/caban_diff_1k.webp",
+   "size": 81296,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Caban\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff greyscale, mean normalized to 0.80"
+  },
+  {
+   "path": "web/public/assets/textures/interior/caban/caban_nor_gl_1k.webp",
+   "size": 102876,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/caban/caban_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Caban\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/512/curly_teddy_natural_arm_1k.webp",
+   "size": 73212,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/512/curly_teddy_natural_diff_1k.webp",
+   "size": 25590,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/512/curly_teddy_natural_nor_gl_1k.webp",
+   "size": 32628,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_arm_1k.webp",
+   "size": 231406,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Curly Teddy Natural\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_diff_1k.webp",
+   "size": 84720,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Curly Teddy Natural\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff greyscale, mean normalized to 0.86"
+  },
+  {
+   "path": "web/public/assets/textures/interior/curly_teddy_natural/curly_teddy_natural_nor_gl_1k.webp",
+   "size": 120416,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/curly_teddy_natural/curly_teddy_natural_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Curly Teddy Natural\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/512/herringbone_parquet_arm_1k.webp",
+   "size": 3844,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/512/herringbone_parquet_diff_1k.webp",
+   "size": 36166,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/512/herringbone_parquet_nor_gl_1k.webp",
+   "size": 2620,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_arm_1k.webp",
+   "size": 23426,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Herringbone Parquet\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_diff_1k.webp",
+   "size": 208170,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Herringbone Parquet\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff re-graded to pale oiled oak: modulate(saturation .72, brightness 1.34) + linear([.84,.88,.82], [24,24,16])"
+  },
+  {
+   "path": "web/public/assets/textures/interior/herringbone_parquet/herringbone_parquet_nor_gl_1k.webp",
+   "size": 22526,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/herringbone_parquet/herringbone_parquet_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Herringbone Parquet\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/512/hessian_230_arm_1k.webp",
+   "size": 57334,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/hessian_230/hessian_230_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/512/hessian_230_diff_1k.webp",
+   "size": 95052,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/hessian_230/hessian_230_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/512/hessian_230_nor_gl_1k.webp",
+   "size": 87962,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/hessian_230/hessian_230_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/hessian_230_arm_1k.webp",
+   "size": 318272,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Hessian 230\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/hessian_230_diff_1k.webp",
+   "size": 391178,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Hessian 230\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff brightened: modulate(brightness 1.75, saturation .85) + linear(.85, 18)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/hessian_230/hessian_230_nor_gl_1k.webp",
+   "size": 364366,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/hessian_230/hessian_230_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Hessian 230\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/512/kitchen_wood_arm_1k.webp",
+   "size": 53796,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/512/kitchen_wood_diff_1k.webp",
+   "size": 49986,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/512/kitchen_wood_nor_gl_1k.webp",
+   "size": 8508,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_arm_1k.webp",
+   "size": 306148,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Kitchen Wood\"; house interiors (house/materials.ts SURFACES); used as walnut",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_diff_1k.webp",
+   "size": 259802,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Kitchen Wood\"; house interiors (house/materials.ts SURFACES); used as walnut",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/kitchen_wood/kitchen_wood_nor_gl_1k.webp",
+   "size": 126112,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/kitchen_wood/kitchen_wood_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Kitchen Wood\"; house interiors (house/materials.ts SURFACES); used as walnut",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/512/oak_veneer_01_arm_1k.webp",
+   "size": 42012,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/512/oak_veneer_01_diff_1k.webp",
+   "size": 20606,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/512/oak_veneer_01_nor_gl_1k.webp",
+   "size": 2378,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_arm_1k.webp",
+   "size": 223272,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Oak Veneer 01\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_diff_1k.webp",
+   "size": 99182,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Oak Veneer 01\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/oak_veneer_01/oak_veneer_01_nor_gl_1k.webp",
+   "size": 50968,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/oak_veneer_01/oak_veneer_01_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Oak Veneer 01\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/512/poly_wool_herringbone_arm_1k.webp",
+   "size": 44056,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/512/poly_wool_herringbone_diff_1k.webp",
+   "size": 65590,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/512/poly_wool_herringbone_nor_gl_1k.webp",
+   "size": 46288,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_arm_1k.webp",
+   "size": 372484,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Poly Wool Herringbone\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_diff_1k.webp",
+   "size": 364452,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Poly Wool Herringbone\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff greyscale, mean normalized to 0.78"
+  },
+  {
+   "path": "web/public/assets/textures/interior/poly_wool_herringbone/poly_wool_herringbone_nor_gl_1k.webp",
+   "size": 405582,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/poly_wool_herringbone/poly_wool_herringbone_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Poly Wool Herringbone\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/512/rough_linen_arm_1k.webp",
+   "size": 41390,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/rough_linen/rough_linen_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/512/rough_linen_diff_1k.webp",
+   "size": 17608,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/rough_linen/rough_linen_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/512/rough_linen_nor_gl_1k.webp",
+   "size": 22632,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/interior/rough_linen/rough_linen_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/rough_linen_arm_1k.webp",
+   "size": 386312,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Rough Linen\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; ARM = R:AO G:rough B:metal"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/rough_linen_diff_1k.webp",
+   "size": 312346,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Rough Linen\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q84) via scratch tools/convert-tex.mjs; diff greyscale, mean normalized to 0.82 (tinted by material colour)"
+  },
+  {
+   "path": "web/public/assets/textures/interior/rough_linen/rough_linen_nor_gl_1k.webp",
+   "size": 341816,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/rough_linen/rough_linen_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "Poly Haven \"Rough Linen\"; house interiors (house/materials.ts SURFACES)",
+   "date": "2026-10-29",
+   "pipeline": "1k JPG -> WebP (sharp q90) via scratch tools/convert-tex.mjs"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/512/laminate_floor_02_arm_1k.webp",
+   "size": 4134,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/512/laminate_floor_02_diff_1k.webp",
+   "size": 18586,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/512/laminate_floor_02_nor_gl_1k.webp",
+   "size": 4020,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_arm_1k.webp",
+   "size": 30666,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/laminate_floor_02/laminate_floor_02_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_diff_1k.webp",
+   "size": 120254,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/laminate_floor_02/laminate_floor_02_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/laminate_floor_02/laminate_floor_02_nor_gl_1k.webp",
+   "size": 41358,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/laminate_floor_02/laminate_floor_02_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/laminate_floor_02/laminate_floor_02_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/512/marble_01_arm_1k.webp",
+   "size": 4772,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/marble_01/marble_01_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/512/marble_01_diff_1k.webp",
+   "size": 9288,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/marble_01/marble_01_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/512/marble_01_nor_gl_1k.webp",
+   "size": 2258,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/marble_01/marble_01_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/marble_01_arm_1k.webp",
+   "size": 14210,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/marble_01/marble_01_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/marble_01_diff_1k.webp",
+   "size": 45828,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/marble_01/marble_01_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/marble_01/marble_01_nor_gl_1k.webp",
+   "size": 6874,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/marble_01/marble_01_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/marble_01/marble_01_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/512/painted_plaster_wall_arm_1k.webp",
+   "size": 1980,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/512/painted_plaster_wall_diff_1k.webp",
+   "size": 9818,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/512/painted_plaster_wall_nor_gl_1k.webp",
+   "size": 25568,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_arm_1k.webp",
+   "size": 8856,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/painted_plaster_wall/painted_plaster_wall_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_diff_1k.webp",
+   "size": 122502,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/painted_plaster_wall/painted_plaster_wall_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.webp",
+   "size": 217156,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/512/red_brick_03_arm_1k.webp",
+   "size": 21914,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/red_brick_03/red_brick_03_arm_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/512/red_brick_03_diff_1k.webp",
+   "size": 55618,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/red_brick_03/red_brick_03_diff_1k.webp → 512 px (lanczos3), WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/512/red_brick_03_nor_gl_1k.webp",
+   "size": 58022,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "phone copy (engine/assets.ts loads it when the texture cap is 512)",
+   "date": "2026-11-01",
+   "pipeline": "web/public/assets/textures/red_brick_03/red_brick_03_nor_gl_1k.webp → 512 px (lanczos3), WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/red_brick_03_arm_1k.webp",
+   "size": 66826,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_arm_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/red_brick_03/red_brick_03_arm_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/red_brick_03_diff_1k.webp",
+   "size": 270910,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_diff_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/red_brick_03/red_brick_03_diff_1k.jpg (see source) → WebP q80 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/red_brick_03/red_brick_03_nor_gl_1k.webp",
+   "size": 293690,
+   "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/red_brick_03/red_brick_03_nor_gl_1k.jpg",
+   "license": "CC0 — Poly Haven",
+   "note": "ARM = R:AO G:rough B:metal",
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/textures/red_brick_03/red_brick_03_nor_gl_1k.jpg (see source) → WebP q86 (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_birch_color.webp",
+   "size": 59702,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/birch_*; original https://www.texturecan.com/details/221/)",
+   "license": "CC0 — TextureCan (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: birch bark albedo 1k jpg -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_birch_normal.webp",
+   "size": 112766,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/birch_normal_1k.jpg; original https://www.texturecan.com/details/221/)",
+   "license": "CC0 — TextureCan (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: birch bark normal 1k -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_oak_color.webp",
+   "size": 87516,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/oak_*; original https://polyhaven.com/a/bark_brown_02)",
+   "license": "CC0 — Poly Haven (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: bark albedo 1k jpg -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_oak_normal.webp",
+   "size": 72592,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/oak_normal_1k.jpg; original https://polyhaven.com/a/bark_brown_02)",
+   "license": "CC0 — Poly Haven (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: bark normal (OpenGL) 1k -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_pine_color.webp",
+   "size": 67924,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/pine_*; original https://www.texturecan.com/details/588/)",
+   "license": "CC0 — TextureCan (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: pine bark albedo 1k jpg -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/bark_pine_normal.webp",
+   "size": 65228,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (assets/bark/pine_normal_1k.jpg; original https://www.texturecan.com/details/588/)",
+   "license": "CC0 — TextureCan (via ez-tree, MIT)",
+   "note": "city trees/hedges, downloaded 2026-10-29: pine bark normal 1k -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/far_atlas.webp",
+   "size": 340282,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (leaf sprig PNGs, composited)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: far-LOD clump atlas: 4 × 512² tiles of many composited sprigs (oak, ash, pine, aspen), inner sprigs darkened -> webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/hedge_color.webp",
+   "size": 79154,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (leaf sprig PNGs, composited)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: tileable clipped-hedge foliage: sprigs scattered with wrap-around on a dark base -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/hedge_normal.webp",
+   "size": 122134,
+   "source": "derived from hedge_color.webp (height from luminance)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: normal map from the hedge height field -> 512² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/leaves_ash.webp",
+   "size": 108176,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (src/lib/assets/leaves/ash_color.png)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: leaf sprig card: push-pull colour bleed -> 1024² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/leaves_aspen.webp",
+   "size": 140646,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (src/lib/assets/leaves/aspen_color.png)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: leaf sprig card (autumn aspen): push-pull colour bleed -> 1024² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/leaves_oak.webp",
+   "size": 180466,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (src/lib/assets/leaves/oak_color.png)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: leaf sprig card: push-pull colour bleed under alpha -> 1024² webp (alpha quality 100); pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/leaves_pine.webp",
+   "size": 281904,
+   "source": "https://registry.npmjs.org/@dgreenheck/ez-tree/-/ez-tree-1.1.0.tgz (src/lib/assets/leaves/pine_color.png)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "city trees/hedges, downloaded 2026-10-29: pine needle sprig card: push-pull colour bleed -> 1024² webp; pipeline tools/city/build-tree-textures.mjs (sharp)",
+   "date": "2026-10-29",
+   "pipeline": "tools/city/build-tree-textures.mjs (sharp)"
+  },
+  {
+   "path": "web/public/assets/textures/trees/LICENSE-ez-tree.txt",
+   "size": 1320,
+   "source": "https://github.com/dgreenheck/ez-tree (LICENSE, MIT, Copyright (c) 2024 Daniel Greenheck)",
+   "license": "MIT — Daniel Greenheck (@dgreenheck/ez-tree 1.1.0)",
+   "note": "licence text for the EZ-Tree-derived textures beside it",
+   "date": "2026-11-01",
+   "pipeline": "bundled licence text"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/delivery.glb",
+   "size": 240264,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2476,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.65,
+    3.25
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/delivery.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/hatchback-sports.glb",
+   "size": 197804,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2088,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.3,
+    1.1,
+    2.85
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/hatchback-sports.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/License.txt",
+   "size": 696,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/License.txt"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/police.glb",
+   "size": 195336,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2304,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.3,
+    3.1
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/police.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/sedan.glb",
+   "size": 172216,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2032,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.3,
+    2.55
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/sedan.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/suv.glb",
+   "size": 207572,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2474,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.3,
+    2.7
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/suv.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/taxi.glb",
+   "size": 175608,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2072,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.5,
+    2.75
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/taxi.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/Textures/colormap.png",
+   "size": 12371,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/Textures/colormap.png)",
+   "license": "CC0 — Kenney",
+   "note": "palette texture every car-kit GLB references (city/parked-cars.ts)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/Textures/colormap.png"
+  },
+  {
+   "path": "web/public/assets/vehicles/kenney-car-kit/van.glb",
+   "size": 175664,
+   "source": "https://kenney.nl/media/pages/assets/car-kit/1a312ec241-1775131960/kenney_car-kit.zip (Models/GLB format/)",
+   "license": "CC0 — Kenney",
+   "note": "stylized; needs Textures/colormap.png beside it; scale ~1.75 for real size",
+   "triangles": 2082,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [],
+   "bboxM": [
+    1.5,
+    1.35,
+    2.75
+   ],
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/kenney-car-kit/van.glb (see source)"
+  },
+  {
+   "path": "web/public/assets/vehicles/khronos/CarConcept_meshopt.glb",
+   "size": 3357016,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb (11.8 MB; re-encoded with gltf-transform meshopt)",
+   "license": "CC-BY 4.0: \"Car Concept\" by Eric Chadwick / Darmstadt Graphics Group GmbH (2024); Khronos logos are trademarks - hide the logo meshes",
+   "note": "needs MeshoptDecoder; KHR_materials_variants/clearcoat/transmission",
+   "triangles": 213347,
+   "skinned": false,
+   "joints": 0,
+   "clips": [],
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization"
+   ],
+   "bboxM": [
+    73267.987,
+    35588.764,
+    142094.101
+   ],
+   "date": "2026-11-01",
+   "pipeline": "copied unchanged from assets-cache/vehicles/khronos/CarConcept_meshopt.glb (see source) → textures → WebP (≤1024 px, q80 / normals q86) (tools/assets/slim.mjs)"
+  },
+  {
+   "path": "web/public/assets/vehicles/khronos/LICENSE_CarConcept.md",
+   "size": 943,
+   "source": "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb (11.8 MB; re-encoded with gltf-transform meshopt)",
+   "license": "CC-BY 4.0: \"Car Concept\" by Eric Chadwick / Darmstadt Graphics Group GmbH (2024); Khronos logos are trademarks - hide the logo meshes",
+   "note": "licence text bundled with the pack (kept beside the files it covers)",
+   "date": "2026-10-27",
+   "pipeline": "copied unchanged from assets-cache/vehicles/khronos/LICENSE_CarConcept.md"
+  }
+ ],
+ "licenseNotes": {
+  "†": "Quaternius packs ship License.txt = CC0 1.0 (downloaded 2026-10-27). The packs' own pages (Universal Animation Library 1 and 2, Universal Base Characters on quaternius.itch.io) still say CC0 on 2026-11-10; evidence and file hashes in THIRD-PARTY-NOTICES.md. quaternius.com/license.html describes a separate QAL licence. Don't repackage web/public/assets as a stand-alone asset pack.",
+  "CC-BY": "Credit required: \"Car Concept\" by Eric Chadwick / Darmstadt Graphics Group GmbH (CC-BY 4.0); \"Glam Velvet Sofa\" by Eric Chadwick / Wayfair, LLC (CC-BY 4.0)."
+ }
+}

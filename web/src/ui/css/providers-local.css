@@ -1,0 +1,86 @@
+/* The "Model servers on your network" card of Models & providers (providers-local.ts): the saved servers, and the
+   add / edit form with Test connection. */
+.rlt-ui .lm-card {
+  display: grid;
+  gap: 0.75rem;
+  align-content: start;
+}
+.rlt-ui .lm-card .vendor-mark svg {
+  color: #fff; /* theme: fixed — white on the card's colour, like the vendors' letters */
+}
+.rlt-ui .lm-addr code {
+  font-size: 0.71875rem;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .lm-ready {
+  color: var(--ok-text);
+}
+.rlt-ui .lm-none {
+  color: var(--sun-text);
+}
+.rlt-ui .lm-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.rlt-ui .lm-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 0.625rem;
+}
+.rlt-ui .lm-field {
+  display: grid;
+  gap: 0.25rem;
+  align-content: start;
+  min-width: 0;
+}
+.rlt-ui .lm-hint {
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.rlt-ui .lm-hint code {
+  font-size: 0.6875rem;
+  color: var(--text-2);
+}
+.rlt-ui .lm-drop-key {
+  justify-self: start;
+}
+.rlt-ui .lm-models {
+  list-style: none;
+  margin: 0.25rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.125rem;
+}
+.rlt-ui .lm-models code {
+  font-size: 0.71875rem;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .signin-result.is-warn {
+  background: rgb(var(--sun-rgb) / 0.13);
+  color: var(--sun-text);
+}
+.rlt-ui .lm-form .signin-actions {
+  flex-wrap: wrap;
+}
+.rlt-ui .lm-file code {
+  overflow-wrap: anywhere;
+}
+.rlt-ui .lm-field.is-wide {
+  grid-column: 1 / -1;
+}
+.rlt-ui .lm-add .btn {
+  justify-self: start;
+}
+@media (max-width: 520px) {
+  .rlt-ui .lm-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (pointer: coarse) {
+  .rlt-ui .lm-form .input {
+    min-height: 2.75rem;
+  }
+}

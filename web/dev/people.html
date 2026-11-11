@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CAST · people dev harness</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #111; overflow: hidden; font-family: Inter, system-ui, sans-serif; }
+    #app { position: absolute; inset: 0; }
+    #log { position: absolute; right: 12px; top: 12px; z-index: 10; color: #F4F1EC; font: 12px monospace; background: rgba(20,20,24,.6); padding: 8px 10px; border-radius: 10px; max-width: 420px; white-space: pre-wrap; }
+    #log:empty { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="log"></div>
+  <script type="module" src="./people.ts"></script>
+</body>
+</html>

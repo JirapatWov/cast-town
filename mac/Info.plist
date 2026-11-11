@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Template for CAST.app/Contents/Info.plist. build-dmg.sh replaces __VERSION__ (package.json's version),
+     __BUILD__ (the same version without a pre-release suffix) and __UPDATE_REPOSITORY__ (package.json's
+     repository.url: the GitHub repository whose releases Check for Updates installs; empty or CHANGE-ME: not set
+     up). The bundle identifier dev.casttown.cast is the project's (casttown.dev); changing it makes Macs treat CAST as
+     a new app. The
+     NS…UsageDescription texts are what macOS shows when the server, an agent or a terminal shell (all started by
+     CAST.app, so macOS asks on its behalf) first touches Desktop, Documents, Downloads, another drive, the local
+     network or another app. -->
+<plist version="1.0">
+<dict>
+	<key>CASTUpdateRepository</key>
+	<string>__UPDATE_REPOSITORY__</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>CAST</string>
+	<key>CFBundleExecutable</key>
+	<string>CAST</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIdentifier</key>
+	<string>dev.casttown.cast</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>CAST</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>__VERSION__</string>
+	<key>CFBundleVersion</key>
+	<string>__BUILD__</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>13.0</string>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Programs that CAST's agents or its terminal run for you may control other apps.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>CAST's agents and terminal work in the project folders you choose, which may be on your Desktop.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>CAST's agents and terminal work in the project folders you choose, which may be in Documents.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>CAST's agents and terminal work in the project folders you choose, which may be in Downloads.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>CAST connects to the other computers running CAST that you add as cities.</string>
+	<key>NSNetworkVolumesUsageDescription</key>
+	<string>CAST's agents and terminal work in the project folders you choose, which may be on a network drive.</string>
+	<key>NSRemovableVolumesUsageDescription</key>
+	<string>CAST's agents and terminal work in the project folders you choose, which may be on an external drive.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSHumanReadableCopyright</key>
+	<string>MIT licence. CAST contributors.</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>NSSupportsAutomaticTermination</key>
+	<false/>
+	<key>NSSupportsSuddenTermination</key>
+	<false/>
+</dict>
+</plist>

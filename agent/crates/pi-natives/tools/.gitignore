@@ -1,0 +1,3 @@
+# Downloaded raw tokenizer sources; generated data/*.bin.zst is committed.
+# cast-agent: upstream commits the files in cache/ as well (added despite this file), so cache/ is not ignored here:
+# a fresh `git add` must keep them.

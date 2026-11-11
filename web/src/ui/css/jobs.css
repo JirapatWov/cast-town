@@ -1,0 +1,1392 @@
+/* Jobs, rooms and floors: room-code plates, side-panel job switcher, chat thread bar, floor switcher,
+   new-job dialog with kind cards and the room picker (mini floor plans). */
+
+@keyframes rlt-wait-ping {
+  0% {
+    box-shadow: 0 0 0 0 rgb(var(--amber-rgb) / 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgb(var(--amber-rgb) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(var(--amber-rgb) / 0);
+  }
+}
+
+/* Room code: a small door plate ("2B") tinted by the job's kind. */
+.rlt-ui .room-code {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--kc, var(--sun)) calc(62% * var(--tint-k)), var(--tint-mix));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--kc, var(--sun)) 30%, rgb(var(--shade-rgb) / calc(0.2 * var(--shade)))), color-mix(in srgb, var(--kc, var(--sun)) 10%, rgb(var(--shade-rgb) / calc(0.25 * var(--shade)))));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kc, var(--sun)) 42%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 6px -2px rgb(var(--shade-rgb) / calc(0.5 * var(--shade)));
+}
+.rlt-ui .room-code-md {
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 0.625rem;
+  font-size: 0.78125rem;
+}
+.rlt-ui .room-code-sm {
+  min-width: 1.75rem;
+  height: 1.375rem;
+  padding: 0 0.3125rem;
+  border-radius: 0.4375rem;
+  font-size: 0.6875rem;
+}
+.rlt-ui .pal-item .room-code {
+  width: 1.875rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.71875rem;
+}
+
+/* ── Side-panel job switcher ─────────────────────────── */
+.rlt-ui .jobs {
+  flex-shrink: 0;
+  padding: 0.25rem 0.5rem 0.5rem;
+  border-bottom: 1px solid var(--hair);
+  background: linear-gradient(180deg, rgb(var(--shade-rgb) / calc(0.08 * var(--shade))), rgb(var(--shade-rgb) / calc(0 * var(--shade))));
+}
+.rlt-ui .jobs-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2rem;
+  padding: 0 0 0 0.375rem;
+}
+.rlt-ui .jobs-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rlt-ui .jobs-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.0625rem;
+  height: 1.0625rem;
+  padding: 0 0.3125rem;
+  border-radius: 0.5625rem;
+  background: var(--fill-2);
+  color: var(--text-2);
+  font-size: 0.65625rem;
+  letter-spacing: 0;
+}
+.rlt-ui .jobs-spacer {
+  flex: 1;
+}
+.rlt-ui .jobs-new {
+  height: 1.625rem;
+  padding: 0 0.5625rem 0 0.4375rem;
+  color: var(--text);
+}
+.rlt-ui .jobs-peek {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  margin-left: 0.125rem;
+  border-radius: 999px;
+  background: var(--fill-1);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  font-size: 0.71875rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .jobs-peek:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .jobs-peek .status-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+.rlt-ui .jobs-peek > span:last-child {
+  margin-left: 0.125rem;
+}
+.rlt-ui .jobs-peek.is-amber {
+  background: rgb(var(--amber-rgb) / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.32);
+  color: var(--amber-text);
+}
+.rlt-ui .jobs-bar .job-row {
+  background: linear-gradient(95deg, color-mix(in srgb, var(--kc) 14%, rgb(var(--fg-rgb) / 0.02)), rgb(var(--fg-rgb) / 0.04) 70%);
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.09), 0 6px 18px -12px rgb(var(--shade-rgb) / calc(0.6 * var(--shade)));
+}
+.rlt-ui .jobs-bar .job-row:hover {
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.16), 0 6px 18px -12px rgb(var(--shade-rgb) / calc(0.6 * var(--shade)));
+}
+.rlt-ui .jobs.is-open .jobs-bar .job-row {
+  box-shadow: inset 0 0 0 1px rgb(var(--sun-rgb) / 0.45), 0 0 0 3px rgb(var(--sun-rgb) / 0.08);
+}
+.rlt-ui .jobs-bar .job-row.is-waiting {
+  box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.45);
+}
+.rlt-ui .job-main .job-chev {
+  color: var(--text-3);
+  margin-left: -0.125rem;
+  transition: transform 0.18s var(--ease), color 0.15s;
+}
+.rlt-ui .job-row.is-bar .job-main {
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+}
+.rlt-ui .job-row.is-bar:hover .job-chev {
+  color: var(--text);
+}
+.rlt-ui .jobs.is-open .job-chev {
+  transform: rotate(180deg);
+  color: var(--sun);
+}
+.rlt-ui .jobs-drop {
+  display: flex;
+  flex-direction: column;
+  max-height: min(70vh, 35rem);
+  padding: 0.25rem;
+  border-radius: 0.875rem;
+}
+.rlt-ui .jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rlt-ui .jobs-drop-foot {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.375rem 0.25rem;
+  border-top: 1px solid var(--hair);
+}
+.rlt-ui .jobs-drop-hint {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .jobs-floor-free {
+  color: var(--text-3);
+  font-style: italic;
+}
+.rlt-ui .jobs-floor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem 0.5rem 0.1875rem 0.5625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.rlt-ui .jobs-floor::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--hair);
+  order: 1;
+}
+.rlt-ui .jobs-floor > span:nth-child(2) {
+  order: 2;
+  font-weight: 500;
+}
+.rlt-ui .jobs-floor-wait {
+  color: var(--amber-text);
+}
+.rlt-ui .jobs-floor-busy {
+  color: var(--work-text);
+}
+.rlt-ui .job-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 0.75rem;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+.rlt-ui .job-row:hover {
+  background: var(--fill-1);
+}
+.rlt-ui .job-row.is-on {
+  background: linear-gradient(95deg, color-mix(in srgb, var(--kc) 15%, transparent), rgb(var(--fg-rgb) / 0.045) 70%);
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.09), 0 6px 18px -12px rgb(var(--shade-rgb) / calc(0.6 * var(--shade)));
+}
+.rlt-ui .job-row.is-on::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6875rem;
+  bottom: 0.6875rem;
+  width: 0.1875rem;
+  border-radius: 0 0.1875rem 0.1875rem 0;
+  background: var(--kc);
+  box-shadow: 0 0 10px var(--kc);
+}
+.rlt-ui .job-row.is-waiting {
+  box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.38);
+  background: linear-gradient(95deg, rgb(var(--amber-rgb) / 0.1), rgb(var(--amber-rgb) / 0.02) 70%);
+}
+.rlt-ui .job-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.4375rem 0.25rem 0.4375rem 0.5625rem;
+  border-radius: 0.75rem;
+  text-align: left;
+}
+.rlt-ui .job-main:focus-visible {
+  outline-offset: -2px;
+}
+.rlt-ui .job-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1875rem;
+  min-width: 0;
+}
+.rlt-ui .job-name {
+  font-size: 0.84375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rlt-ui .job-row:not(.is-on) .job-name {
+  color: var(--text-soft);
+}
+.rlt-ui .job-lead {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+.rlt-ui .job-lead-name {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.rlt-ui .model-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  min-width: 0;
+  height: 1.125rem;
+  padding: 0 0.4375rem 0 0.375rem;
+  border-radius: 0.375rem;
+  background: color-mix(in srgb, var(--vc) 15%, transparent);
+  color: color-mix(in srgb, var(--vc) calc(50% * var(--tint-k)), var(--tint-mix));
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rlt-ui .model-chip .vendor-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+.rlt-ui .job-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  padding-left: 0.25rem;
+}
+.rlt-ui .job-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.71875rem;
+  font-weight: 500;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.rlt-ui .job-status.tone-work {
+  color: var(--work-text);
+}
+.rlt-ui .job-status.tone-wait {
+  color: var(--amber-text);
+  font-weight: 600;
+}
+.rlt-ui .job-status.tone-error {
+  color: var(--err-text);
+}
+.rlt-ui .job-status.tone-ok {
+  color: var(--ok-text);
+}
+.rlt-ui .job-status .status-dot.tone-work,
+.rlt-ui .jobs-peek .status-dot.tone-work {
+  box-shadow: 0 0 7px var(--work);
+  animation: rlt-pulse 1.6s ease-in-out infinite;
+}
+.rlt-ui .job-status .status-dot.tone-idle {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--text-3);
+}
+.rlt-ui .job-wait-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: rlt-wait-ping 1.6s ease-out infinite;
+}
+.rlt-ui .job-wait-dot.is-sm {
+  width: 0.375rem;
+  height: 0.375rem;
+}
+.rlt-ui .job-cost {
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .job-more {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: 0.1875rem;
+  opacity: 0;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s;
+}
+.rlt-ui .job-row:hover .job-more,
+.rlt-ui .job-row:focus-within .job-more,
+.rlt-ui .job-row.is-on .job-more,
+.rlt-ui .job-more[aria-expanded='true'] {
+  opacity: 1;
+}
+@media (hover: none) {
+  .rlt-ui .job-more {
+    opacity: 1;
+  }
+}
+.rlt-ui .job-menu .menu-section {
+  max-width: 16.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Workflow tab: which job's team this is */
+.rlt-ui .wf-job {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: -0.25rem;
+  font-size: 0.8125rem;
+  color: var(--text-2);
+}
+.rlt-ui .wf-job:empty {
+  display: none;
+}
+.rlt-ui .wf-job strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.rlt-ui .wf-job-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .wf-job .muted {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Chat: empty room */
+.rlt-ui .loading-row.is-tall {
+  padding: 4rem 1.5rem;
+  line-height: 1.55;
+  align-items: flex-start;
+}
+
+/* ── Chat thread bar + menu ──────────────────────────── */
+.rlt-ui .thread-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3125rem 0.5rem 0.3125rem 0.5rem;
+  border-bottom: 1px solid var(--hair);
+  background: rgb(var(--shade-rgb) / calc(0.07 * var(--shade)));
+  flex-shrink: 0;
+}
+.rlt-ui .thread-btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 1.875rem;
+  padding: 0 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .thread-btn:hover,
+.rlt-ui .thread-btn[aria-expanded='true'] {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .thread-btn-ic {
+  color: var(--text-3);
+}
+.rlt-ui .thread-btn-title {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text);
+  font-weight: 500;
+}
+.rlt-ui .thread-btn-meta {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 1.125rem;
+  height: 1.0625rem;
+  padding: 0 0.3125rem;
+  border-radius: 0.5625rem;
+  background: var(--fill-2);
+  color: var(--text-2);
+  font-size: 0.65625rem;
+  font-weight: 600;
+}
+.rlt-ui .thread-btn-more {
+  flex-shrink: 0;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.rlt-ui .thread-btn-chev {
+  flex-shrink: 0;
+  margin-left: auto;
+  color: var(--text-3);
+}
+.rlt-ui .thread-new {
+  flex-shrink: 0;
+  height: 1.875rem;
+  padding: 0 0.625rem 0 0.5rem;
+  color: var(--text);
+}
+.rlt-ui .thread-new:disabled {
+  opacity: 0.38;
+}
+/* Where the bar is narrow (the 420 px panel) the chat's title gets the room first: Compact and New chat become icons
+   (their tooltips and labels still say what they do) and "N older" waits in the menu. Finding #88. */
+.rlt-ui .thread-bar {
+  container: thread-bar / inline-size;
+}
+@container thread-bar (max-width: 560px) {
+  /* the label, not the icon: New chat carries a long and a short label (the short one is for phones) */
+  .rlt-ui .thread-new > span:last-child,
+  .rlt-ui .thread-new > .thread-new-long {
+    display: none;
+  }
+  .rlt-ui .thread-new {
+    width: 2rem;
+    padding: 0;
+    justify-content: center;
+  }
+  .rlt-ui .thread-btn-more {
+    display: none;
+  }
+}
+.rlt-ui .thread-menu {
+  display: flex;
+  flex-direction: column;
+  width: 340px;
+  max-width: calc(100vw - 1rem);
+  max-height: min(60vh, 27.5rem);
+  padding: 0.3125rem;
+  border-radius: 0.8125rem;
+}
+.rlt-ui .thread-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rlt-ui .thread-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5625rem;
+  text-align: left;
+  transition: background-color 0.12s;
+}
+.rlt-ui .thread-item:hover:not(:disabled),
+.rlt-ui .thread-item:focus-visible {
+  background: var(--fill-3);
+  outline: none;
+}
+.rlt-ui .thread-item:disabled {
+  opacity: 0.45;
+}
+.rlt-ui .thread-item.is-current {
+  background: rgb(var(--sun-rgb) / 0.07);
+}
+.rlt-ui .thread-ic {
+  display: grid;
+  place-items: center;
+  width: 1.125rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--text-3);
+}
+.rlt-ui .thread-item.is-current .thread-ic {
+  color: var(--sun);
+}
+.rlt-ui .thread-item-new .thread-ic {
+  color: var(--text);
+}
+.rlt-ui .thread-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.rlt-ui .thread-title {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rlt-ui .thread-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .thread-cur {
+  color: var(--sun-text);
+  font-weight: 600;
+}
+.rlt-ui .thread-sec {
+  margin-top: 0.25rem;
+  padding: 0.5625rem 0.625rem 0.25rem;
+  border-top: 1px solid var(--hair);
+  font-size: 0.71875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.rlt-ui .thread-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.625rem;
+  font-size: 0.78125rem;
+  color: var(--text-3);
+}
+/* Search chats (finding #44) */
+.rlt-ui .thread-search {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  flex-shrink: 0;
+  margin: 0 0 0.25rem;
+  padding: 0 0.625rem;
+  height: 2.125rem;
+  border-radius: 0.5625rem;
+  background: var(--well);
+  border: 1px solid var(--hair);
+  color: var(--text-3);
+}
+.rlt-ui .thread-search:focus-within {
+  border-color: rgb(var(--sun-rgb) / 0.45);
+}
+.rlt-ui .thread-search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.rlt-ui .thread-search + .thread-list > .thread-sec:first-child {
+  margin-top: 0;
+  border-top: 0;
+}
+.rlt-ui .thread-snippet {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .thread-item mark {
+  background: rgb(var(--amber-rgb) / 0.32);
+  color: var(--text);
+  border-radius: 0.1875rem;
+  padding: 0 1px;
+}
+
+/* ── Floor switcher (elevator panel) ─────────────────── */
+.rlt-ui .floor-switch {
+  position: absolute;
+  left: var(--gap);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4375rem;
+  border-radius: 1.25rem;
+  animation: rlt-fade 0.25s var(--ease);
+}
+.rlt-ui .fs-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1875rem;
+  width: 2.625rem;
+  height: 1.875rem;
+  border-radius: 0.5625rem;
+  /* theme: fixed — the lift's lit display looks the same in both themes */
+  background: linear-gradient(180deg, #0d0b09, #1b1612); /* theme: fixed */
+  box-shadow: inset 0 1px 4px rgb(var(--shade-rgb) / calc(0.8 * var(--shade))), inset 0 0 0 1px rgb(var(--fg-rgb) / 0.06), 0 1px 0 rgb(var(--fg-rgb) / 0.05);
+  color: #ffb547; /* theme: fixed */
+}
+.rlt-ui .fs-digit {
+  font: 600 1rem/1 var(--mono);
+  text-shadow: 0 0 8px rgba(255, 170, 60, 0.85), 0 0 2px rgba(255, 200, 120, 0.9); /* theme: fixed */
+}
+.rlt-ui .fs-arrow {
+  display: grid;
+  opacity: 0.22;
+}
+.rlt-ui .fs-arrow.is-up,
+.rlt-ui .fs-arrow.is-down {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px rgba(255, 170, 60, 0.9)); /* theme: fixed */
+  animation: rlt-pulse 0.9s ease-in-out infinite;
+}
+.rlt-ui .fs-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+}
+.rlt-ui .fs-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font: 600 0.875rem/1 var(--font);
+  color: var(--text-2);
+  background: radial-gradient(circle at 50% 30%, rgb(var(--fg-rgb) / 0.14), rgb(var(--fg-rgb) / 0.035) 72%);
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.14), inset 0 -2px 5px rgb(var(--shade-rgb) / calc(0.35 * var(--shade))), 0 3px 8px -2px rgb(var(--shade-rgb) / calc(0.45 * var(--shade)));
+  transition: color 0.15s, background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+.rlt-ui .fs-btn:hover:not(:disabled) {
+  color: var(--text);
+  background: radial-gradient(circle at 50% 30%, rgb(var(--fg-rgb) / 0.22), rgb(var(--fg-rgb) / 0.06) 72%);
+}
+.rlt-ui .fs-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.rlt-ui .fs-btn.is-empty:not(.is-on) .fs-num {
+  opacity: 0.6;
+}
+.rlt-ui .fs-btn.is-on {
+  /* theme: fixed — a lit lift button */
+  color: #2b1a04; /* theme: fixed */
+  background: radial-gradient(circle at 50% 30%, #fff0c8, #f5b551 74%); /* theme: fixed */
+  box-shadow: 0 0 0 2px rgb(var(--sun-rgb) / 0.32), 0 0 22px rgba(245, 181, 81, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -2px 4px rgba(150, 90, 10, 0.35); /* theme: fixed */
+}
+.rlt-ui .fs-btn.is-pending {
+  color: var(--text);
+  box-shadow: 0 0 0 2px rgb(var(--sun-rgb) / 0.5), inset 0 0 0 1px rgb(var(--sun-rgb) / 0.6);
+  animation: rlt-amber-glow 1s ease-in-out infinite;
+}
+.rlt-ui .fs-add {
+  width: 2.5rem;
+  height: 2rem;
+  border-radius: 0.75rem;
+  color: var(--text-3);
+  background: transparent;
+  box-shadow: none;
+  border: 1.5px dashed rgb(var(--fg-rgb) / 0.2);
+}
+.rlt-ui .fs-add:hover:not(:disabled) {
+  color: var(--sun-text);
+  border-color: rgb(var(--sun-rgb) / 0.6);
+  background: rgb(var(--sun-rgb) / 0.07);
+}
+.rlt-ui .fs-add:disabled {
+  opacity: 0.35;
+}
+.rlt-ui .fs-busy {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.3125rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.0625rem;
+  height: 1.0625rem;
+  padding: 0 0.25rem;
+  border-radius: 0.5625rem;
+  background: var(--work);
+  color: var(--on-work);
+  font: 700 0.625rem/1 var(--font);
+  box-shadow: 0 0 0 2px rgb(var(--surface-rgb) / 0.95), 0 0 10px rgb(var(--work-rgb) / 0.6);
+}
+.rlt-ui .fs-wait {
+  position: absolute;
+  top: -0.125rem;
+  right: -0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 2px solid rgb(var(--surface-rgb) / 0.95);
+  animation: rlt-wait-ping 1.6s ease-out infinite;
+}
+.rlt-ui.is-focus .floor-switch {
+  display: none;
+}
+/* terminal open: centre the elevator in the strip between the top bar and the dock (it scrolls if the dock is tall),
+   and step aside while the dock fills the screen */
+@media (min-width: 821px) {
+  .rlt-ui.has-term .floor-switch {
+    top: calc((var(--panel-top) + 100% - var(--term-h) - var(--gap)) / 2);
+    max-height: calc(100% - var(--panel-top) - var(--term-h) - var(--gap) * 3);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui.has-term:has(.term-dock.is-max) .floor-switch {
+    display: none;
+  }
+}
+
+/* ── New-job dialog ──────────────────────────────────── */
+.rlt-ui .modal-job {
+  width: min(72.5rem, 100%);
+}
+.rlt-ui .modal-job.is-edit {
+  width: min(37.5rem, 100%);
+}
+.rlt-ui .modal-job.is-move {
+  width: min(42.5rem, 100%);
+}
+.rlt-ui .jd {
+  display: grid;
+  gap: 1.125rem;
+}
+.rlt-ui .jd-split {
+  grid-template-columns: minmax(0, 540px) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+/* Lead / Team side by side: tighter buttons so "DeepSeek V4 Pro" + "not connected" and a long team name fit
+   without an ellipsis */
+.rlt-ui .jd-split .jd-details .field-row {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+.rlt-ui .jd-details .field-row .model-btn {
+  gap: 0.375rem;
+  padding: 0 0.5625rem;
+}
+.rlt-ui .jd-split .form-error {
+  grid-column: 1 / -1;
+}
+.rlt-ui .jd-details {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+}
+.rlt-ui .jd-name {
+  height: 2.5rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+.rlt-ui .field-optional {
+  margin-left: 0.125rem;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.rlt-ui .jd-kinds {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+.rlt-ui .jd-kind {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.18s, background-color 0.15s;
+}
+.rlt-ui .jd-kind:hover {
+  border-color: var(--hair-2);
+  background: var(--fill-2);
+}
+.rlt-ui .jd-kind:focus-visible {
+  outline-offset: 2px;
+  border-radius: 0.75rem;
+}
+.rlt-ui .jd-kind-art {
+  display: block;
+  height: 4rem;
+  overflow: hidden;
+  background: #2a2a30; /* theme: fixed — behind the (dark) illustrations */
+}
+.rlt-ui .jd-kind-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.35s var(--ease), filter 0.2s;
+  filter: saturate(0.82) brightness(0.92);
+}
+.rlt-ui .jd-kind:hover .jd-kind-art svg,
+.rlt-ui .jd-kind.is-on .jd-kind-art svg {
+  transform: scale(1.05);
+  filter: none;
+}
+.rlt-ui .jd-kind-text {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4375rem;
+  min-width: 0;
+  padding: 0.4375rem 0.625rem 0.5rem;
+}
+.rlt-ui .jd-kind-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.rlt-ui .jd-kind-blurb {
+  min-width: 0;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rlt-ui .jd-kind.is-on {
+  border-color: color-mix(in srgb, var(--kc) 75%, transparent);
+  background: color-mix(in srgb, var(--kc) 9%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kc) 18%, transparent), 0 12px 26px -16px var(--kc);
+}
+.rlt-ui .jd-kind.is-on .jd-kind-blurb {
+  color: var(--text-2);
+}
+.rlt-ui .jd-kind-check {
+  position: absolute;
+  top: 0.4375rem;
+  right: 0.4375rem;
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--kc);
+  color: #1d1406; /* theme: fixed — dark on the kind's bright colour */
+  box-shadow: 0 2px 8px rgb(var(--shade-rgb) / calc(0.4 * var(--shade)));
+  animation: rlt-pop 0.18s var(--ease);
+}
+.rlt-ui .jd-team-icon {
+  display: grid;
+  place-items: center;
+  width: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}
+.rlt-ui .jd-team .model-btn-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rlt-ui .jd-team-dots {
+  display: inline-flex;
+  gap: 0.1875rem;
+}
+.rlt-ui .jd-team-dots span {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+}
+.rlt-ui .jd-brief {
+  min-height: 76px;
+}
+.rlt-ui .jd-rooms {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  min-width: 0;
+}
+/* Split layout: the rooms column scrolls on its own (modal max-height minus head, foot and the column's label),
+   so a 5-floor house never pushes the form away. The padding keeps room focus rings unclipped. */
+.rlt-ui .jd-split .jd-rooms-scroll {
+  max-height: calc(100vh - 268px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0.1875rem 0.5rem 0.1875rem 0.1875rem;
+  margin: -0.1875rem -0.5rem -0.1875rem -0.1875rem;
+}
+.rlt-ui .jd-rooms-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.rlt-ui .jd-room-hint {
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+.rlt-ui .jd-foot-hint {
+  margin-right: auto;
+  padding-left: 0.375rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+
+/* ── Room picker ─────────────────────────────────────── */
+.rlt-ui .room-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.625rem;
+}
+.rlt-ui .modal-job.is-move .room-picker {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.rlt-ui .rp-add {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  height: 2.5rem;
+  padding: 0 0.875rem;
+  border-radius: 0.75rem;
+  border: 1.5px dashed rgb(var(--fg-rgb) / 0.18);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  transition: border-color 0.15s, background-color 0.15s, color 0.15s;
+}
+.rlt-ui .rp-add:hover:not(:disabled) {
+  border-color: rgb(var(--sun-rgb) / 0.6);
+  background: rgb(var(--sun-rgb) / 0.06);
+  color: var(--text);
+}
+.rlt-ui .rp-add:disabled {
+  opacity: 0.55;
+}
+.rlt-ui .rp-add-sub {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.rlt-ui .rp-floor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4375rem;
+  min-width: 0;
+  padding: 0.5rem;
+  border-radius: 0.8125rem;
+  background: var(--fill-1);
+  border: 1px solid var(--hair);
+  transition: border-color 0.2s, background-color 0.2s;
+}
+.rlt-ui .rp-floor.has-sel {
+  border-color: rgb(var(--sun-rgb) / 0.32);
+  background: rgb(var(--sun-rgb) / 0.035);
+}
+.rlt-ui .rp-floor-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  height: 1.375rem;
+  padding: 0 0.125rem;
+}
+.rlt-ui .rp-floor-num {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--fill-3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+.rlt-ui .rp-floor.has-sel .rp-floor-num {
+  background: var(--sun);
+  color: var(--on-amber);
+}
+.rlt-ui .rp-floor-name {
+  font-size: 0.78125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rlt-ui .rp-floor-free {
+  margin-left: auto;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.rlt-ui .rp-remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  height: 1.375rem;
+  padding: 0 0.4375rem 0 0.3125rem;
+  border-radius: 0.375rem;
+  font-size: 0.71875rem;
+  color: var(--text-2);
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .rp-remove:hover:not(:disabled) {
+  background: rgb(var(--err-rgb) / 0.12);
+  color: var(--err-text);
+}
+.rlt-ui .rp-plan {
+  position: relative;
+  aspect-ratio: 18.7 / 12.7;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: var(--plan-bg);
+  box-shadow: inset 0 0 0 1px rgb(var(--shade-rgb) / calc(0.3 * var(--shade)));
+}
+.rlt-ui .rp-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.rlt-ui .rp-floorfill {
+  fill: var(--plan-floor);
+}
+.rlt-ui .rp-corridor {
+  fill: rgb(var(--shade-rgb) / calc(0.2 * var(--shade)));
+}
+.rlt-ui .rp-wall {
+  fill: none;
+  stroke: rgb(var(--plan-ink-rgb));
+  stroke-width: 0.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rlt-ui .rp-outer {
+  stroke-width: 0.26;
+}
+.rlt-ui .rp-door {
+  fill: none;
+  stroke: rgb(var(--plan-ink-rgb) / 0.42);
+  stroke-width: 0.05;
+}
+.rlt-ui .rp-stairs {
+  fill: rgb(var(--fg-rgb) / 0.05);
+  stroke: rgb(var(--plan-ink-rgb) / 0.32);
+  stroke-width: 0.05;
+}
+.rlt-ui .rp-tread {
+  stroke: rgb(var(--plan-ink-rgb) / 0.28);
+  stroke-width: 0.04;
+}
+.rlt-ui .rp-stair-arrow {
+  fill: none;
+  stroke: rgb(var(--sun-rgb) / 0.8);
+  stroke-width: 0.11;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rlt-ui .rp-rail {
+  stroke: rgb(var(--plan-ink-rgb) / 0.65);
+  stroke-width: 0.08;
+}
+.rlt-ui .rp-furn {
+  fill: rgb(var(--fg-rgb) / 0.075);
+  stroke: rgb(var(--fg-rgb) / 0.1);
+  stroke-width: 0.04;
+}
+.rlt-ui .rp-rug {
+  fill: rgb(var(--fg-rgb) / 0.035);
+  stroke: rgb(var(--fg-rgb) / 0.07);
+  stroke-width: 0.04;
+}
+.rlt-ui .rp-label {
+  fill: rgb(var(--plan-ink-rgb) / 0.42);
+  font-family: var(--font);
+  font-size: 0.66px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+.rlt-ui .rp-label-sm {
+  font-size: 0.52px;
+}
+.rlt-ui .rp-entry {
+  fill: none;
+  stroke: rgb(var(--sun-rgb) / 0.8);
+  stroke-width: 0.11;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rlt-ui .rp-room {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  padding: 0.1875rem 0.25rem;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  text-align: center;
+  font-size: 0.6875rem;
+  line-height: 1.2;
+  transition: background-color 0.15s, border-color 0.15s, box-shadow 0.2s, color 0.15s;
+}
+.rlt-ui .rp-room.is-free {
+  border: 1.5px dashed rgb(var(--fg-rgb) / 0.2);
+  background: rgb(var(--fg-rgb) / 0.02);
+  color: var(--text-3);
+}
+.rlt-ui .rp-room.is-free:hover {
+  border-color: rgb(var(--sun-rgb) / 0.7);
+  background: rgb(var(--sun-rgb) / 0.09);
+  color: var(--text);
+}
+.rlt-ui .rp-room.is-free:focus-visible {
+  outline-offset: 1px;
+}
+.rlt-ui .rp-room.is-on {
+  border: 2px solid var(--sun);
+  background: radial-gradient(ellipse at 50% 35%, rgb(var(--sun-rgb) / 0.36), rgb(var(--sun-rgb) / 0.13));
+  color: var(--text);
+  box-shadow: 0 0 0 3px rgb(var(--sun-rgb) / 0.16), 0 0 24px rgb(var(--sun-rgb) / 0.35);
+  animation: rlt-pop 0.2s var(--ease);
+}
+.rlt-ui .rp-room.is-mine:not(.is-on) {
+  border-style: solid;
+  border-color: rgb(var(--fg-rgb) / 0.35);
+  color: var(--text-2);
+}
+.rlt-ui .rp-room.is-taken {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--kc) 34%, var(--plan-taken-1)), color-mix(in srgb, var(--kc) 14%, var(--plan-taken-2)));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--kc) 50%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  cursor: default;
+}
+.rlt-ui .rp-code {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65625rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  opacity: 0.85;
+}
+.rlt-ui .rp-room.is-on .rp-code {
+  color: var(--sun-text);
+  opacity: 1;
+}
+.rlt-ui .rp-code .vendor-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  box-shadow: 0 0 0 1.5px rgb(var(--shade-rgb) / calc(0.3 * var(--shade)));
+}
+.rlt-ui .rp-name {
+  max-width: 100%;
+  font-size: 0.71875rem;
+  font-weight: 500;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .rp-room.is-taken .rp-name,
+.rlt-ui .rp-room.is-on .rp-name {
+  font-weight: 600;
+}
+.rlt-ui .rp-check {
+  color: var(--sun);
+}
+
+/* ── Narrow screens ─────────────────────────────────── */
+@media (max-width: 65em) {
+  .rlt-ui .jd-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rlt-ui .jd-split .jd-rooms-scroll {
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+    margin: 0;
+  }
+}
+@media (max-width: 820px) {
+  .rlt-ui .floor-switch {
+    top: calc(var(--panel-top) + 3.125rem);
+    left: auto;
+    right: var(--gap);
+    transform: none;
+    gap: 0.375rem;
+    padding: 0.3125rem;
+    border-radius: 1rem;
+  }
+  .rlt-ui .fs-display {
+    display: none;
+  }
+  .rlt-ui .fs-buttons {
+    gap: 0.375rem;
+  }
+  .rlt-ui .fs-btn {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.8125rem;
+  }
+  .rlt-ui .fs-add {
+    width: 2.25rem;
+    height: 1.75rem;
+  }
+  .rlt-ui.has-panel .floor-switch {
+    top: calc(var(--panel-top) + 2.75rem);
+  }
+  .rlt-ui .jd-kind-art {
+    height: 3.375rem;
+  }
+  .rlt-ui .jd-kind-blurb {
+    display: none;
+  }
+  .rlt-ui .room-picker {
+    gap: 0.5rem;
+  }
+  .rlt-ui .rp-floor {
+    padding: 0.375rem;
+  }
+  .rlt-ui .rp-room {
+    font-size: 0.625rem;
+  }
+  .rlt-ui .rp-name {
+    font-size: 0.65625rem;
+    -webkit-line-clamp: 1;
+  }
+  .rlt-ui .jd-foot-hint {
+    display: none;
+  }
+  .rlt-ui .jobs-drop-hint {
+    display: none;
+  }
+}
+
+/* Lead thinking: Default + up to 7 levels — wrap instead of running off the dialog */
+.rlt-ui .jd-thinking .segmented {
+  flex-wrap: wrap;
+}
+
+/* Advisor: one model button, not a full-width bar */
+.rlt-ui .jd-advisor {
+  align-self: flex-start;
+  width: min(18.75rem, 100%);
+}
+.rlt-ui .jd-advisor:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.rlt-ui .jd-advisor-why {
+  color: var(--amber-text);
+}
+.rlt-ui .jd-advisor-why svg {
+  display: inline-block;
+  vertical-align: -0.125rem;
+}
+
+/* Files: its own copy (checkbox on create, read-only with the branch afterwards) */
+.rlt-ui .jd-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.5625rem 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.rlt-ui label.jd-copy:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .jd-copy:has(input:checked) {
+  background: rgb(var(--work-rgb) / 0.08);
+  border-color: rgb(var(--work-rgb) / 0.45);
+}
+.rlt-ui .jd-copy input {
+  margin-top: 0.1875rem;
+  accent-color: var(--work);
+}
+.rlt-ui .jd-copy.is-off {
+  cursor: default;
+}
+.rlt-ui .jd-copy.is-off .jd-copy-label {
+  color: var(--text-3);
+}
+.rlt-ui .jd-copy.is-readonly {
+  cursor: default;
+}
+.rlt-ui .jd-copy.is-readonly > svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+  color: var(--work-text);
+}
+.rlt-ui .jd-copy-text {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.rlt-ui .jd-copy-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.rlt-ui .jd-copy-branch {
+  margin-left: 0.25rem;
+  padding: 1px 0.375rem;
+  border-radius: 0.375rem;
+  background: rgb(var(--work-rgb) / 0.14);
+  color: var(--work-text);
+  font: 500 0.71875rem var(--mono);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .jd-copy-shared {
+  margin: 0;
+  font-size: 0.78125rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}

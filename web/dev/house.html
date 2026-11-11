@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CAST · house dev harness</title>
+  <link rel="stylesheet" href="/fonts/fonts.css" data-rlt-fonts />
+  <style>
+    html, body { margin: 0; height: 100%; background: #111; overflow: hidden; font-family: Inter, 'IBM Plex Sans Thai', system-ui, sans-serif; }
+    #app { position: absolute; inset: 0; }
+    #dev { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 760px; z-index: 10;
+      background: rgba(20,20,24,.72); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,.08); border-radius: 14px; padding: 10px; color: #F4F1EC; font-size: 12px; }
+    #dev button { background: rgba(255,255,255,.08); color: #F4F1EC; border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 5px 9px; font: inherit; cursor: pointer; }
+    #dev button:hover { background: rgba(255,255,255,.16); }
+    #dev .row { display: flex; gap: 6px; align-items: center; width: 100%; flex-wrap: wrap; }
+    #dev .lbl { opacity: .6; min-width: 76px; }
+    #log { position: absolute; right: 12px; top: 12px; z-index: 10; color: #F4F1EC; font: 12px 'JetBrains Mono', monospace; background: rgba(20,20,24,.6); padding: 8px 10px; border-radius: 10px; max-width: 360px; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="dev"></div>
+  <div id="log"></div>
+  <script type="module" src="./house.ts"></script>
+</body>
+</html>

@@ -1,0 +1,1097 @@
+/* Built-in file viewer (file-viewer.ts) and the ways into it: file links and thumbnails in chat replies, View buttons
+   and pictures on tool cards, the Changes tab's view buttons. */
+
+/* ── Overlay ─────────────────────────────────────────── */
+.rlt-ui .vw-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 58; /* above the TV (45) and dialogs (55) it can be opened from; the palette (60) stays on top */
+  display: grid;
+  padding: 1.125rem;
+  pointer-events: auto;
+  background: rgb(var(--scrim-rgb) / calc(0.55 * var(--scrim-k)));
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.18s var(--ease);
+}
+.rlt-ui .vw-overlay.is-open {
+  opacity: 1;
+}
+.rlt-ui .vw-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 1.125rem;
+  transform: translateY(0.625rem) scale(0.99);
+  transition: transform 0.22s var(--ease);
+}
+.rlt-ui .vw-overlay.is-open .vw-panel {
+  transform: none;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.rlt-ui .vw-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  grid-template-areas: 'nav titles bar close';
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.625rem 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--hair);
+}
+.rlt-ui .vw-navbtn {
+  grid-area: nav;
+}
+.rlt-ui .vw-navbtn.is-on {
+  color: var(--sun-text);
+  background: rgb(var(--sun-rgb) / 0.1);
+}
+.rlt-ui .vw-close {
+  grid-area: close;
+}
+.rlt-ui .vw-titles {
+  grid-area: titles;
+  min-width: 0;
+}
+.rlt-ui .vw-title {
+  font-size: 0.96875rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .vw-sub {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .vw-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.1875rem;
+  min-width: 0;
+  overflow: hidden;
+  font: 0.75rem var(--mono);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.rlt-ui .vw-crumb {
+  padding: 1px 0.25rem;
+  border-radius: 0.3125rem;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 13.75rem;
+  flex-shrink: 1;
+  min-width: 0;
+}
+.rlt-ui .vw-crumb:first-child {
+  font-family: var(--font);
+  flex-shrink: 0;
+}
+.rlt-ui .vw-crumb:hover:not(.is-static) {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .vw-crumb.is-static {
+  cursor: default;
+}
+.rlt-ui .vw-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.3125rem;
+  flex-shrink: 0;
+}
+.rlt-ui .vw-chip-new {
+  background: rgb(var(--ok-rgb) / 0.16);
+  color: var(--ok-text);
+}
+.rlt-ui .vw-bar {
+  grid-area: bar;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+.rlt-ui .vw-tools,
+.rlt-ui .vw-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+}
+.rlt-ui .vw-actions {
+  gap: 0.125rem;
+}
+/* the phone's More (Reload, Open in new tab, Download, Copy path); a desktop shows those four in the bar */
+.rlt-ui .vw-actions .vw-more {
+  display: none;
+}
+/* finding #49: previous / next file and A− / A+ (the sizes only where there is text to size) */
+.rlt-ui .vw-steps,
+.rlt-ui .vw-sizes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin-right: 0.375rem;
+  padding-right: 0.375rem;
+  border-right: 1px solid var(--hair);
+}
+.rlt-ui .vw-steps:not(:has(.vw-step:not([hidden]))),
+.rlt-ui .vw-panel:not(:has(.vw-md, .vw-code, .vw-table)) .vw-sizes {
+  display: none;
+}
+.rlt-ui .vw-size:disabled,
+.rlt-ui .vw-step:disabled {
+  opacity: 0.35;
+}
+.rlt-ui .vw-size-a {
+  font-size: 0.84375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.rlt-ui .vw-size-a.is-small {
+  font-size: 0.71875rem;
+}
+.rlt-ui .vw-head a.icon-btn {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.rlt-ui .vw-head a.icon-btn:hover {
+  color: var(--text);
+}
+.rlt-ui .vw-tog {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.875rem;
+  padding: 0 0.625rem;
+  border-radius: 0.5625rem;
+  border: 1px solid var(--hair);
+  background: var(--well);
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.rlt-ui .vw-tog:hover {
+  color: var(--text);
+}
+.rlt-ui .vw-tog.is-on {
+  color: var(--text);
+  background: rgb(var(--fg-rgb) / 0.12);
+  border-color: var(--hair-2);
+}
+
+/* ── Files column ────────────────────────────────────── */
+.rlt-ui .vw-main {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+}
+.rlt-ui .vw-nav {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--hair);
+  background: rgb(var(--shade-rgb) / calc(0.08 * var(--shade)));
+}
+.rlt-ui .vw-nav-head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.625rem 0.125rem 0.375rem;
+  min-width: 0;
+}
+.rlt-ui .vw-up:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.rlt-ui .vw-dir {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--text-2);
+  direction: rtl; /* a long folder path keeps its end in view */
+  text-align: left;
+  unicode-bidi: plaintext;
+}
+.rlt-ui .vw-find-wrap {
+  position: relative;
+  margin: 0.25rem 0.625rem 0.375rem;
+  color: var(--text-3);
+}
+.rlt-ui .vw-find-wrap > .ic {
+  position: absolute;
+  left: 0.625rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+.rlt-ui .vw-find {
+  height: 2rem;
+  padding: 0.25rem 0.625rem 0.25rem 1.875rem;
+  font-size: 0.78125rem;
+}
+.rlt-ui .vw-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.125rem 0.375rem 0.625rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+.rlt-ui .vw-entry {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.5rem;
+  font: 0.78125rem/1.35 var(--mono);
+  color: var(--text-2);
+  text-align: left;
+}
+.rlt-ui .vw-entry:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .vw-entry.is-on {
+  background: rgb(var(--sun-rgb) / 0.12);
+  color: var(--text);
+  box-shadow: inset 2px 0 0 var(--sun);
+}
+.rlt-ui .vw-entry-icon {
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.rlt-ui .vw-entry.is-dir .vw-entry-icon {
+  color: var(--sun);
+}
+.rlt-ui .vw-entry.is-dir {
+  color: var(--text);
+}
+.rlt-ui .vw-entry-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .vw-entry.is-found .vw-entry-name {
+  display: flex;
+  flex-direction: column;
+}
+.rlt-ui .vw-entry.is-found .vw-entry-name > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rlt-ui .vw-entry-dir {
+  font-size: 0.65625rem;
+  color: var(--text-3);
+}
+.rlt-ui .vw-entry mark {
+  background: none;
+  color: var(--sun-text);
+  font-weight: 600;
+}
+.rlt-ui .vw-entry-meta {
+  font: 0.65625rem var(--font);
+  color: var(--text-3);
+}
+.rlt-ui .vw-nav-msg {
+  padding: 0.75rem 0.625rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .vw-nav-msg.is-error {
+  color: var(--err-text);
+}
+.rlt-ui .vw-nav-note {
+  padding: 0.375rem 0.875rem 0.625rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  border-top: 1px solid var(--hair);
+}
+.rlt-ui .vw-scrim {
+  display: none;
+}
+.rlt-ui .vw-panel.nav-hidden .vw-main,
+.rlt-ui .vw-panel.no-nav .vw-main {
+  grid-template-columns: minmax(0, 1fr);
+}
+.rlt-ui .vw-panel.nav-hidden .vw-nav,
+.rlt-ui .vw-panel.no-nav .vw-nav,
+.rlt-ui .vw-panel.no-nav .vw-navbtn {
+  display: none;
+}
+
+/* ── Body ────────────────────────────────────────────── */
+.rlt-ui .vw-body {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 1.125rem;
+  background: rgb(var(--shade-rgb) / calc(0.18 * var(--shade)));
+}
+.rlt-ui .vw-body:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px rgb(var(--sun-rgb) / 0.35);
+  border-radius: 0;
+}
+.rlt-ui .vw-body.is-flush {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rlt-ui .vw-body.is-center {
+  display: grid;
+  place-items: center;
+}
+.rlt-ui .vw-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.375rem;
+  max-width: 27.5rem;
+  margin: auto;
+  padding: 2.5rem 1.25rem;
+}
+.rlt-ui .vw-state-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fill-2);
+  color: var(--text-2);
+  margin-bottom: 0.375rem;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.rlt-ui .vw-state-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .vw-state-body {
+  color: var(--text-2);
+  font-size: 0.8125rem;
+}
+.rlt-ui .vw-state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+}
+.rlt-ui .vw-state-actions a.btn {
+  text-decoration: none;
+}
+.rlt-ui .vw-note {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  flex-shrink: 0;
+  padding: 0.4375rem 0.875rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  border-top: 1px solid var(--hair);
+  background: rgb(var(--shade-rgb) / calc(0.22 * var(--shade)));
+}
+.rlt-ui .vw-note.is-top {
+  border-top: 0;
+  border-bottom: 1px solid var(--hair);
+  color: var(--amber-text);
+}
+.rlt-ui .vw-note a {
+  color: var(--sun-text);
+}
+
+/* Pictures: a checkerboard behind transparency; Fit or 1:1 (a click switches). */
+.rlt-ui .is-checker {
+  background-color: var(--panel-2);
+  background-image: conic-gradient(rgb(var(--fg-rgb) / 0.055) 25%, transparent 0 50%, rgb(var(--fg-rgb) / 0.055) 0 75%, transparent 0);
+  background-size: 20px 20px;
+}
+.rlt-ui .vw-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  touch-action: pinch-zoom pan-x pan-y;
+}
+.rlt-ui .vw-stage.is-fit {
+  cursor: zoom-in;
+}
+.rlt-ui .vw-stage.is-fit .vw-img {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  max-width: calc(100% - 2rem);
+  max-height: calc(100% - 2rem);
+  object-fit: contain;
+}
+.rlt-ui .vw-stage.is-actual {
+  display: flex;
+  padding: 1rem;
+  cursor: zoom-out;
+}
+.rlt-ui .vw-stage.is-actual .vw-img {
+  margin: auto;
+  flex: none;
+  max-width: none;
+}
+.rlt-ui .vw-stage.is-small {
+  cursor: default;
+}
+.rlt-ui .vw-img {
+  display: block;
+  border-radius: 0.25rem;
+  -webkit-user-drag: none;
+}
+
+/* Web pages and PDFs */
+.rlt-ui .vw-frame-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* Over a web page: "Open <host>?" (it asked to leave for another site) and the dismissible blocked note */
+.rlt-ui .vw-page-bars {
+  position: absolute;
+  top: 0.625rem;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(35rem, calc(100% - 1.5rem));
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.rlt-ui .vw-page-bars > * {
+  pointer-events: auto;
+  max-width: 100%;
+  border: 1px solid var(--hair);
+  border-radius: 0.625rem;
+  background: rgb(var(--surface-rgb) / 0.94);
+  box-shadow: 0 10px 30px -12px rgb(var(--shade-rgb) / calc(0.7 * var(--shade)));
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.rlt-ui .vw-ask {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.625rem 0.875rem;
+  width: 100%;
+  padding: 0.75rem 0.875rem;
+}
+.rlt-ui .vw-ask-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1 1 260px;
+  min-width: 0;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .vw-ask-text strong {
+  font-size: 0.875rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .vw-ask-url {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font: 0.71875rem/1.5 var(--mono);
+  color: var(--text-3);
+}
+.rlt-ui .vw-ask-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.rlt-ui .vw-ask .btn[aria-disabled='true'] {
+  opacity: 0.42;
+  transform: none;
+}
+.rlt-ui .vw-blocked {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.3125rem 0.375rem 0.3125rem 0.6875rem;
+  font-size: 0.71875rem;
+  color: var(--amber-text);
+}
+.rlt-ui .vw-blocked > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .vw-blocked .ic {
+  flex-shrink: 0;
+}
+.rlt-ui .vw-blocked-x {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--text-3);
+}
+.rlt-ui .vw-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff; /* theme: fixed — a page without its own background is meant to be read on white */
+}
+.rlt-ui .vw-frame-wrap.is-phone {
+  padding: 1.125rem 1rem;
+}
+.rlt-ui .vw-frame-wrap.is-phone .vw-frame {
+  width: 390px;
+  max-width: 100%;
+  border-radius: 1.625rem;
+  border: 9px solid #0c0b0e; /* theme: fixed — a phone's bezel */
+  box-shadow: 0 0 0 1px rgb(var(--fg-rgb) / 0.1), 0 24px 60px -20px rgb(var(--shade-rgb) / calc(0.8 * var(--shade)));
+}
+.rlt-ui .vw-frame-wrap.is-pdf .vw-frame {
+  background: #525659; /* theme: fixed — the PDF viewer's own grey */
+}
+
+/* Code, text, JSON: line numbers that stay put while the lines scroll sideways */
+.rlt-ui .vw-code {
+  --vw-gutter: 3ch;
+  width: max-content;
+  min-width: 100%;
+  padding: 0.625rem 0 1.5rem;
+  font: calc(0.78125rem * var(--vw-text, 1)) / 1.62 var(--mono);
+  color: var(--code-text);
+  tab-size: 4;
+}
+.rlt-ui .vw-code.is-wrap {
+  width: auto;
+}
+.rlt-ui .vw-ln {
+  display: flex;
+  white-space: pre;
+  padding-right: 1.25rem;
+  min-height: 1.62em;
+}
+.rlt-ui .vw-code.is-wrap .vw-ln {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .vw-lt {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.rlt-ui .vw-ln::before {
+  content: attr(data-n);
+  flex: none;
+  width: var(--vw-gutter);
+  padding: 0 0.875rem 0 0.625rem;
+  box-sizing: content-box;
+  text-align: right;
+  color: var(--code-ln);
+  user-select: none;
+  -webkit-user-select: none;
+  position: sticky;
+  left: 0;
+  background: var(--code-gutter);
+}
+.rlt-ui .vw-ln:hover {
+  background: rgb(var(--fg-rgb) / 0.03);
+}
+.rlt-ui .vw-ln:hover::before {
+  color: var(--text-2);
+}
+/* highlight.js tokens, in the app's warm palette */
+.rlt-ui .vw-code .hljs-comment,
+.rlt-ui .vw-code .hljs-quote {
+  color: var(--hl-comment);
+  font-style: italic;
+}
+.rlt-ui .vw-code .hljs-keyword,
+.rlt-ui .vw-code .hljs-selector-tag,
+.rlt-ui .vw-code .hljs-doctag {
+  color: var(--hl-keyword);
+}
+.rlt-ui .vw-code .hljs-string,
+.rlt-ui .vw-code .hljs-regexp,
+.rlt-ui .vw-code .hljs-addition,
+.rlt-ui .vw-code .hljs-meta .hljs-string {
+  color: var(--hl-string);
+}
+.rlt-ui .vw-code .hljs-number,
+.rlt-ui .vw-code .hljs-literal,
+.rlt-ui .vw-code .hljs-symbol,
+.rlt-ui .vw-code .hljs-bullet {
+  color: var(--hl-number);
+}
+.rlt-ui .vw-code .hljs-title,
+.rlt-ui .vw-code .hljs-title.function_,
+.rlt-ui .vw-code .hljs-section {
+  color: var(--hl-title);
+}
+.rlt-ui .vw-code .hljs-built_in,
+.rlt-ui .vw-code .hljs-type,
+.rlt-ui .vw-code .hljs-title.class_ {
+  color: var(--hl-type);
+}
+.rlt-ui .vw-code .hljs-attr,
+.rlt-ui .vw-code .hljs-attribute,
+.rlt-ui .vw-code .hljs-property,
+.rlt-ui .vw-code .hljs-selector-class,
+.rlt-ui .vw-code .hljs-selector-id {
+  color: var(--hl-attr);
+}
+.rlt-ui .vw-code .hljs-tag,
+.rlt-ui .vw-code .hljs-name {
+  color: var(--hl-tag);
+}
+.rlt-ui .vw-code .hljs-variable,
+.rlt-ui .vw-code .hljs-template-variable,
+.rlt-ui .vw-code .hljs-params {
+  color: var(--hl-var);
+}
+.rlt-ui .vw-code .hljs-meta {
+  color: var(--hl-meta);
+}
+.rlt-ui .vw-code .hljs-deletion {
+  color: var(--err-text);
+  background: rgb(var(--err-rgb) / 0.1);
+}
+.rlt-ui .vw-code .hljs-addition {
+  background: rgb(var(--ok-rgb) / 0.1);
+}
+.rlt-ui .vw-code .hljs-emphasis {
+  font-style: italic;
+}
+.rlt-ui .vw-code .hljs-strong,
+.rlt-ui .vw-code .hljs-section {
+  font-weight: 600;
+}
+.rlt-ui .vw-code .hljs-link {
+  color: var(--hl-title);
+  text-decoration: underline;
+}
+
+/* CSV / TSV */
+.rlt-ui .vw-table-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.rlt-ui .vw-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: calc(0.78125rem * var(--vw-text, 1));
+  font-variant-numeric: tabular-nums;
+}
+.rlt-ui .vw-table th,
+.rlt-ui .vw-table td {
+  padding: 0.375rem 0.75rem;
+  max-width: 26.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  border-bottom: 1px solid var(--hair);
+  border-right: 1px solid rgb(var(--fg-rgb) / 0.04);
+}
+.rlt-ui .vw-table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--code-head);
+  font-weight: 600;
+  color: var(--text);
+}
+.rlt-ui .vw-table tbody tr:hover td {
+  background: rgb(var(--fg-rgb) / 0.03);
+}
+.rlt-ui .vw-table .vw-rn {
+  position: sticky;
+  left: 0;
+  background: var(--panel-2);
+  color: var(--text-3);
+  text-align: right;
+  font: 0.6875rem var(--mono);
+}
+.rlt-ui .vw-table th.vw-rn {
+  z-index: 2;
+  background: var(--code-head);
+}
+
+/* Audio / video */
+.rlt-ui .vw-media {
+  width: 100%;
+  padding: 1.5rem;
+  display: grid;
+  place-items: center;
+}
+.rlt-ui .vw-video {
+  max-width: 100%;
+  max-height: calc(100dvh - 200px);
+  border-radius: 0.75rem;
+  background: #000; /* theme: fixed — letterbox behind a video */
+}
+.rlt-ui .vw-audio {
+  width: min(35rem, 100%);
+}
+
+/* Markdown files */
+.rlt-ui .vw-md {
+  max-width: calc(53.75rem * var(--vw-text, 1));
+  margin: 0 auto;
+  padding: 0.625rem 0.375rem 3rem;
+  font-size: calc(0.90625rem * var(--vw-text, 1));
+}
+.rlt-ui .vw-md .md-thumb {
+  display: inline-block;
+  max-width: 100%;
+}
+.rlt-ui .vw-md .md-thumb img {
+  max-width: 100%;
+  max-height: none;
+}
+
+/* ── File links in chat replies ──────────────────────── */
+.rlt-ui .md a.md-file {
+  cursor: pointer;
+}
+.rlt-ui .md a.md-codepath {
+  text-decoration: none;
+}
+.rlt-ui .md a.md-codepath code {
+  color: var(--sun-text);
+  box-shadow: inset 0 -1px 0 rgb(var(--sun-rgb) / 0.45);
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+.rlt-ui .md a.md-codepath:hover code {
+  background: rgb(var(--sun-rgb) / 0.16);
+  box-shadow: inset 0 -1px 0 var(--sun);
+}
+.rlt-ui .md .md-path.is-outside {
+  cursor: help;
+  text-decoration: underline dotted rgb(var(--fg-rgb) / 0.28);
+  text-underline-offset: 0.1875rem;
+}
+.rlt-ui .md a.md-thumb {
+  display: inline-block;
+  vertical-align: top;
+  margin: 0.25rem 0.375rem 0.25rem 0;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--hair-2);
+  text-decoration: none;
+  background-color: var(--panel-2);
+  background-image: conic-gradient(rgb(var(--fg-rgb) / 0.055) 25%, transparent 0 50%, rgb(var(--fg-rgb) / 0.055) 0 75%, transparent 0);
+  background-size: 16px 16px;
+  transition: border-color 0.15s, transform 0.15s var(--ease);
+}
+.rlt-ui .md a.md-thumb:hover {
+  border-color: rgb(var(--sun-rgb) / 0.6);
+}
+.rlt-ui .md a.md-thumb img {
+  display: block;
+  max-width: min(17.5rem, 100%);
+  max-height: 220px;
+  object-fit: contain;
+}
+.rlt-ui .md a.md-thumb img[data-pending] {
+  width: 120px;
+  height: 80px;
+}
+.rlt-ui .md a.md-thumb.is-broken {
+  border: 0;
+  background: none;
+  border-radius: 0;
+  margin: 0;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--sun-rgb) / 0.4);
+}
+.rlt-ui .md a.md-thumb.is-broken img {
+  display: none;
+}
+.rlt-ui .md a.md-thumb.is-broken::before {
+  content: '[' attr(data-file) ']';
+}
+.rlt-ui .md-thumbs,
+.rlt-ui .tool-shots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.rlt-ui .md-thumbs {
+  margin-top: 0.5rem;
+}
+.rlt-ui .tool-shots {
+  padding: 0.125rem 0.625rem 0.5625rem;
+}
+.rlt-ui .md-thumbs-item {
+  width: 72px;
+  height: 72px;
+  border-radius: 0.625rem;
+  overflow: hidden;
+  border: 1px solid var(--hair-2);
+  background-color: var(--panel-2);
+  background-image: conic-gradient(rgb(var(--fg-rgb) / 0.055) 25%, transparent 0 50%, rgb(var(--fg-rgb) / 0.055) 0 75%, transparent 0);
+  background-size: 12px 12px;
+  transition: border-color 0.15s, transform 0.15s var(--ease);
+}
+.rlt-ui .md-thumbs-item:hover {
+  border-color: rgb(var(--sun-rgb) / 0.6);
+  transform: translateY(-1px);
+}
+.rlt-ui .md-thumbs-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Tool cards: View button, pictures, file list ────── */
+.rlt-ui .tool-top {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+}
+.rlt-ui .tool-top .tool-head {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+.rlt-ui .tool-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  flex-shrink: 0;
+  padding: 0 0.6875rem;
+  font-size: 0.71875rem;
+  font-weight: 500;
+  color: var(--sun-text);
+  border-left: 1px solid var(--hair);
+  transition: background-color 0.15s, color 0.15s, opacity 0.15s;
+}
+.rlt-ui .tool-open:hover {
+  background: rgb(var(--sun-rgb) / 0.1);
+  color: var(--sun);
+}
+.rlt-ui .tool-open.is-quiet {
+  color: var(--text-3);
+}
+.rlt-ui .tool-open.is-quiet:hover {
+  color: var(--text);
+  background: var(--fill-1);
+}
+@media (hover: hover) {
+  .rlt-ui .tool:not(:hover) .tool-open.is-quiet:not(:focus-visible) {
+    opacity: 0;
+  }
+}
+.rlt-ui .tool-files {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+}
+.rlt-ui .tool-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  padding: 0.1875rem 0.4375rem;
+  border-radius: 0.375rem;
+  font: 0.71875rem var(--mono);
+  color: var(--sun-text);
+  text-align: left;
+}
+.rlt-ui .tool-file > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui button.tool-file:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .tool-file.is-outside {
+  color: var(--text-3);
+  cursor: help;
+}
+.rlt-ui .tool-file-why {
+  font: 0.65625rem var(--font);
+  flex-shrink: 0;
+}
+
+/* ── Changes tab ─────────────────────────────────────── */
+.rlt-ui .changes-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+.rlt-ui .file-item {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+.rlt-ui .file-item .file-row {
+  flex: 1;
+  min-width: 0;
+}
+.rlt-ui .file-view,
+.rlt-ui .file-undo {
+  width: 1.875rem;
+  height: 1.875rem;
+  color: var(--text-3);
+}
+.rlt-ui .file-view:hover:not(:disabled) {
+  color: var(--sun-text);
+}
+.rlt-ui .file-undo:hover:not(:disabled) {
+  color: var(--err);
+}
+.rlt-ui .file-view:disabled {
+  opacity: 0.3;
+}
+@media (pointer: coarse) {
+  .rlt-ui .file-view,
+  .rlt-ui .file-undo {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+
+/* ── Phones ──────────────────────────────────────────── */
+@media (max-width: 68.75em) {
+  .rlt-ui .vw-main {
+    grid-template-columns: 228px minmax(0, 1fr);
+  }
+}
+@media (max-width: 820px) {
+  .rlt-ui .vw-overlay {
+    padding: 0;
+  }
+  /* full screen: clear of the notch / status bar (the installed app draws under it) and the home indicator */
+  .rlt-ui .vw-panel {
+    border-radius: 0;
+    border: 0;
+    height: 100dvh;
+    padding: 0 var(--sa-r) var(--sa-b) var(--sa-l);
+  }
+  .rlt-ui .vw-head {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'nav titles close'
+      'bar bar bar';
+    gap: 0.375rem 0.5rem;
+    padding: max(0.5rem, var(--sa-t)) 0.375rem 0.375rem 0.5rem;
+  }
+  .rlt-ui .vw-bar {
+    justify-content: space-between;
+    gap: 0.375rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui .vw-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .rlt-ui .vw-tools .seg {
+    padding: 0 0.5625rem;
+  }
+  /* the file drawer switches files here, and More holds the four less used actions: the bar fits a 320 px phone */
+  .rlt-ui .vw-steps,
+  .rlt-ui .vw-actions .vw-extra {
+    display: none;
+  }
+  .rlt-ui .vw-actions .vw-more {
+    display: inline-grid;
+  }
+  .rlt-ui .vw-sizes {
+    margin-right: 0.125rem;
+    padding-right: 0.125rem;
+  }
+  .rlt-ui .vw-chip-time,
+  .rlt-ui .vw-crumbs {
+    display: none;
+  }
+  .rlt-ui .vw-main,
+  .rlt-ui .vw-panel.nav-hidden .vw-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rlt-ui .vw-panel.nav-hidden .vw-nav {
+    display: flex;
+  }
+  .rlt-ui .vw-nav {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 3;
+    width: min(20.625rem, 86vw);
+    background: var(--glass-strong);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    backdrop-filter: blur(22px) saturate(150%);
+    box-shadow: 18px 0 40px -18px rgb(var(--shade-rgb) / calc(0.7 * var(--shade)));
+    transform: translateX(-104%);
+    visibility: hidden;
+    transition: transform 0.22s var(--ease), visibility 0s linear 0.22s;
+  }
+  .rlt-ui .vw-panel.nav-open .vw-nav {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.22s var(--ease);
+  }
+  .rlt-ui .vw-panel.nav-open .vw-scrim {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: rgb(var(--shade-rgb) / calc(0.45 * var(--shade)));
+  }
+  .rlt-ui .vw-entry {
+    padding: 0.625rem 0.5rem;
+  }
+  .rlt-ui .vw-body {
+    padding: 0.875rem;
+  }
+  .rlt-ui .vw-frame-wrap.is-phone {
+    padding: 0;
+  }
+  .rlt-ui .vw-frame-wrap.is-phone .vw-frame {
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .rlt-ui .vw-md {
+    padding: 0.25rem 0.125rem 2.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rlt-ui .vw-overlay,
+  .rlt-ui .vw-panel,
+  .rlt-ui .vw-nav {
+    transition: none;
+  }
+}

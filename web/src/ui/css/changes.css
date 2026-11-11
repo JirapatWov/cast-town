@@ -1,0 +1,335 @@
+/* Changes + Inbox tabs. */
+.rlt-ui .tab-changes {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+.rlt-ui .changes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem 0.625rem 1rem;
+  border-bottom: 1px solid var(--hair);
+}
+.rlt-ui .changes-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  font-size: 0.8125rem;
+}
+.rlt-ui .file-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.375rem;
+  flex: 1;
+}
+.rlt-ui .file-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5625rem;
+  transition: background-color 0.15s;
+}
+.rlt-ui .file-row:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .st-badge {
+  width: 1.25rem;
+  height: 1.125rem;
+  border-radius: 0.3125rem;
+  display: grid;
+  place-items: center;
+  font: 600 0.65625rem var(--mono);
+}
+.rlt-ui .st-mod {
+  background: rgb(var(--sun-rgb) / 0.14);
+  color: var(--sun-text);
+}
+.rlt-ui .st-add {
+  background: rgb(var(--ok-rgb) / 0.15);
+  color: var(--ok-text);
+}
+.rlt-ui .st-del {
+  background: rgb(var(--err-rgb) / 0.15);
+  color: var(--err-text);
+}
+.rlt-ui .st-ren {
+  background: rgb(var(--work-rgb) / 0.15);
+  color: var(--work-text);
+}
+.rlt-ui .file-path {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 0.78125rem var(--mono);
+}
+.rlt-ui .file-dir {
+  color: var(--text-3);
+}
+.rlt-ui .file-name {
+  color: var(--text);
+}
+.rlt-ui .file-stat {
+  display: flex;
+  gap: 0.375rem;
+  font: 0.71875rem var(--mono);
+}
+.rlt-ui .blocks {
+  display: flex;
+  gap: 0.125rem;
+}
+.rlt-ui .blocks > span {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 0.125rem;
+  background: var(--fill-3);
+}
+.rlt-ui .blocks > .b-add {
+  background: var(--ok);
+}
+.rlt-ui .blocks > .b-del {
+  background: var(--err);
+}
+.rlt-ui .changes-foot {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 0.875rem 0.875rem;
+  border-top: 1px solid var(--hair);
+  background: rgb(var(--surface-rgb) / 0.85);
+}
+
+/* Inbox */
+.rlt-ui .tab-inbox {
+  overflow-y: auto;
+  padding: 0.875rem 0.875rem 1.25rem;
+}
+.rlt-ui .section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.125rem 0 0.625rem;
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.rlt-ui .count {
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.3125rem;
+  border-radius: 0.5625rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: 0.65625rem;
+  background: var(--fill-3);
+  color: var(--text);
+}
+.rlt-ui .count.is-amber {
+  background: var(--amber);
+  color: var(--on-amber);
+}
+.rlt-ui .inbox-approvals {
+  display: grid;
+  gap: 0.625rem;
+  margin-bottom: 1.375rem;
+}
+.rlt-ui .inbox-clear {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6875rem 0.75rem;
+  margin-bottom: 1.375rem;
+  border-radius: 0.625rem;
+  background: var(--fill-1);
+  border: 1px solid var(--hair);
+  color: var(--text-2);
+  font-size: 0.8125rem;
+}
+.rlt-ui .inbox-clear svg {
+  color: var(--ok);
+}
+.rlt-ui .notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.125rem;
+}
+.rlt-ui .note {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.125rem minmax(0, 1fr);
+  gap: 0.125rem 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5625rem;
+  text-align: left;
+}
+.rlt-ui button.note:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .note-icon {
+  padding-top: 0.125rem;
+  color: var(--text-3);
+}
+.rlt-ui .note-icon.level-success {
+  color: var(--ok);
+}
+.rlt-ui .note-icon.level-warn {
+  color: var(--amber);
+}
+.rlt-ui .note-icon.level-error {
+  color: var(--err);
+}
+.rlt-ui .note-icon.level-info {
+  color: var(--sun);
+}
+.rlt-ui .note-text {
+  font-size: 0.8125rem;
+}
+.rlt-ui .note-meta {
+  grid-column: 2;
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+
+/* A job with its own copy of the files (Job.worktree): what it changed, Bring into house… and Undo last bring */
+.rlt-ui .branch-chip.is-copy {
+  min-width: 0;
+  max-width: 100%;
+  background: rgb(var(--work-rgb) / 0.14);
+  color: var(--work-text);
+}
+.rlt-ui .branch-chip-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .changes-intro {
+  margin: 0;
+  padding: 0.625rem 1rem 0.125rem;
+  font-size: 0.78125rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.rlt-ui .changes-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+}
+.rlt-ui .changes-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin: 0.5625rem 0.125rem 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.rlt-ui .changes-note:first-child {
+  margin-top: 0;
+}
+.rlt-ui .changes-note.is-wait {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.375rem;
+  color: var(--sun-text);
+}
+.rlt-ui .changes-note.is-wait svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .changes-note .link-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* "Changes aren't tracked here": Set up git + Browse files side by side */
+.rlt-ui .empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+}
+
+/* "Left over from deleted jobs" (finding #75): branches deleted jobs left, with Bring in… / Undo / Delete */
+.rlt-ui .leftovers {
+  margin: 0.25rem 0.625rem 0.625rem;
+  padding: 0.625rem 0.625rem 0.375rem;
+  border: 1px solid var(--hair);
+  border-radius: 0.625rem;
+}
+.rlt-ui .leftovers-title {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 0 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-2);
+}
+.rlt-ui .leftovers-info {
+  display: inline-flex;
+  color: var(--text-3);
+  cursor: help;
+}
+.rlt-ui .leftover-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rlt-ui .leftover {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+  padding: 0.4375rem 0.125rem;
+}
+.rlt-ui .leftover + .leftover {
+  border-top: 1px solid var(--hair);
+}
+.rlt-ui .leftover-icon {
+  display: inline-flex;
+  align-self: start;
+  margin-top: 0.125rem;
+  color: var(--text-3);
+}
+.rlt-ui .leftover-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.125rem;
+}
+.rlt-ui .leftover-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+}
+.rlt-ui .leftover-meta {
+  font-size: 0.71875rem;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.rlt-ui .leftover-meta .link-btn {
+  font-size: inherit;
+}
+.rlt-ui .leftover-approx {
+  cursor: help;
+}
+.rlt-ui .leftover-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}

@@ -1,0 +1,364 @@
+/* Models & providers: the folded parts of a card (its models, its usage) and their one-line toggles, the device code
+   of a sign-in, the cards of other signed-in providers, and "Connect another account" — every sign-in omp offers
+   (providers-list.ts, providers.ts). */
+
+/* ── folded parts ── */
+.rlt-ui .card-parts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.75rem;
+}
+.rlt-ui .part-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.625rem 0.125rem 0.4375rem;
+  border-radius: 999px;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+  color: var(--text-2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: left;
+}
+.rlt-ui .part-toggle:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .part-toggle.is-open {
+  color: var(--text);
+  background: var(--fill-2);
+}
+.rlt-ui .part-chev {
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+}
+.rlt-ui .part-toggle.is-open .part-chev {
+  transform: rotate(90deg);
+}
+.rlt-ui .part-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .part-meta {
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.rlt-ui .part-meta .is-warn {
+  color: var(--amber-text);
+}
+.rlt-ui .part-meta .is-err {
+  color: var(--err-text);
+}
+.rlt-ui .part-meta .is-ok {
+  color: var(--text-2);
+}
+.rlt-ui .part-body[hidden] {
+  display: none;
+}
+.rlt-ui .vendor-models.part-body {
+  margin-top: 0.625rem;
+}
+.rlt-ui .usage-block {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+  padding: 0.5rem 0.625rem 0.625rem;
+  border-radius: 0.5625rem;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+}
+.rlt-ui .usage-accts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.rlt-ui .usage-acct {
+  display: grid;
+  gap: 0.375rem;
+}
+.rlt-ui .usage-acct-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .usage-block .acct-order {
+  display: grid;
+  gap: 0.375rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--hair-2);
+}
+
+/* ── other providers' cards ── */
+.rlt-ui .vendor-id code {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+
+/* ── a device sign-in's code ── */
+.rlt-ui .signin-code {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin: 0.25rem 0 0.5rem;
+  padding: 0.375rem 0.375rem 0.375rem 0.75rem;
+  border-radius: 0.5625rem;
+  background: rgb(var(--shade-rgb) / calc(0.32 * var(--shade)));
+  border: 1px solid rgb(var(--fg-rgb) / 0.06);
+}
+.rlt-ui .signin-code-label {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+.rlt-ui .signin-code-value {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* ── Connect another account ── */
+.rlt-ui .login-list {
+  display: grid;
+  gap: 0.625rem;
+  padding: 0.875rem;
+  border-radius: 0.8125rem;
+  border: 1px solid var(--hair);
+  background: rgb(var(--fg-rgb) / 0.03);
+}
+.rlt-ui .login-list-head h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.rlt-ui .login-list-note {
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.rlt-ui .login-list-note code {
+  font-size: 0.71875rem;
+  color: var(--text-2);
+}
+.rlt-ui .login-search-wrap {
+  position: relative;
+}
+.rlt-ui .login-search-icon {
+  position: absolute;
+  left: 0.6875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.rlt-ui .login-search {
+  width: 100%;
+  padding-left: 2rem;
+}
+.rlt-ui .login-status {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.rlt-ui .login-status[hidden] {
+  display: none;
+}
+.rlt-ui .login-groups {
+  display: grid;
+  gap: 0.5rem;
+}
+.rlt-ui .login-group {
+  display: grid;
+  gap: 0.375rem;
+}
+.rlt-ui .login-group-toggle {
+  justify-self: start;
+}
+.rlt-ui .login-count {
+  font-weight: 500;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.rlt-ui .login-group-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-2);
+}
+.rlt-ui .login-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.rlt-ui .login-rows[hidden] {
+  display: none;
+}
+.rlt-ui .login-row {
+  display: grid;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.25rem 0.625rem;
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.5625rem;
+  border: 1px solid transparent;
+  background: var(--fill-1);
+}
+.rlt-ui .login-row.is-connected {
+  border-color: rgb(var(--ok-rgb) / 0.28);
+}
+.rlt-ui .login-row.is-signing {
+  border-color: var(--hair-2);
+}
+.rlt-ui .login-mark {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-2);
+  background: var(--fill-2);
+}
+.rlt-ui .login-titles {
+  display: grid;
+  min-width: 0;
+}
+.rlt-ui .login-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .login-id {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .login-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+}
+.rlt-ui .login-kind {
+  padding: 0.0625rem 0.4375rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  color: var(--text-2);
+  background: var(--fill-2);
+  white-space: nowrap;
+}
+.rlt-ui .login-connect {
+  min-width: 5.5rem;
+  justify-content: center;
+}
+.rlt-ui .login-panel {
+  grid-column: 1 / -1;
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--hair-2);
+}
+
+@media (max-width: 40rem) {
+  .rlt-ui .login-row {
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+  }
+  .rlt-ui .login-side {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+  .rlt-ui .login-connect {
+    margin-left: auto;
+  }
+}
+
+/* ── large text (200 %) on a phone ──
+   The cards' lines wrap instead of running past the card's edge (its overflow cut them off): the grids inside a card
+   size to the card rather than to their widest button, buttons and the connection pill may wrap, and the dialog's
+   header puts Refresh under the title once the title column would get too narrow to read (the header doesn't scroll:
+   squeezed to a word per line it filled the whole screen). At normal text sizes nothing moves. */
+.rlt-ui .vendor-card :is(.vendor-accounts, .vendor-connect, .cmd-manual, .signin, .usage-block) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.rlt-ui .vendor-card .btn {
+  height: auto;
+  min-height: 2.25rem;
+  padding-block: 0.25rem;
+  white-space: normal;
+  text-align: left;
+}
+.rlt-ui .vendor-card .btn-sm {
+  min-height: 1.875rem;
+}
+.rlt-ui .vendor-head,
+.rlt-ui .usage-head {
+  flex-wrap: wrap;
+}
+.rlt-ui .modal-providers .modal-head {
+  flex-wrap: wrap;
+}
+.rlt-ui .modal-providers .modal-titles {
+  flex: 1 1 8rem;
+}
+/* …and when the header still takes much of the screen (watchTallHead), the whole dialog scrolls, header included */
+.rlt-ui .modal-providers.is-tall-head {
+  overflow-y: auto;
+}
+.rlt-ui .modal-providers.is-tall-head .modal-body {
+  flex: none;
+  overflow: visible;
+}
+/* the list's rows: the tag, the pill and the button wrap or shrink to the row instead of running past it */
+.rlt-ui .login-side :is(.login-kind, .conn-pill) {
+  white-space: normal;
+}
+.rlt-ui .login-side .conn-pill {
+  height: auto;
+  min-height: 1.375rem;
+}
+.rlt-ui .login-connect {
+  min-width: min(5.5rem, 30vw);
+}
+.rlt-ui .login-side .btn {
+  height: auto;
+  min-height: 1.875rem;
+  white-space: normal;
+}
+/* a row too narrow for its tag, pill and button next to the name (rem here follows the text size): the name takes the
+   whole line (the letter mark is only decoration) and they go under it */
+.rlt-ui .login-row {
+  container-type: inline-size;
+}
+@container (max-width: 13rem) {
+  .rlt-ui .login-mark {
+    display: none;
+  }
+  .rlt-ui .login-titles,
+  .rlt-ui .login-side {
+    grid-column: 1 / -1;
+  }
+}
+/* a touch screen keeps its larger buttons (mobile.css) */
+@media (pointer: coarse) {
+  .rlt-ui .vendor-card .btn,
+  .rlt-ui .login-side .btn {
+    min-height: 2.75rem;
+  }
+}

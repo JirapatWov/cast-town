@@ -1,0 +1,384 @@
+/* Settings (devices, pairing, terminal, your data) and the terminal's "real shell" confirmation. */
+.rlt-ui .modal-settings {
+  width: min(38.75rem, 100%);
+}
+.rlt-ui .set-body {
+  display: grid;
+  gap: 1.375rem;
+}
+.rlt-ui .set-sec {
+  display: grid;
+  gap: 0.625rem;
+  scroll-margin-top: 0.5rem;
+}
+.rlt-ui .set-sec > .field + .field {
+  margin-top: 0.375rem;
+}
+.rlt-ui .set-sec + .set-sec {
+  padding-top: 1.125rem;
+  border-top: 1px solid var(--hair);
+}
+.rlt-ui .set-h {
+  font-size: 0.90625rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.rlt-ui .set-lead {
+  color: var(--text-2);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+.rlt-ui .set-lead:empty {
+  display: none;
+}
+.rlt-ui .set-note {
+  padding: 0.5rem 0.6875rem;
+  border-radius: var(--radius-sm);
+  background: var(--fill-1);
+  box-shadow: inset 0 0 0 1px var(--hair);
+  color: var(--text-2);
+  font-size: 0.78125rem;
+  line-height: 1.5;
+}
+.rlt-ui .set-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rlt-ui .set-block {
+  display: block;
+  margin-top: 0.375rem;
+}
+
+/* devices */
+.rlt-ui .set-devices {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.375rem;
+}
+.rlt-ui .set-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  color: var(--text-2);
+  font-size: 0.8125rem;
+}
+.rlt-ui .set-device {
+  display: flex;
+  align-items: center;
+  gap: 0.6875rem;
+  padding: 0.5625rem 0.625rem 0.5625rem 0.75rem;
+  border-radius: 0.75rem;
+  background: var(--fill-1);
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.rlt-ui .set-device.is-current {
+  background: rgb(var(--ok-rgb) / 0.07);
+  box-shadow: inset 0 0 0 1px rgb(var(--ok-rgb) / 0.22);
+}
+.rlt-ui .set-device-ic {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5625rem;
+  background: var(--fill-2);
+  color: var(--text-2);
+}
+.rlt-ui .set-device-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 0.125rem;
+}
+.rlt-ui .set-device-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.125rem 0.4375rem;
+  min-width: 0;
+  font-size: 0.84375rem;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .set-device-meta {
+  color: var(--text-3);
+  font-size: 0.75rem;
+}
+.rlt-ui .set-rotate {
+  display: grid;
+  gap: 0.5rem;
+}
+.rlt-ui .set-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5625rem;
+  padding: 0.5625rem 0.6875rem;
+  border-radius: var(--radius-sm);
+  background: var(--fill-1);
+  cursor: pointer;
+}
+.rlt-ui .set-check input {
+  margin-top: 0.125rem;
+  accent-color: var(--err);
+}
+
+/* pair a phone */
+.rlt-ui .set-pair-out:empty {
+  display: none;
+}
+.rlt-ui .set-pair-out {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.rlt-ui .set-qr {
+  flex: none;
+  width: 200px;
+  max-width: 100%;
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #fff; /* theme: fixed — a QR code needs its white quiet zone */
+}
+.rlt-ui .set-qr svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.rlt-ui .set-pair-info {
+  flex: 1 1 240px;
+  min-width: 0;
+  display: grid;
+  gap: 0.625rem;
+}
+.rlt-ui .set-warn {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5625rem 0.6875rem;
+  border-radius: var(--radius-sm);
+  background: rgb(var(--amber-rgb) / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(var(--amber-rgb) / 0.24);
+  color: var(--amber-text);
+  font-size: 0.78125rem;
+  line-height: 1.5;
+}
+.rlt-ui .set-warn svg {
+  flex: none;
+  margin-top: 0.125rem;
+}
+.rlt-ui .set-warn strong {
+  color: var(--text);
+}
+.rlt-ui .set-link {
+  display: block;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  background: var(--well);
+  font-family: var(--mono);
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  word-break: break-all;
+  user-select: all;
+}
+.rlt-ui .set-pair-left {
+  color: var(--text-3);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* terminal */
+.rlt-ui .set-term {
+  display: block;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.rlt-ui .set-term .spinner {
+  margin-right: 0.375rem;
+  vertical-align: -0.125rem;
+}
+.rlt-ui .chip-root {
+  background: rgb(var(--err-rgb) / 0.16);
+  color: var(--err-text);
+}
+
+/* your data */
+.rlt-ui .set-wipe ul {
+  margin: 0;
+  padding-left: 1.125rem;
+  display: grid;
+  gap: 0.1875rem;
+  color: var(--text-2);
+}
+.rlt-ui .set-wipe .field {
+  margin-top: 0.25rem;
+}
+
+/* the terminal confirmation and the dock's user@host chip */
+.rlt-ui .term-confirm {
+  display: grid;
+  gap: 0.5rem;
+}
+.rlt-ui .term-confirm-root {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5625rem 0.6875rem;
+  border-radius: var(--radius-sm);
+  background: rgb(var(--err-rgb) / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(var(--err-rgb) / 0.28);
+  color: var(--err-text);
+}
+.rlt-ui .term-confirm-root svg {
+  flex: none;
+  margin-top: 0.125rem;
+}
+.rlt-ui .term-confirm-root strong {
+  color: var(--text);
+}
+.rlt-ui .term-who {
+  font-family: var(--mono);
+  font-size: 0.71875rem;
+}
+.rlt-ui .term-who.is-root {
+  background: rgb(var(--err-rgb) / 0.18);
+  color: var(--err-text);
+  box-shadow: inset 0 0 0 1px rgb(var(--err-rgb) / 0.32);
+}
+/* Phones hide the dock's chips to make room (terminal.css), but never the root marker: a root shell stays marked in
+   red there too, as "root" without the host (#7). Same breakpoint as terminal.css. */
+@media (max-width: 820px) {
+  .rlt-ui .term-who.is-root:not([hidden]) {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+  .rlt-ui .term-who.is-root .term-who-host {
+    display: none;
+  }
+}
+.rlt-ui .set-gear {
+  display: inline-grid;
+  place-items: center;
+}
+
+@media (max-width: 560px) {
+  .rlt-ui .set-qr {
+    width: min(15rem, 100%);
+    margin: 0 auto;
+  }
+  .rlt-ui .set-device {
+    flex-wrap: wrap;
+  }
+  .rlt-ui .set-device .btn {
+    margin-left: 2.6875rem;
+  }
+}
+
+/* chat menu: delete one chat */
+.rlt-ui .thread-row {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  border-radius: 0.5625rem;
+}
+.rlt-ui .thread-row > .thread-item {
+  flex: 1;
+  min-width: 0;
+}
+.rlt-ui .thread-del {
+  width: 1.75rem;
+  height: 1.75rem;
+  margin-right: 0.125rem;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity 0.12s, background-color 0.15s, color 0.15s;
+}
+.rlt-ui .thread-row:hover .thread-del,
+.rlt-ui .thread-row:focus-within .thread-del {
+  opacity: 1;
+}
+.rlt-ui .thread-del:hover:not(:disabled) {
+  color: var(--err-text);
+  background: rgb(var(--err-rgb) / 0.12);
+}
+.rlt-ui .thread-del:disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+@media (hover: none) {
+  .rlt-ui .thread-del {
+    opacity: 0.7;
+  }
+}
+
+/* pair a phone: the short code to type into CAST on a Home Screen, installing CAST here (settings-install.ts) */
+.rlt-ui .set-pair-short {
+  display: grid;
+  gap: 0.375rem;
+}
+.rlt-ui .set-pair-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.rlt-ui .set-short-code {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--well);
+  font-family: var(--mono);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  user-select: all;
+}
+.rlt-ui .set-install,
+.rlt-ui .set-push-app {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.375rem;
+}
+.rlt-ui .set-install-body {
+  display: grid;
+  gap: 0.5rem;
+}
+.rlt-ui .set-sub {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.rlt-ui .set-install-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.25rem;
+  color: var(--text-2);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+/* notifications & app (settings-notify.ts) */
+.rlt-ui .set-push {
+  display: grid;
+  gap: 0.625rem;
+}
+.rlt-ui .set-push-line {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.rlt-ui .set-push-line .chip {
+  vertical-align: 0.0625rem;
+}
+.rlt-ui .set-push-prefs {
+  display: grid;
+  gap: 0.25rem;
+}
+/* what to hear about only matters once notifications are on: until then the switches read as unavailable */
+.rlt-ui .set-push-prefs.is-off .set-row {
+  opacity: 0.5;
+}

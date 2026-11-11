@@ -1,0 +1,256 @@
+name: Release Mac app and Linux tarball
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag (v<package.json version>)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  kit:
+    name: Build Apple Silicon kit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Check tag against package version
+        id: version
+        env:
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          version="$(bun --print 'require("./package.json").version')"
+          if [ "$TAG" != "v$version" ]; then
+            echo "Tag $TAG does not match package.json version v$version" >&2
+            exit 1
+          fi
+          git rev-parse --verify "refs/tags/$TAG^{commit}"
+          printf 'version=%s\ntag=%s\n' "$version" "$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Bun and pinned native downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            agent/vendor/npm
+          key: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-kit-${{ hashFiles('bun.lock', 'agent/bun.lock', 'agent/cast/natives.lock.json') }}
+          restore-keys: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-kit-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build the kit (web, server, standalone agent and notices)
+        run: bash scripts/mac/build-kit.sh "$RUNNER_TEMP/release-kit"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-kit
+          path: ${{ runner.temp }}/release-kit/cast-mac-kit-${{ steps.version.outputs.version }}.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  dmg:
+    name: Build and self-check Mac app
+    needs: kit
+    # GitHub's macos-15 image is Apple Silicon; macos-15-intel is the separate Intel image.
+    runs-on: macos-15
+    timeout-minutes: 35
+    env:
+      VERSION: ${{ needs.kit.outputs.version }}
+      MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+      MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.kit.outputs.tag }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-kit
+          path: ${{ runner.temp }}/kit-transfer
+
+      - name: Unpack the kit on Apple Silicon
+        run: |
+          test "$(uname -m)" = arm64
+          tar -xzf "$RUNNER_TEMP/kit-transfer/cast-mac-kit-$VERSION.tar.gz" -C "$RUNNER_TEMP"
+
+      # OPTIONAL: without all six secrets the normal ad hoc build is published.
+      # A configured but invalid certificate/notarization must fail the release, not silently fall back.
+      - name: Import optional Developer ID certificate
+        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+        run: |
+          keychain="$RUNNER_TEMP/cast-signing.keychain-db"
+          certificate="$RUNNER_TEMP/cast-signing.p12"
+          password="$(openssl rand -base64 32)"
+          echo "::add-mask::$password"
+          printf '%s' "$MACOS_CERTIFICATE_P12" | base64 -D > "$certificate"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          security import "$certificate" -P "$MACOS_CERTIFICATE_PASSWORD" -k "$keychain" -T /usr/bin/codesign
+          security list-keychains -d user -s "$keychain"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain"
+          rm -f "$certificate"
+          printf 'CAST_SIGN_IDENTITY=%s\nCAST_SIGN_ENTITLEMENTS=%s\n' \
+            "$MACOS_SIGNING_IDENTITY" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" >> "$GITHUB_ENV"
+
+      - name: Build, sign and self-check the app, then create the dmg
+        run: |
+          sandbox="$RUNNER_TEMP/cast-build-home"
+          mkdir -p "$sandbox/home" "$sandbox/agent" "$sandbox/workspace" "$sandbox/tmp"
+          export HOME="$sandbox/home" PI_CODING_AGENT_DIR="$sandbox/agent"
+          export CAST_WORKSPACE="$sandbox/workspace" CAST_FS_ROOTS="$sandbox"
+          export TMPDIR="$sandbox/tmp" CAST_PUSH=off
+          bash "$RUNNER_TEMP/cast-mac-kit/build-dmg.sh"
+
+      - name: Notarize and staple (optional Apple credentials)
+        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+        run: |
+          dmg="$RUNNER_TEMP/cast-mac-kit/CAST-$VERSION-arm64.dmg"
+          codesign --force --timestamp --sign "$MACOS_SIGNING_IDENTITY" "$dmg"
+          xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+            --password "$APPLE_APP_PASSWORD" --wait
+          xcrun stapler staple "$dmg"
+          xcrun stapler validate "$dmg"
+          hdiutil verify "$dmg"
+
+      - name: Hash the final downloadable dmg
+        run: |
+          cd "$RUNNER_TEMP/cast-mac-kit"
+          shasum -a 256 "CAST-$VERSION-arm64.dmg" > SHA256SUMS
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-release
+          path: |
+            ${{ runner.temp }}/cast-mac-kit/CAST-${{ needs.kit.outputs.version }}-arm64.dmg
+            ${{ runner.temp }}/cast-mac-kit/SHA256SUMS
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+      - name: Remove temporary signing credentials
+        if: always()
+        run: |
+          if [ -f "$RUNNER_TEMP/cast-signing.keychain-db" ]; then
+            security delete-keychain "$RUNNER_TEMP/cast-signing.keychain-db"
+          fi
+          rm -f "$RUNNER_TEMP/cast-signing.p12"
+
+  linux:
+    name: Build Linux x64 tarball
+    needs: kit
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      VERSION: ${{ needs.kit.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.kit.outputs.tag }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Cache Bun and pinned native downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            agent/vendor/npm
+          key: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-linux-${{ hashFiles('bun.lock', 'agent/bun.lock', 'agent/cast/natives.lock.json') }}
+          restore-keys: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-linux-
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build the linux-x64 kit (standalone cast-agent)
+        run: |
+          test "$(uname -m)" = x86_64
+          bash scripts/mac/build-kit.sh --target linux-x64 "$RUNNER_TEMP/linux-kit"
+
+      - name: Make the tarball and hash it
+        run: |
+          mkdir -p "$RUNNER_TEMP/linux-release"
+          bash scripts/release/linux-tarball.sh "$RUNNER_TEMP/linux-kit" "$RUNNER_TEMP/linux-release"
+          cd "$RUNNER_TEMP/linux-release"
+          sha256sum "cast-$VERSION-linux-x64.tar.gz" > linux-x64.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-release
+          path: |
+            ${{ runner.temp }}/linux-release/cast-${{ needs.kit.outputs.version }}-linux-x64.tar.gz
+            ${{ runner.temp }}/linux-release/linux-x64.sha256
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub release
+    needs: [kit, dmg, linux]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TAG: ${{ needs.kit.outputs.tag }}
+      VERSION: ${{ needs.kit.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-release
+          path: release
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-release
+          path: release
+
+      - name: Verify checksums and publish assets
+        working-directory: release
+        run: |
+          sha256sum -c SHA256SUMS
+          sha256sum -c linux-x64.sha256
+          cat linux-x64.sha256 >> SHA256SUMS
+          rm linux-x64.sha256
+          sha256sum -c SHA256SUMS
+          prerelease=false
+          case "$VERSION" in *-*) prerelease=true ;; esac
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "CAST-$VERSION-arm64.dmg" "cast-$VERSION-linux-x64.tar.gz" SHA256SUMS --clobber
+            gh release edit "$TAG" --draft=false --prerelease="$prerelease"
+          else
+            gh release create "$TAG" "CAST-$VERSION-arm64.dmg" "cast-$VERSION-linux-x64.tar.gz" SHA256SUMS \
+              --verify-tag --title "CAST $VERSION" --generate-notes --prerelease="$prerelease"
+          fi

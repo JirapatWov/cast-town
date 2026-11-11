@@ -1,0 +1,119 @@
+# Checks stay secret-free, including the real source install and pinned native-addon download.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          # The version CAST is developed and tested with (package.json engines: >=1.3.14).
+          bun-version: 1.4.4
+
+
+      - name: Cache Bun downloads
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-check-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bun run typecheck
+
+      - name: Tests
+        run: bun run test
+
+      - name: Build the web app
+        run: bun run build:web
+
+  install:
+    name: README install
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - name: Cache Bun and pinned native downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            agent/vendor/npm
+          key: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-install-${{ hashFiles('bun.lock', 'agent/bun.lock', 'agent/cast/natives.lock.json') }}
+          restore-keys: bun-${{ runner.os }}-${{ runner.arch }}-1.4.4-install-
+
+      - name: Install and build as a new user
+        run: |
+          bun install
+          bun run build
+
+      - name: Run the installed agent and server
+        shell: bash
+        run: |
+          sandbox="$(mktemp -d "$RUNNER_TEMP/cast-install.XXXXXX")"
+          pid=""
+          cleanup() {
+            if [ -n "$pid" ]; then
+              kill -TERM "$pid" 2>/dev/null || true
+              wait "$pid" 2>/dev/null || true
+            fi
+            rm -rf "$sandbox"
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT TERM
+          export HOME="$sandbox/home"
+          export PI_CODING_AGENT_DIR="$sandbox/agent"
+          export CAST_DATA_DIR="$sandbox/data"
+          export CAST_WORKSPACE="$sandbox/workspace"
+          export CAST_FS_ROOTS="$sandbox"
+          export CAST_PORT=14860 CAST_MOCK_PORT=14960 CAST_HOST=127.0.0.1
+          export CAST_MOCK_LLM=1 CAST_PUSH=off
+          mkdir -p "$HOME" "$PI_CODING_AGENT_DIR" "$CAST_WORKSPACE"
+          agent/bin/cast-agent --version
+          bun run server/index.ts >"$sandbox/server.log" 2>&1 &
+          pid=$!
+          ready=0
+          for attempt in {1..60}; do
+            if ! kill -0 "$pid" 2>/dev/null; then
+              cat "$sandbox/server.log"
+              echo "CAST exited before becoming healthy" >&2
+              exit 1
+            fi
+            if curl --fail --silent --show-error --max-time 2 \
+              "http://127.0.0.1:$CAST_PORT/api/health" >"$sandbox/health.json" 2>/dev/null; then
+              bun -e 'const h = await Bun.file(process.argv[1]).json(); if (h.ok !== true || h.name !== "cast") process.exit(1)' "$sandbox/health.json"
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" != 1 ]; then
+            cat "$sandbox/server.log"
+            echo "CAST did not become healthy within 60 attempts" >&2
+            exit 1
+          fi
+          cat "$sandbox/health.json"
+          kill -TERM "$pid"
+          wait "$pid"
+          pid=""

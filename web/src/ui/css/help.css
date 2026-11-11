@@ -1,0 +1,256 @@
+/* Help dialog (help.ts): section chips, glossary, shortcut list, omp status, diagnostics. Loaded by help.ts itself so
+   the shared stylesheet list stays untouched. */
+.rlt-ui .modal-help {
+  width: min(47.5rem, 100%);
+  height: min(48.75rem, calc(100vh - 3rem));
+}
+.rlt-ui .help {
+  display: grid;
+  gap: 1.375rem;
+  padding-bottom: 0.375rem;
+}
+.rlt-ui .help-nav {
+  position: sticky;
+  top: -0.75rem;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: -0.75rem -1.375rem 0;
+  padding: 0.75rem 1.375rem 0.625rem;
+  background: rgb(var(--surface-rgb) / 0.97);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--hair);
+}
+.rlt-ui .help-nav-btn {
+  height: 1.75rem;
+  padding: 0 0.6875rem;
+  border-radius: 999px;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+  background: var(--fill-1);
+  border: 1px solid var(--hair);
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .help-nav-btn:hover {
+  color: var(--text);
+  background: var(--fill-2);
+}
+.rlt-ui .help-sec {
+  display: grid;
+  gap: 0.625rem;
+}
+.rlt-ui .help-h {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.rlt-ui .help-h:focus {
+  outline: none;
+}
+.rlt-ui .help-h:focus-visible {
+  outline: 2px solid var(--sun);
+}
+.rlt-ui .help-sub {
+  margin-bottom: 0.25rem;
+  font-size: 0.71875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.rlt-ui .help-note {
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .help p code,
+.rlt-ui .help-note code {
+  font-size: 0.75rem;
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+  background: var(--fill-2);
+}
+
+/* Glossary and about rows: term | text */
+.rlt-ui .help-terms,
+.rlt-ui .help-about {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 0.4375rem 1rem;
+  margin: 0;
+}
+.rlt-ui .help-terms dt,
+.rlt-ui .help-about dt {
+  font-weight: 600;
+  color: var(--text);
+}
+.rlt-ui .help-terms dd,
+.rlt-ui .help-about dd {
+  margin: 0;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+/* Shortcuts */
+.rlt-ui .help-keygroup + .help-keygroup {
+  margin-top: 0.375rem;
+}
+.rlt-ui .help-keylist {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rlt-ui .help-keyrow {
+  display: grid;
+  grid-template-columns: minmax(150px, max-content) minmax(0, 1fr);
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.3125rem 0.5rem;
+  border-radius: 0.5rem;
+}
+.rlt-ui .help-keyrow:nth-child(odd) {
+  background: var(--fill-1);
+}
+.rlt-ui .help-keys {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.1875rem;
+}
+/* display: the touch rule in responsive.css hides every kbd as noise, but here the keys are the content (a tablet may
+   have a keyboard; the list says these need one). */
+.rlt-ui .help-keys kbd {
+  display: inline-grid;
+  min-width: 1.375rem;
+  height: 1.375rem;
+  padding: 0 0.375rem;
+  font-size: 0.71875rem;
+  color: var(--text);
+}
+.rlt-ui .help-plus {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+.rlt-ui .help-keylabel {
+  color: var(--text-2);
+}
+
+/* omp status */
+.rlt-ui .help-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5625rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.6875rem;
+  background: var(--fill-1);
+  border: 1px solid var(--hair);
+}
+.rlt-ui .help-status .ic {
+  margin-top: 0.125rem;
+}
+.rlt-ui .help-status.is-ok .ic {
+  color: var(--ok-text);
+}
+.rlt-ui .help-status.is-warn {
+  border-color: rgb(var(--amber-rgb) / 0.35);
+  background: rgb(var(--amber-rgb) / 0.08);
+}
+.rlt-ui .help-status.is-warn .ic {
+  color: var(--amber-text);
+}
+.rlt-ui .help-status.is-err {
+  border-color: rgb(var(--err-rgb) / 0.4);
+  background: rgb(var(--err-rgb) / 0.08);
+}
+.rlt-ui .help-status.is-err .ic {
+  color: var(--err-text);
+}
+
+/* Links and buttons */
+.rlt-ui .help-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.rlt-ui .help-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--sun-text);
+  text-decoration: none;
+}
+.rlt-ui .help-actions .help-link {
+  height: 2rem;
+  padding: 0 0.75rem;
+  border-radius: 0.5625rem;
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .help-link:hover {
+  text-decoration: underline;
+}
+.rlt-ui .help-actions .help-link:hover {
+  text-decoration: none;
+  background: var(--fill-3);
+}
+
+/* Diagnostics */
+.rlt-ui .help-diag {
+  margin: 0;
+  max-height: 220px;
+  overflow: auto;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.625rem;
+  font: 0.71875rem/1.55 var(--mono);
+  color: var(--text-2);
+  background: rgb(var(--shade-rgb) / calc(0.32 * var(--shade)));
+  border: 1px solid rgb(var(--fg-rgb) / 0.06);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+@media (max-width: 820px) {
+  .rlt-ui .modal-help {
+    height: auto;
+  }
+  .rlt-ui .help-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui .help-nav-btn {
+    flex: none;
+  }
+  .rlt-ui .help-terms,
+  .rlt-ui .help-about {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.125rem;
+  }
+  .rlt-ui .help-terms dd,
+  .rlt-ui .help-about dd {
+    margin-bottom: 0.5rem;
+  }
+  .rlt-ui .help-keyrow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.25rem;
+  }
+}
+
+/* "How to fix" in the omp version banner (omp-warning.ts) */
+.rlt-ui .omp-warn-fix {
+  flex: none;
+  height: 1.625rem;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--amber-text);
+  background: rgb(var(--amber-rgb) / 0.12);
+}
+.rlt-ui .omp-warn-fix:hover {
+  background: rgb(var(--amber-rgb) / 0.2);
+}

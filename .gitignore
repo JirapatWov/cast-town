@@ -1,0 +1,43 @@
+# Dependencies and build output. No trailing slash on node_modules: a symlinked node_modules is a file to git.
+node_modules
+web/dist/
+# `bun run build:server` (the single-file server) and Mac kits built into the tree
+/dist/
+cast-mac-kit/
+cast-mac-kit-*.tar.gz
+
+# Runtime state. CAST keeps it outside the clone by default (see README "Where CAST keeps things"), but an older
+# install used <repo>/data — it holds the pairing token, chat transcripts and uploads, so it must never be committed.
+# Anchored, like the scratch folders below: agent/ (cast-agent) has data/ folders of its own source, and its own
+# .gitignore files for its build output.
+/data/
+
+# Secrets and per-machine state, wherever they end up (a data folder copied into the tree, a test run): the pairing
+# token, paired devices, other cities' session cookies, the local config.
+token
+devices.json
+cities.json
+instance-id
+listen.json
+config.json
+
+# CAST for Mac: what mac/build-dmg.sh writes when run from a checkout (build/CAST.app, the dmg)
+/build/
+*.dmg
+
+# Local scratch: a development server's data (CONTRIBUTING.md), screenshots, logs, editor and OS files
+/.dev/
+/screenshots/
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
+/coverage/
+
+# The owner's working notes: machine paths, host names, plans. They stay on disk for those who use them, never published.
+/NEXT.md
+/JOBS.md
+/GRAPHICS.md

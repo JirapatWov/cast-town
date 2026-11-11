@@ -1,0 +1,1119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e0d0c" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="application-name" content="CAST" />
+    <meta name="apple-mobile-web-app-title" content="CAST" />
+    <meta name="description" content="A little town where your AI cast lives and works." />
+    <!-- iOS would turn digit runs in agents' output (ids, times, ports) into phone links, rewriting the DOM under the app -->
+    <meta name="format-detection" content="telephone=no" />
+    <!-- Installed app (Home Screen, Dock): its own window, the status bar over the page (the page pads by the safe
+         areas; iOS 26.1+ may keep the bar opaque, and both look right). The legacy name is for older iOS. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>CAST</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <!-- iOS launch images: the splash's first frame (the mark alone, lamp dim, centred on the screen) for every iPhone
+         and iPad screen; iOS shows it from the tap on the Home Screen icon until this page paints. One dark set for
+         every appearance: the installed app's splash starts at night for everyone (data-launch="night" below).
+         Written with web/public/splash/ by tools/splash/launch-images.ts --dark-only: rerun it, don't edit by hand. -->
+    <!-- launch-images -->
+    <link rel="apple-touch-startup-image" media="(device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1320x2868.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 420px) and (device-height: 912px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1260x2736.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1206x2622.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1290x2796.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1179x2556.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1284x2778.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1170x2532.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1125x2436.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/launch-dark-1242x2688.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-828x1792.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-750x1334.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-2064x2752.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 1032px) and (device-height: 1376px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2752x2064.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1668x2420.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1210px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2420x1668.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-2048x2732.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2732x2048.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1640x2360.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2360x1640.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1668x2388.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2388x1668.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1488x2266.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2266x1488.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1620x2160.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2160x1620.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1668x2224.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2224x1668.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/launch-dark-1536x2048.png" />
+    <link rel="apple-touch-startup-image" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)" href="/splash/launch-dark-2048x1536.png" />
+    <!-- /launch-images -->
+    <!-- use-credentials: a token-paired browser's cookie must ride along, or the manifest fetch gets the 403 page.
+         Relative, like the bundle: this city's server serves it, also under /city/<id>/ through a hub. -->
+    <link rel="manifest" href="./manifest.webmanifest" crossorigin="use-credentials" />
+    <!-- Self-hosted fonts (web/public/fonts, tools/fonts/fetch.mjs): CAST starts with no internet at all and never
+         sends a visitor's IP to a font CDN. The build inlines fonts.css right here (vite.config.ts) so first paint never
+         waits on it; font-display: swap shows text in the system font until each file arrives. -->
+    <link rel="preload" href="/fonts/inter-latin-var.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/fonts/fonts.css" data-rlt-fonts />
+    <!-- Light or dark before the first paint (#77): Settings → Theme (deviceStorage 'rlt.theme') or the OS setting.
+         web/src/ui/theme.ts takes over once the app loads — keep the key and the rules the same there.
+         The installed app (Home Screen, Dock) opens after the OS launch screen, which is dark for everyone (manifest
+         background_color, the iOS launch images): data-launch="night" starts the splash from that same night and, on
+         the light theme, lets the morning in. Only a window's first page: after its morning (sessionStorage
+         'rlt.launch', theme.ts LAUNCH_KEY) a reload or a city switch starts in the theme. The bar keeps the night's
+         colour until the sunrise has ended — its own animationend, whenever the first frame came. -->
+    <script>
+      (function () {
+        var t = null;
+        try {
+          t = localStorage.getItem('rlt.theme');
+        } catch (e) {}
+        if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        var d = document.documentElement;
+        d.setAttribute('data-theme', t);
+        d.style.colorScheme = t;
+        var installed = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+        // the iOS Home Screen app (navigator.standalone is WebKit's, on iOS only): the height fix below
+        if (navigator.standalone === true) d.setAttribute('data-ios-app', '');
+        var day = false;
+        try {
+          day = sessionStorage.getItem('rlt.launch') === 'day';
+        } catch (e) {}
+        var night = installed && !day;
+        if (night) d.setAttribute('data-launch', 'night');
+        var m = document.querySelector('meta[name="color-scheme"]');
+        if (m) m.setAttribute('content', t);
+        m = document.querySelector('meta[name="theme-color"]');
+        if (m) m.setAttribute('content', t === 'light' && !night ? '#f1ece4' : '#0e0d0c');
+        // the night has lifted (or faded, with reduced motion): day, and the bar follows the theme
+        if (night)
+          document.addEventListener(
+            'animationend',
+            function morning(e) {
+              var el = e.target;
+              if (!el || !el.classList || !el.classList.contains('boot-dusk')) return;
+              document.removeEventListener('animationend', morning, true);
+              d.setAttribute('data-launch', 'day');
+              try {
+                sessionStorage.setItem('rlt.launch', 'day');
+              } catch (x) {}
+              if (m) m.setAttribute('content', d.getAttribute('data-theme') === 'light' ? '#f1ece4' : '#0e0d0c');
+            },
+            true,
+          );
+      })();
+    </script>
+    <style>
+      :root {
+        color-scheme: dark;
+        --boot-bg: #0e0d0c;
+        --boot-text: #f4f1ec;
+        --boot-text-2: #a8a29e;
+        --boot-text-3: #918a85; /* AA on the splash background, like the app's faint text */
+        --boot-ink: #f4f1ec; /* the mark: shared/brand.ts BRAND_COLORS.ink */
+        --boot-sun: #f5c26b;
+        --boot-sun-rgb: 245 194 107;
+        --boot-flare-rgb: 255 232 190; /* the lamp at full, the last beat before the dive */
+        --boot-fg-rgb: 255 248 240;
+        /* the town: silhouettes a breath lighter than the night, unlit windows a breath darker */
+        --boot-house: #151311;
+        --boot-house-line: rgb(255 236 214 / 0.14);
+        --boot-win-off: rgb(0 0 0 / 0.55);
+        --boot-glow: 0 0 5px 1px rgb(245 194 107 / 0.5), 0 0 16px 5px rgb(245 194 107 / 0.13);
+        /* sky: night (cool, from above) cross-fades to first light (warm, from the horizon) */
+        --boot-night-a: rgb(78 104 156 / 0.2);
+        --boot-night-b: rgb(40 52 80 / 0.22);
+        /* first light: a low glow on the horizon (rgb + peak opacity) and a wide, faint warmth over it */
+        --boot-dawn-rgb: 236 134 58;
+        --boot-dawn-k: 0.3;
+        --boot-warm-rgb: 196 104 64;
+        --boot-warm-k: 0.12;
+        --boot-dawn-c: rgb(240 142 56 / 0.08);
+        --boot-dither: 0; /* the grain over the sky (see .boot-sky::after): not needed on dark */
+        --boot-err-text: #ffb3b5;
+        --boot-btn: #f4f1ec;
+        --boot-btn-text: #1b1a18;
+        --boot-focus: #f5c26b; /* the keyboard ring, 2 px off the button: 11:1 on the splash background */
+        --boot-chip: rgb(22 20 18 / 0.86);
+      }
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --boot-bg: #f1ece4;
+        --boot-text: #1f1b17;
+        --boot-text-2: #4d463f;
+        --boot-text-3: #5e564f;
+        --boot-ink: #1b1a18; /* shared/brand.ts BRAND_COLORS.inkOnLight */
+        --boot-sun: #e0932a; /* the brand's lamp on light surfaces */
+        --boot-sun-rgb: 224 147 42;
+        --boot-flare-rgb: 255 196 104;
+        --boot-fg-rgb: 45 35 25;
+        --boot-house: #faf7f2;
+        --boot-house-line: rgb(120 88 56 / 0.3);
+        --boot-win-off: rgb(45 35 25 / 0.12);
+        --boot-glow: 0 0 2px rgb(224 147 42 / 0.4);
+        --boot-night-a: rgb(168 196 255 / 0.22); /* a clear pre-dawn blue, not a grey cast on the warm paper */
+        --boot-night-b: rgb(200 216 252 / 0.14);
+        --boot-dawn-rgb: 246 158 78;
+        --boot-dawn-k: 0.34;
+        --boot-warm-rgb: 248 188 128;
+        --boot-warm-k: 0.22;
+        --boot-dawn-c: rgb(246 160 80 / 0.1);
+        --boot-dither: 0.035;
+        --boot-err-text: #a8252b;
+        --boot-btn: #1f1b17;
+        --boot-btn-text: #fbf9f6;
+        --boot-focus: #9a5b12; /* 4.5:1 on the light splash (the lamp's amber is 2.3:1) */
+        --boot-chip: rgb(250 248 245 / 0.92);
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: var(--boot-bg);
+        color: var(--boot-text);
+        font-family: 'Inter', 'IBM Plex Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+        overscroll-behavior: none;
+      }
+      #scene {
+        position: fixed;
+        inset: 0;
+        background: var(--boot-bg);
+        transition: filter 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      /* The iOS Home Screen app: WebKit (iOS 26 and 27) can lay it out with a viewport a status bar's height (~62 px)
+         shorter than the screen, so every box sized to the viewport (height: 100%, position: fixed; inset: 0) stopped
+         short and a strip of the page background showed under the chat. 100vh is the whole screen there: the page
+         takes that height and the town and the UI (base.css .rlt-ui) fill the page instead of the viewport; a page
+         taller than that short viewport also makes iOS lay it out again at full height. The body clips rather than
+         hides: a box that hides overflow can still be scrolled by focus or scrollIntoView, which would carry the
+         whole UI up with it. data-ios-app: the script above. */
+      :root[data-ios-app],
+      :root[data-ios-app] body {
+        height: 100vh;
+      }
+      :root[data-ios-app] body {
+        position: relative;
+        overflow: clip;
+      }
+      :root[data-ios-app] #scene {
+        position: absolute;
+      }
+      /* A finger on the town moves the camera, never the page (pinch must not zoom the whole UI). The camera
+         controls set this on their canvas too; the name tags and room plates over it need it as well. */
+      #scene,
+      #scene * {
+        touch-action: none;
+      }
+      /* Focus mode: the 3D town is paused and sits dimmed behind the 2D town board. */
+      body.rlt-paused #scene {
+        filter: saturate(0.55) brightness(0.42) blur(3px);
+      }
+
+      /* ───────── boot / loading screen: "the town wakes" ─────────
+         Frame 1 is the OS launch screen: the splash background and the mark alone, 96 px, lamp dim, on the viewport
+         centre. Then the lamp comes on, the mark settles up, a row of houses rises out of the horizon and their
+         windows light one by one as the app loads (boot.ts writes --boot-p, 0…1, on #boot); the sky cross-fades from
+         night to first light with it. Still working (.is-waiting): the windows breathe in a slow wave along the row
+         (the lit ones fully, the unlit faintly) and the caption says so in words. Ready (.is-ready): the lamp flares
+         (.is-quick: inside the dive). Done (.is-done): the view dives into the town. Everything that moves while the
+         main thread may be blocked is a transform or opacity animation. */
+      #boot {
+        --sat: env(safe-area-inset-top, 0px);
+        --sab: env(safe-area-inset-bottom, 0px);
+        --sa: calc((var(--sat) - var(--sab)) / 2); /* the safe area's centre, from the viewport's */
+        --rise: 70px; /* how far the mark settles up from the viewport centre */
+        --mk: 0.75; /* and its settled size (96 px → 72 px) */
+        --hzo: 58px;
+        --hz: calc(50% + var(--sa) + var(--hzo)); /* the horizon */
+        --tk: 1; /* the town's scale */
+        --gw: 420px; /* the horizon's width */
+        --dawn-w: 460px; /* the glows' sizes (fixed px: clamp() in a gradient size drops the whole background) */
+        --dawn-h: 150px;
+        --warm-w: 720px;
+        --warm-h: 330px;
+        --land-w: 340px;
+        --cap-y: 24px; /* the caption, under the horizon */
+        --lift: 0px; /* short screens: how far the picture moves up to make room for the error */
+        --gut-l: max(24px, env(safe-area-inset-left, 0px)); /* side gutters clear of a landscape notch */
+        --gut-r: max(24px, env(safe-area-inset-right, 0px));
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        overflow: hidden;
+        background: var(--boot-bg);
+        color: var(--boot-text);
+        transition:
+          opacity 0.44s cubic-bezier(0.4, 0, 0.2, 1) 0.26s,
+          visibility 0s linear 0.7s;
+      }
+      #boot.is-done {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      .boot-sky,
+      .boot-sky i,
+      .boot-stage {
+        position: absolute;
+        inset: 0;
+      }
+      .boot-sky {
+        transform-origin: 50% var(--hz);
+        animation: boot-in 1.6s ease 0.3s both;
+      }
+      .boot-sky i {
+        transition: opacity 1.2s linear;
+      }
+      /* a faint, still grain over the sky: the big soft glows band into rings on 8-bit screens (most on the light
+         theme) and the grain breaks them up. It fades in with the sky, so the first frame stays the OS launch screen. */
+      .boot-sky::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: var(--boot-dither);
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E") 0 0 / 160px 160px;
+      }
+      .boot-night {
+        background:
+          radial-gradient(130% 70% at 50% -10%, var(--boot-night-a), transparent 70%),
+          linear-gradient(var(--boot-night-b), transparent 55%);
+        opacity: calc(1 - var(--boot-p, 0) * 0.8);
+      }
+      .boot-dawn {
+        /* the land in front of the town catches a little of it */
+        background: radial-gradient(var(--land-w) 56px at 50% var(--hz), var(--boot-dawn-c), transparent);
+        opacity: var(--boot-p, 0);
+      }
+      /* first light is behind the town: the glows stop at the horizon (a 4 px feather, not a cut). Their stops follow a
+         bell curve rather than a straight fade, so there is no visible rim where a glow ends, and less banding. */
+      .boot-dawn::before,
+      .boot-dawn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        -webkit-mask-image: linear-gradient(#000 calc(var(--hz) - 2px), transparent calc(var(--hz) + 2px));
+        mask-image: linear-gradient(#000 calc(var(--hz) - 2px), transparent calc(var(--hz) + 2px));
+      }
+      .boot-dawn::before {
+        opacity: var(--boot-dawn-k);
+        background: radial-gradient(
+          var(--dawn-w) var(--dawn-h) at 50% var(--hz),
+          rgb(var(--boot-dawn-rgb)),
+          rgb(var(--boot-dawn-rgb) / 0.66) 26%,
+          rgb(var(--boot-dawn-rgb) / 0.32) 50%,
+          rgb(var(--boot-dawn-rgb) / 0.1) 74%,
+          rgb(var(--boot-dawn-rgb) / 0)
+        );
+      }
+      .boot-dawn::after {
+        opacity: var(--boot-warm-k);
+        background: radial-gradient(
+          var(--warm-w) var(--warm-h) at 50% var(--hz),
+          rgb(var(--boot-warm-rgb)),
+          rgb(var(--boot-warm-rgb) / 0.66) 26%,
+          rgb(var(--boot-warm-rgb) / 0.32) 50%,
+          rgb(var(--boot-warm-rgb) / 0.1) 74%,
+          rgb(var(--boot-warm-rgb) / 0)
+        );
+      }
+      /* The installed app on the light theme starts from the OS launch screen's night (dark for everyone), then the
+         night lifts off the top like a curtain, a warm band of sunrise at its edge, and leaves the light theme behind.
+         The night's own mark rides inside it, counter-moved so it stays put while the edge wipes across it. */
+      .boot-dusk {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: calc(100% + 220px);
+        pointer-events: none;
+      }
+      :root[data-launch='night'][data-theme='light'] .boot-dusk {
+        display: block;
+        animation: boot-lift 1.5s cubic-bezier(0.5, 0, 0.25, 1) 0.4s both;
+      }
+      .boot-dusk-sky {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 220px;
+        overflow: hidden;
+        background: #0e0d0c;
+      }
+      .boot-dusk-in {
+        position: absolute;
+        inset: 0;
+        animation: boot-lift-in 1.5s cubic-bezier(0.5, 0, 0.25, 1) 0.4s both;
+      }
+      .boot-dusk-band {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 220px;
+        background: linear-gradient(#0e0d0c, #2c190d 20%, rgb(196 108 44 / 0.78) 50%, rgb(242 164 88 / 0.34) 76%, rgb(246 170 90 / 0));
+      }
+      .boot-dusk .boot-mark path {
+        stroke: #f4f1ec;
+      }
+      .boot-dusk .boot-mark circle {
+        fill: #f5c26b;
+      }
+
+      /* the mark: 96 px on the viewport centre (frame 1), then settles up into the composition, centred in the safe
+         area (clear of the status bar the installed app draws under) */
+      .boot-mark {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 96px;
+        height: 96px;
+        margin: -48px 0 0 -48px;
+        transform: translateY(calc(var(--sa) - var(--rise))) scale(var(--mk));
+        animation: boot-settle 1.05s cubic-bezier(0.32, 0, 0.15, 1) 0.42s both;
+      }
+      .boot-mark svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .boot-mark path {
+        fill: none;
+        stroke: var(--boot-ink);
+        stroke-width: 9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .boot-mark circle {
+        fill: var(--boot-sun);
+      }
+      .boot-mark .boot-ember {
+        opacity: 0.32; /* the lamp, dim: frame 1, the iOS launch images (tools/splash/launch-images.ts --lamp) */
+      }
+      .boot-lamp {
+        animation: boot-lamp 0.9s linear 0.16s both;
+      }
+      .boot-halo,
+      .boot-flare,
+      .boot-core {
+        position: absolute;
+        left: 58.6%; /* the lamp: (37.5, 40.5) of the mark's 64 units */
+        top: 63.3%;
+        border-radius: 50%;
+      }
+      .boot-halo {
+        width: 150px;
+        height: 150px;
+        margin: -75px 0 0 -75px;
+        background: radial-gradient(
+          closest-side,
+          rgb(var(--boot-sun-rgb) / 0.2),
+          rgb(var(--boot-sun-rgb) / 0.12) 30%,
+          rgb(var(--boot-sun-rgb) / 0.05) 62%,
+          rgb(var(--boot-sun-rgb) / 0)
+        );
+        animation: boot-in 1.4s ease 0.3s both;
+      }
+      /* ready (done() was called): the lamp comes up to full — a hotter core (.boot-core, on the lamp) — with a small
+         warm halo behind the ink (.boot-flare), the last beat before the dive; both go with the mark as it dives */
+      .boot-flare {
+        width: 84px;
+        height: 84px;
+        margin: -42px 0 0 -42px;
+        background: radial-gradient(
+          closest-side,
+          rgb(var(--boot-sun-rgb) / 0.62),
+          rgb(var(--boot-sun-rgb) / 0.4) 22%,
+          rgb(var(--boot-sun-rgb) / 0.18) 46%,
+          rgb(var(--boot-sun-rgb) / 0.05) 72%,
+          rgb(var(--boot-sun-rgb) / 0)
+        );
+        transform: scale(0.4);
+      }
+      .boot-core {
+        width: 20.25px; /* the lamp: r 6.75 of 64 units at 96 px */
+        height: 20.25px;
+        margin: -10.125px 0 0 -10.125px;
+        background: radial-gradient(closest-side, rgb(var(--boot-flare-rgb)), rgb(var(--boot-flare-rgb) / 0.7) 45%, rgb(var(--boot-flare-rgb) / 0));
+      }
+      .boot-flare,
+      .boot-core {
+        opacity: 0;
+        transition:
+          opacity 0.24s ease-out,
+          transform 0.36s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      #boot.is-ready .boot-flare,
+      #boot.is-ready .boot-core {
+        opacity: 1;
+        transform: none;
+      }
+      #boot.is-done .boot-flare,
+      #boot.is-done .boot-core {
+        opacity: 0;
+        transition:
+          opacity 0.26s ease,
+          transform 0.36s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      /* the quick hand-off (done({quick}): ready and done at once, no beat to wait for): the same flare, folded into
+         the first moment of the dive */
+      #boot.is-quick .boot-flare,
+      #boot.is-quick .boot-core {
+        animation: boot-flash 0.4s ease-out both;
+      }
+
+      /* the town: seven houses on the horizon; the row is the progressbar (its windows are the progress) */
+      .boot-town {
+        position: absolute;
+        left: 50%;
+        top: calc(var(--hz) - 66px);
+        width: 310px;
+        height: 66px;
+        margin-left: -155px;
+        overflow: hidden; /* the houses rise out of the ground */
+        transform: scale(var(--tk));
+        transform-origin: 50% 100%;
+      }
+      .boot-house {
+        position: absolute;
+        bottom: 0;
+        left: var(--x);
+        width: var(--w);
+        height: var(--h);
+        animation: boot-rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+        animation-delay: calc(0.66s + var(--r) * 90ms);
+      }
+      .boot-house svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .boot-house path {
+        fill: var(--boot-house);
+        stroke: var(--boot-house-line);
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+      }
+      /* a window: <i> unlit; <b> its light, on once the progress passes its --at (with the small stutter of a real
+         lamp), its steady glow b::after; <s> the breathing light (s::after), which runs all along out of sight. Still
+         working cross-fades the steady light to the breathing one and back, so the breath never stops half-way when
+         "still working" ends. The breath is a wave along the row (each house a step, --i, behind), and an unlit window
+         breathes too, faintly, so the wave runs the whole row from the first second (no window lit yet). */
+      .boot-win {
+        position: absolute;
+        width: 5px;
+        height: 6px;
+        border-radius: 1.5px;
+        background: var(--boot-win-off);
+      }
+      .boot-win b,
+      .boot-win s,
+      .boot-win b::after,
+      .boot-win s::after {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+      }
+      .boot-win b {
+        opacity: clamp(0, (var(--boot-p, 0) - var(--at)) * 1000, 1);
+        transition: opacity 0.4s ease-out;
+        transition: opacity 0.8s linear(0, 0.85 9%, 0.35 19%, 1 34%, 1);
+      }
+      .boot-win b::after,
+      .boot-win s::after {
+        content: '';
+        background: var(--boot-sun);
+        box-shadow: var(--boot-glow);
+      }
+      .boot-win b::after {
+        transition: opacity 0.6s ease-in-out;
+      }
+      .boot-win s {
+        opacity: 0;
+        text-decoration: none;
+        transition: opacity 0.6s ease-in-out 0.6s;
+      }
+      .boot-win s::after {
+        animation: boot-wave 3.2s ease-in-out infinite;
+        animation-delay: calc(var(--i) * 0.3s - 3.2s);
+      }
+      #boot.is-waiting:not(.is-error) .boot-win s {
+        opacity: calc(0.2 + 0.8 * clamp(0, (var(--boot-p, 0) - var(--at)) * 1000, 1)); /* lit: all of it; unlit: a fifth */
+        transition-delay: 0s;
+      }
+      #boot.is-waiting:not(.is-error) .boot-win b::after {
+        opacity: 0;
+        transition-delay: 0.6s;
+      }
+      #boot.is-done .boot-win b {
+        opacity: 1;
+        transition-delay: calc(var(--at) * 260ms);
+      }
+
+      /* the horizon: a hairline; the warm light along it spreads from the middle with the progress (#boot-fill) */
+      .boot-ground {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: var(--hz);
+        width: min(var(--gw), 100% - 48px);
+        height: 1px;
+        margin: 0 auto;
+        background: linear-gradient(90deg, transparent, rgb(var(--boot-fg-rgb) / 0.13) 24%, rgb(var(--boot-fg-rgb) / 0.13) 76%, transparent);
+        animation: boot-draw 1.2s cubic-bezier(0.3, 0, 0.15, 1) 0.5s both;
+      }
+      #boot-fill {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgb(var(--boot-sun-rgb) / 0.75) 30%, rgb(var(--boot-sun-rgb) / 0.75) 70%, transparent);
+        transform: scaleX(0);
+        transform-origin: 50% 50%;
+      }
+
+      /* the words: one quiet line under the town, the server's line at the foot */
+      .boot-sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .boot-cap {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(var(--hz) + var(--cap-y));
+        margin: 0;
+        padding: 0 var(--gut-r) 0 var(--gut-l);
+        display: flex;
+        flex-wrap: wrap; /* a long step and "· still working 128s" on a 320 px phone: two lines, not a cut step */
+        justify-content: center;
+        align-items: baseline;
+        column-gap: 0.625rem;
+        font-size: 0.8125rem;
+        line-height: 1.25rem;
+        letter-spacing: 0.005em;
+        color: var(--boot-text-2);
+        animation: boot-in 0.7s ease 1.05s both;
+      }
+      .boot-step {
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .boot-pct {
+        flex: none;
+        font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+        font-size: 0.6875rem;
+        color: var(--boot-text-3);
+        font-variant-numeric: tabular-nums;
+      }
+      .boot-pct:empty {
+        display: none;
+      }
+      /* still working: boot.ts writes it in words ("· still working 6s"), in the caption's own voice */
+      #boot.is-waiting .boot-cap {
+        column-gap: 0.3em;
+      }
+      #boot.is-waiting .boot-pct {
+        font-family: inherit;
+        font-size: inherit;
+        color: var(--boot-text-2);
+      }
+      .boot-foot {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: max(20px, calc(var(--sab) + 10px));
+        padding: 0 var(--gut-r) 0 var(--gut-l);
+        text-align: center;
+        font-size: 0.71875rem;
+        line-height: 1rem;
+        letter-spacing: 0.01em;
+        color: var(--boot-text-3);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        animation: boot-in 0.7s ease 1.25s both;
+      }
+
+      /* could not finish: the lights in the mark go out, the caption gives way to the message and two ways on */
+      .boot-error {
+        display: none;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(var(--hz) + var(--cap-y) - 2px - var(--lift));
+        width: min(340px, 100% - 48px);
+        margin: 0 auto;
+        text-align: center;
+        font-size: 0.8125rem;
+        line-height: 1.55;
+        color: var(--boot-text-2);
+      }
+      .boot-error p {
+        margin: 0;
+      }
+      .boot-error-title {
+        font-weight: 600;
+        color: var(--boot-err-text);
+        margin-bottom: 4px !important;
+      }
+      #boot.is-error .boot-error {
+        display: block;
+        animation: boot-in 0.4s ease both;
+      }
+      #boot.is-error .boot-cap {
+        display: none;
+      }
+      #boot.is-error {
+        overflow-y: auto; /* whatever the screen, the buttons can be reached */
+      }
+      #boot.is-error .boot-stage,
+      #boot.is-error .boot-sky {
+        transform: translateY(calc(var(--lift) * -1));
+        transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      #boot.is-error .boot-lamp {
+        opacity: 0; /* out for good: done()'s fade (Continue without 3D) starts from here, not from a lit lamp */
+        animation: boot-lamp-out 0.5s ease both;
+      }
+      #boot.is-error .boot-halo,
+      #boot.is-error .boot-town {
+        opacity: 0.45;
+        transition: opacity 0.5s ease;
+      }
+      .boot-actions {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 18px;
+      }
+      .boot-actions button {
+        height: 38px;
+        padding: 0 16px;
+        border-radius: 10px;
+        border: 1px solid rgb(var(--boot-fg-rgb) / 0.16);
+        background: rgb(var(--boot-fg-rgb) / 0.05);
+        color: var(--boot-text);
+        font-family: inherit;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .boot-actions button.primary {
+        background: var(--boot-btn);
+        color: var(--boot-btn-text);
+        border-color: transparent;
+      }
+      .boot-actions button:focus-visible {
+        outline: 2px solid var(--boot-focus);
+        outline-offset: 2px;
+      }
+
+      /* done: the view dives into the town, then the splash fades onto the app */
+      .boot-stage {
+        transform-origin: 50% var(--hz); /* the same point as the sky's, so the ground and the glow's edge stay one line */
+      }
+      /* the camera moves in: an ease-in scale, the town gone by the time the app shows through (no ghost of it over
+         the app); the sky's glow grows more slowly behind it, for depth */
+      #boot.is-done .boot-stage {
+        animation:
+          boot-dive 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both,
+          boot-dive-fade 0.5s linear both;
+      }
+      #boot.is-done .boot-sky {
+        animation: boot-sky-dive 0.7s cubic-bezier(0.55, 0.085, 0.68, 0.53) both;
+      }
+      #boot.is-done .boot-mark svg,
+      #boot.is-done .boot-halo {
+        animation: boot-out 0.26s ease both;
+      }
+      #boot.is-done .boot-cap,
+      #boot.is-done .boot-foot {
+        animation: boot-out 0.2s ease both;
+      }
+
+      @keyframes boot-in {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-out {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-lift {
+        to {
+          transform: translateY(-100%);
+        }
+      }
+      @keyframes boot-lift-in {
+        to {
+          transform: translateY(calc(100% + 220px));
+        }
+      }
+      @keyframes boot-settle {
+        from {
+          transform: none;
+        }
+      }
+      @keyframes boot-lamp {
+        0% {
+          opacity: 0;
+        }
+        16% {
+          opacity: 0.9;
+        }
+        26% {
+          opacity: 0.25;
+        }
+        40%,
+        100% {
+          opacity: 1;
+        }
+      }
+      @keyframes boot-lamp-out {
+        to {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-flash {
+        25% {
+          opacity: 1;
+          transform: none;
+        }
+        to {
+          opacity: 0;
+          transform: none;
+        }
+      }
+      @keyframes boot-rise {
+        from {
+          transform: translateY(102%);
+          opacity: 0;
+        }
+      }
+      @keyframes boot-draw {
+        from {
+          transform: scaleX(0.15);
+          opacity: 0;
+        }
+      }
+      @keyframes boot-wave {
+        50% {
+          opacity: 0.22;
+        }
+      }
+      @keyframes boot-dive {
+        to {
+          transform: scale(3);
+        }
+      }
+      @keyframes boot-dive-fade {
+        0%,
+        36% {
+          opacity: 1;
+        }
+        90%,
+        100% {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-sky-dive {
+        to {
+          transform: scale(1.5);
+        }
+      }
+      @keyframes boot-breathe {
+        to {
+          opacity: 0.45;
+        }
+      }
+      /* While driving, the UI action bar already shows the keys and a "Leave car" button. */
+      .rlt-drive-exit,
+      .rlt-drive-help {
+        display: none !important;
+      }
+      /* Curtain caption over a slow step after the splash (a house still being furnished, the first 3D frame): a small
+         chip in the splash's language — one lit window, steady words — docked under the top bar, centred, in the chrome
+         band above the town rather than over the houses and their labels. */
+      #curtain-note {
+        position: fixed;
+        left: 50%;
+        top: calc(env(safe-area-inset-top, 0px) + 4.5rem);
+        z-index: 60;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 13px 7px 11px;
+        border-radius: 999px;
+        background: var(--boot-chip);
+        border: 1px solid rgb(var(--boot-fg-rgb) / 0.09);
+        box-shadow: 0 8px 24px -12px rgb(0 0 0 / 0.5);
+        font-size: 0.75rem;
+        line-height: 1rem;
+        color: var(--boot-text-2);
+        white-space: nowrap;
+        opacity: 0;
+        transform: translate(-50%, -4px);
+        pointer-events: none;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+      }
+      #curtain-note.is-on {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      #curtain-note i {
+        flex: none;
+        width: 5px;
+        height: 6px;
+        border-radius: 1.5px;
+        background: var(--boot-sun);
+        box-shadow: 0 0 6px 1px rgb(var(--boot-sun-rgb) / 0.55);
+      }
+      /* the window breathes only while the note shows: the note stays in the page for the app's whole life */
+      #curtain-note.is-on i {
+        animation: boot-breathe 1.2s ease-in-out infinite alternate;
+      }
+      /* a short screen (a phone held sideways): the band under the top bar is where the town's labels are, so the chip
+         docks just above the action bar instead (the bar: 3.625rem high, max(0.5rem, the bottom inset) up — ui/css
+         hud.css, responsive.css), and rises into place */
+      @media (max-height: 540px) {
+        #curtain-note {
+          top: auto;
+          bottom: calc(max(0.5rem, env(safe-area-inset-bottom, 0px)) + 4.125rem);
+          transform: translate(-50%, 4px);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        /* no travel: the mark dips out at the centre and back in at its place, the houses fade up, the lamp and
+           windows simply come on, the windows do not breathe; still working = the words and the mark's lamp breathing
+           slowly; ready = the flare fades in; done = a fade */
+        .boot-mark {
+          animation-name: boot-settle-rm;
+          animation-duration: 0.8s;
+        }
+        @keyframes boot-settle-rm {
+          0%,
+          40% {
+            transform: none;
+            opacity: 1;
+          }
+          50% {
+            transform: none;
+            opacity: 0;
+          }
+          51% {
+            transform: translateY(calc(var(--sa) - var(--rise))) scale(var(--mk));
+            opacity: 0;
+          }
+        }
+        /* the installed app on the light theme: the night fades to morning instead of lifting */
+        :root[data-launch='night'][data-theme='light'] .boot-dusk {
+          height: 100%; /* no sunrise band below the fold: nothing to scroll to in the error state */
+          animation: boot-out 1s ease 0.5s both;
+        }
+        .boot-dusk-in {
+          animation: none;
+        }
+        /* the night fills the screen, so its mark sits exactly on the stage's */
+        .boot-dusk-sky {
+          bottom: 0;
+        }
+        .boot-dusk-band {
+          display: none;
+        }
+        #boot.is-error .boot-stage,
+        #boot.is-error .boot-sky {
+          transition: none;
+        }
+        #boot.is-done .boot-sky {
+          animation: none;
+        }
+        .boot-house,
+        .boot-ground,
+        .boot-lamp {
+          animation-name: boot-in;
+        }
+        .boot-win b {
+          transition: opacity 0.6s ease;
+        }
+        .boot-win s {
+          display: none;
+        }
+        #boot.is-waiting:not(.is-error) .boot-win b::after {
+          opacity: 1;
+        }
+        /* the breath is added to the lamp's coming-on, not put in its place: when it ends, the lamp stays on (replacing
+           it would start the coming-on over, from dark) */
+        #boot.is-waiting:not(.is-error) .boot-lamp {
+          animation:
+            boot-in 0.9s linear 0.16s both,
+            boot-breathe 2.4s ease-in-out infinite alternate;
+        }
+        .boot-flare {
+          transform: none;
+        }
+        #boot.is-quick .boot-flare,
+        #boot.is-quick .boot-core {
+          animation: none; /* done is a fade */
+        }
+        #boot.is-done .boot-stage {
+          animation: boot-out 0.4s ease both;
+        }
+        #curtain-note.is-on i {
+          animation: none;
+        }
+        #curtain-note,
+        #curtain-note.is-on {
+          transform: translate(-50%, 0);
+        }
+      }
+      @media (max-width: 359px) {
+        #boot {
+          --tk: 0.88;
+        }
+      }
+      @media (max-height: 540px) {
+        #boot {
+          --rise: 56px;
+          --mk: 0.6;
+          --hzo: 40px;
+          --lift: 48px;
+          --tk: 0.86;
+          --cap-y: 18px;
+        }
+        .boot-actions {
+          margin-top: 12px;
+        }
+      }
+      @media (min-width: 1024px) and (min-height: 720px) {
+        /* a large screen: the same picture a little larger, still small in the space */
+        #boot {
+          --tk: 1.12;
+        }
+      }
+      @media (min-width: 1200px) and (min-height: 760px) {
+        /* a wide desktop: the town at one and a half, the mark settling a little larger and higher, the glows and the
+           horizon wider, so the picture holds the screen instead of floating in it (frame 1 is the same 96 px mark) */
+        #boot {
+          --tk: 1.5;
+          --mk: 0.875;
+          --rise: 88px;
+          --hzo: 76px;
+          --gw: 640px;
+          --dawn-w: 660px;
+          --dawn-h: 210px;
+          --warm-w: 1040px;
+          --warm-h: 470px;
+          --land-w: 500px;
+          --cap-y: 30px;
+        }
+        .boot-cap {
+          font-size: 0.875rem;
+        }
+        .boot-pct {
+          font-size: 0.75rem;
+        }
+      }
+      /* The status bar's white text over the light theme in the installed app: a soft dark strip behind it (no
+         height where iOS keeps the bar opaque: the inset is 0 there). */
+      @media (display-mode: standalone) {
+        :root[data-theme='light'] body::after {
+          content: '';
+          position: fixed;
+          inset: 0 0 auto 0;
+          height: env(safe-area-inset-top);
+          background: linear-gradient(rgba(20, 16, 12, 0.55), rgba(20, 16, 12, 0));
+          pointer-events: none;
+          z-index: 2147483000;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="scene" aria-hidden="true"></div>
+
+    <div id="boot">
+      <div class="boot-sky" aria-hidden="true"><i class="boot-night"></i><i class="boot-dawn"></i></div>
+      <h1 class="boot-sr">CAST</h1>
+      <div class="boot-stage">
+        <div class="boot-mark" aria-hidden="true">
+          <i class="boot-halo"></i>
+          <i class="boot-flare"></i>
+          <svg viewBox="0 0 64 64"><path d="M51.5 25 31 9 11.5 24.5v21a9 9 0 0 0 9 9H52" /><circle class="boot-ember" cx="37.5" cy="40.5" r="6.75" /></svg>
+          <svg class="boot-lamp" viewBox="0 0 64 64"><circle cx="37.5" cy="40.5" r="6.75" /></svg>
+          <i class="boot-core"></i>
+        </div>
+        <div class="boot-ground" aria-hidden="true"><b id="boot-fill"></b></div>
+        <!-- the town alone is the progressbar: a progressbar's children are hidden from screen readers, and the splash
+             holds buttons (Reload, Continue without 3D). --i: the house's place in the row (the breathing wave),
+             --r: from the middle (the order they rise in), --at: when a window lights (0…1 of the progress). -->
+        <div class="boot-town" id="boot-bar" role="progressbar" aria-label="Loading CAST" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="boot-house" style="--x: 0px; --w: 32px; --h: 31px; --r: 3; --i: 0"><svg viewBox="0 0 32 31"><path d="M0.75 30.25L0.75 12L16 0.75L31.25 12L31.25 30.25Z" /></svg><i class="boot-win" style="left: 13.5px; top: 18px; --at: 0.3"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 42px; --w: 28px; --h: 44px; --r: 2; --i: 1"><svg viewBox="0 0 28 44"><path d="M0.75 43.25L0.75 12L14 0.75L27.25 12L27.25 43.25Z" /></svg><i class="boot-win" style="left: 11.5px; top: 19px; --at: 0.18"><b></b><s></s></i><i class="boot-win" style="left: 11.5px; top: 32px; --at: 0.74"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 81px; --w: 48px; --h: 37px; --r: 1; --i: 2"><svg viewBox="0 0 48 37"><path d="M0.75 36.25L0.75 16L24 0.75L33 6L33 2.25L38 2.25L38 9.33L47.25 16L47.25 36.25Z" /></svg><i class="boot-win" style="left: 10px; top: 24px; --at: 0.36"><b></b><s></s></i><i class="boot-win" style="left: 33px; top: 24px; --at: 0.6"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 140px; --w: 34px; --h: 53px; --r: 0; --i: 3"><svg viewBox="0 0 34 53"><path d="M0.75 52.25L0.75 15L17 0.75L33.25 15L33.25 52.25Z" /></svg><i class="boot-win" style="left: 14.5px; top: 10px; --at: 0.9"><b></b><s></s></i><i class="boot-win" style="left: 8px; top: 27px; --at: 0.1"><b></b><s></s></i><i class="boot-win" style="left: 21px; top: 27px; --at: 0.48"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 186px; --w: 44px; --h: 35px; --r: 1; --i: 4"><svg viewBox="0 0 44 35"><path d="M0.75 34.25L0.75 15L22 0.75L43.25 15L43.25 34.25Z" /></svg><i class="boot-win" style="left: 9px; top: 21px; --at: 0.66"><b></b><s></s></i><i class="boot-win" style="left: 30px; top: 21px; --at: 0.24"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 241px; --w: 28px; --h: 38px; --r: 2; --i: 5"><svg viewBox="0 0 28 38"><path d="M0.75 37.25L0.75 11L14 0.75L27.25 11L27.25 37.25Z" /></svg><i class="boot-win" style="left: 11.5px; top: 19px; --at: 0.42"><b></b><s></s></i></div>
+          <div class="boot-house" style="--x: 280px; --w: 30px; --h: 26px; --r: 3; --i: 6"><svg viewBox="0 0 30 26"><path d="M0.75 25.25L0.75 10L15 0.75L29.25 10L29.25 25.25Z" /></svg><i class="boot-win" style="left: 12.5px; top: 14px; --at: 0.54"><b></b><s></s></i></div>
+        </div>
+      </div>
+      <p class="boot-cap"><span class="boot-step" id="boot-step">Waking up the town…</span><span class="boot-pct" id="boot-pct"></span></p>
+      <div class="boot-error" id="boot-error" role="alert">
+        <p class="boot-error-title">Could not finish loading</p>
+        <p id="boot-error-text">Something went wrong while loading the town.</p>
+        <div class="boot-actions">
+          <button type="button" class="primary" id="boot-reload">Reload</button>
+          <button type="button" id="boot-2d">Continue without 3D</button>
+        </div>
+      </div>
+      <div class="boot-foot" id="boot-foot">Connecting to the CAST server…</div>
+      <div class="boot-dusk" aria-hidden="true">
+        <div class="boot-dusk-sky">
+          <div class="boot-dusk-in">
+            <div class="boot-mark">
+              <svg viewBox="0 0 64 64"><path d="M51.5 25 31 9 11.5 24.5v21a9 9 0 0 0 9 9H52" /><circle class="boot-ember" cx="37.5" cy="40.5" r="6.75" /></svg>
+              <svg class="boot-lamp" viewBox="0 0 64 64"><circle cx="37.5" cy="40.5" r="6.75" /></svg>
+            </div>
+          </div>
+        </div>
+        <i class="boot-dusk-band"></i>
+      </div>
+    </div>
+
+    <div id="curtain-note" aria-hidden="true"><i></i><span id="curtain-text">Furnishing the house…</span></div>
+
+    <noscript>
+      <p style="position: fixed; inset: auto 0 40px; text-align: center; z-index: 200; color: #8a837d">CAST needs JavaScript.</p>
+    </noscript>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

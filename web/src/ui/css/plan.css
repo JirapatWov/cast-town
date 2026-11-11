@@ -1,0 +1,639 @@
+/* Goal-first pieces: plan cards (who does what on which model, Run / Cancel), "not connected" chips, how the lead
+   works (job dialog), parallel groups in the Workflow tab, the role card's Advanced part. */
+
+/* Chips */
+.rlt-ui .chip-off {
+  background: rgb(var(--err-rgb) / 0.12);
+  color: var(--err-text);
+  box-shadow: inset 0 0 0 1px rgb(var(--err-rgb) / 0.26);
+}
+.rlt-ui .chip-changed {
+  background: rgb(var(--work-rgb) / 0.14);
+  color: var(--work-text);
+}
+.rlt-ui .chip-par {
+  background: rgb(var(--work-rgb) / 0.1);
+  color: var(--work-text);
+}
+.rlt-ui .avail.is-off {
+  color: var(--err-text);
+}
+
+/* Plan card (in the lead's chat) */
+.rlt-ui .plan {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--hair-2);
+  background: rgb(var(--fg-rgb) / 0.04);
+  transition: opacity 0.2s;
+}
+.rlt-ui .plan.is-pending {
+  background: linear-gradient(180deg, rgb(var(--amber-rgb) / 0.1), rgb(var(--amber-rgb) / 0.03));
+  border-color: rgb(var(--amber-rgb) / 0.36);
+  box-shadow: 0 0 26px -12px rgb(var(--amber-rgb) / 0.5);
+}
+.rlt-ui .plan.is-cancelled {
+  opacity: 0.72;
+}
+.rlt-ui .plan.is-sending .plan-steps {
+  opacity: 0.6;
+}
+.rlt-ui .plan-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+.rlt-ui .plan-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--text-2);
+  background: var(--fill-2);
+}
+.rlt-ui .plan.is-pending .plan-icon {
+  color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.18);
+  box-shadow: 0 0 0 4px rgb(var(--amber-rgb) / 0.07);
+}
+.rlt-ui .plan-titles {
+  min-width: 0;
+  display: grid;
+  gap: 0.125rem;
+}
+.rlt-ui .plan-kicker {
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .plan.is-pending .plan-kicker {
+  color: var(--amber-text);
+}
+.rlt-ui .plan-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .plan-why {
+  font-size: 0.78125rem;
+  line-height: 1.5;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .plan-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.375rem;
+  transition: opacity 0.2s;
+}
+.rlt-ui .plan-step {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.625rem;
+  padding: 0.5625rem 0.625rem 0.5625rem 0.75rem;
+  border-radius: 0.625rem;
+  background: var(--well);
+  border: 1px solid var(--hair);
+}
+.rlt-ui .plan-step::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.625rem;
+  height: 1.375rem;
+  width: 0.1875rem;
+  border-radius: 0 0.1875rem 0.1875rem 0;
+  background: var(--vc);
+}
+/* people who work at the same time hang off the one before them */
+.rlt-ui .plan-step.is-par {
+  margin-left: 0.875rem;
+}
+.rlt-ui .plan-step.is-par::after {
+  content: '';
+  position: absolute;
+  left: -0.5625rem;
+  top: -0.4375rem;
+  bottom: 50%;
+  width: 0.4375rem;
+  border-left: 1px dashed var(--hair-2);
+  border-bottom: 1px dashed var(--hair-2);
+  border-bottom-left-radius: 0.375rem;
+}
+.rlt-ui .plan-step.is-changed {
+  border-color: rgb(var(--work-rgb) / 0.4);
+}
+.rlt-ui .plan-step-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.1875rem;
+}
+.rlt-ui .plan-step-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.125rem 0.5rem;
+}
+.rlt-ui .plan-step-name {
+  font-size: 0.84375rem;
+  font-weight: 600;
+}
+.rlt-ui .plan-step-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .plan-step-duty {
+  font-size: 0.78125rem;
+  line-height: 1.45;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .plan-step-model {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.1875rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+  min-width: 0;
+}
+.rlt-ui .plan-model {
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 1 auto;
+  text-overflow: ellipsis;
+}
+.rlt-ui .plan-model-label {
+  color: var(--text);
+}
+.rlt-ui .plan-effort-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--text-3);
+}
+.rlt-ui .plan-effort-word {
+  font-size: 0.75rem;
+}
+.rlt-ui .plan-effort {
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 auto;
+  text-overflow: ellipsis;
+}
+.rlt-ui .plan-effort-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  color: var(--text-3);
+}
+.rlt-ui .plan-brief {
+  border-radius: 0.625rem;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+}
+.rlt-ui .plan-brief summary {
+  display: flex;
+  align-items: center;
+  gap: 0.4375rem;
+  padding: 0.4375rem 0.625rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+}
+.rlt-ui .plan-brief summary::-webkit-details-marker {
+  display: none;
+}
+.rlt-ui .plan-brief summary span {
+  flex: 1;
+}
+.rlt-ui .plan-brief-chev {
+  transition: transform 0.18s var(--ease);
+}
+.rlt-ui .plan-brief[open] .plan-brief-chev {
+  transform: rotate(180deg);
+}
+.rlt-ui .plan-brief-text {
+  max-height: 240px;
+  overflow: auto;
+  padding: 0.5rem 0.625rem 0.625rem;
+  border-top: 1px solid var(--hair);
+  font-size: 0.78125rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .plan-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.625rem;
+}
+.rlt-ui .plan-error {
+  flex-basis: 100%;
+  margin: 0;
+}
+.rlt-ui .plan-hint {
+  flex: 1 1 180px;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.rlt-ui .plan-actions {
+  display: flex;
+  gap: 0.375rem;
+  margin-left: auto;
+}
+.rlt-ui .plan-outcome {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .plan-outcome svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .plan.is-approved .plan-outcome svg {
+  color: var(--ok);
+}
+.rlt-ui .plan.is-cancelled .plan-outcome svg {
+  color: var(--text-3);
+}
+.rlt-ui .plan-open-run {
+  font-size: 0.78125rem;
+}
+
+/* A card that continues a run (team_continue): who works again first, who keeps their result, the lead's note */
+.rlt-ui .plan-continues {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  border: 1px dashed var(--hair-2);
+  background: var(--fill-1);
+  font-size: 0.78125rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.rlt-ui .plan-continues > svg {
+  flex-shrink: 0;
+  margin-top: 0.1875rem;
+  color: var(--work-text);
+}
+.rlt-ui .plan-continues-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.1875rem;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .plan-continues strong,
+.rlt-ui .plan-continues-kept {
+  color: var(--text);
+  font-weight: 600;
+}
+.rlt-ui .plan-continues .link-btn {
+  font-weight: 500;
+}
+.rlt-ui .plan-continues-note {
+  max-height: 7.5em;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+/* Inbox: plan cards waiting in a lead's chat */
+.rlt-ui .inbox-plan {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgb(var(--amber-rgb) / 0.11), rgb(var(--amber-rgb) / 0.035));
+  border: 1px solid rgb(var(--amber-rgb) / 0.36);
+}
+.rlt-ui .inbox-plan-main {
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.rlt-ui .inbox-plan-title {
+  font-size: 0.84375rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .inbox-plan-title .room-code {
+  margin-right: 0.375rem;
+  vertical-align: 1px;
+}
+.rlt-ui .inbox-plan-team {
+  display: flex;
+  align-items: center;
+  gap: 0.1875rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  min-width: 0;
+}
+.rlt-ui .inbox-plan-team > span:last-child {
+  margin-left: 0.3125rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .inbox-plan-kept {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.3125rem;
+  min-width: 0;
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.rlt-ui .inbox-plan-kept > svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .inbox-plan-kept > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Job dialog: how the lead works */
+.rlt-ui .jd-styles {
+  display: grid;
+  gap: 0.375rem;
+}
+.rlt-ui .jd-style {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.5625rem 0.75rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--hair);
+  background: var(--fill-1);
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.rlt-ui .jd-style:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .jd-style.is-on {
+  background: rgb(var(--fg-rgb) / 0.07);
+  border-color: rgb(var(--text-rgb) / 0.34);
+}
+.rlt-ui .jd-style-dot {
+  width: 0.875rem;
+  height: 0.875rem;
+  margin-top: 0.125rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-3);
+  flex-shrink: 0;
+}
+.rlt-ui .jd-style.is-on .jd-style-dot {
+  border-color: var(--text);
+  background: radial-gradient(circle, var(--text) 0 3.5px, transparent 4px);
+}
+.rlt-ui .jd-style-text {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.rlt-ui .jd-style-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.rlt-ui .jd-style-hint {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+/* Workflow tab */
+.rlt-ui .wf-intro {
+  margin-bottom: -0.375rem;
+  font-size: 0.78125rem;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.rlt-ui .wf-section-head .wf-delete {
+  width: 1.625rem;
+  height: 1.625rem;
+  align-self: center;
+  color: var(--text-3);
+}
+.rlt-ui .wf-section-head .wf-delete:hover {
+  color: var(--err-text);
+  background: rgb(var(--err-rgb) / 0.12);
+}
+.rlt-ui .wf-add:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.rlt-ui .wf-group {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr); /* the cards wrap inside the box instead of widening it */
+  gap: 6px;
+  padding: 0.5rem;
+  border-radius: 0.875rem;
+  border: 1px dashed rgb(var(--work-rgb) / 0.32);
+  background: rgb(var(--work-rgb) / 0.04);
+}
+.rlt-ui .wf-group-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--work-text);
+}
+.rlt-ui .wf-group-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+/* side by side while each gets ~180px, else one under the other (phones) */
+.rlt-ui .wf-group-cards > .role {
+  flex: 1 1 180px;
+  min-width: min(11.25rem, 100%);
+}
+/* an open card takes the whole row: its editor doesn't fit beside another */
+.rlt-ui .wf-group-cards > .role.is-open {
+  flex-basis: 100%;
+}
+/* side by side the cards are narrow: no step numbers, names may wrap */
+.rlt-ui .wf-group-cards .role:not(.is-open) .role-num {
+  display: none;
+}
+.rlt-ui .wf-group-cards .role:not(.is-open) .role-head {
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+.rlt-ui .wf-group-cards .role:not(.is-open) .role-chips .chip-par {
+  display: none;
+}
+/* Narrow cards (side by side in a group, a phone): the chips go under the name instead of squeezing it to a letter
+   per line. A long name wraps between words, and inside one only when it doesn't fit at all. */
+.rlt-ui .role {
+  container-type: inline-size;
+}
+.rlt-ui .role-name {
+  overflow-wrap: break-word;
+}
+@container (max-width: 360px) {
+  .rlt-ui .role-head {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: 'num av titles chev' 'num av chips chev';
+    gap: 0 0.5rem;
+  }
+  .rlt-ui .wf-group-cards .role:not(.is-open) .role-head {
+    grid-template-columns: auto minmax(0, 1fr) auto; /* no step number side by side */
+    grid-template-areas: 'av titles chev' 'av chips chev';
+    gap: 0 0.5rem;
+  }
+  .rlt-ui .role-head > .role-num {
+    grid-area: num;
+  }
+  .rlt-ui .role-head > .avatar {
+    grid-area: av;
+  }
+  .rlt-ui .role-head > .role-titles {
+    grid-area: titles;
+  }
+  .rlt-ui .role-head > .role-chips {
+    grid-area: chips;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+  }
+  .rlt-ui .role-head > .role-chips:empty {
+    display: none;
+  }
+  .rlt-ui .role-head > .role-chev {
+    grid-area: chev;
+  }
+}
+.rlt-ui .role-par {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.625rem;
+  background: var(--fill-1);
+  border: 1px solid var(--hair);
+  cursor: pointer;
+}
+.rlt-ui .role-par input {
+  margin-top: 0.1875rem;
+  accent-color: var(--work);
+}
+.rlt-ui .role-par > span {
+  display: grid;
+  gap: 0.125rem;
+}
+.rlt-ui .role-par-label {
+  font-size: 0.78125rem;
+  color: var(--text);
+}
+.rlt-ui .role-advanced {
+  border-top: 1px solid var(--hair);
+  margin: 0 -0.875rem;
+  padding: 0 0.875rem;
+}
+.rlt-ui .role-advanced summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.625rem 0 0.125rem;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  list-style: none;
+}
+.rlt-ui .role-advanced summary::-webkit-details-marker {
+  display: none;
+}
+.rlt-ui .role-advanced summary .muted {
+  flex: 1;
+}
+.rlt-ui .role-advanced-chev {
+  align-self: center;
+  transition: transform 0.18s var(--ease);
+}
+.rlt-ui .role-advanced[open] .role-advanced-chev {
+  transform: rotate(180deg);
+}
+.rlt-ui .role-advanced-body {
+  display: grid;
+  gap: 0.875rem;
+  padding-top: 0.75rem;
+}
+/* Thinking can have up to 7 levels (Off … Max): wrap instead of running off a narrow card */
+.rlt-ui .role-advanced-body .segmented {
+  flex-wrap: wrap;
+}
+
+/* Run strip: people of a parallel group are joined by "+" */
+.rlt-ui .rs-link.is-par {
+  width: auto;
+  height: auto;
+  margin: 0 0.25rem;
+  background: none;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* Board on a phone: the plan card's small print (who asks, a step's loop, the hint, More, Don't ask again) was
+   11.5–12 px, hard to read in Thai; "What the team gets" a 33 px tap. (Same query as PHONE_BOARD_QUERY in touch.ts.) */
+@media (max-width: 820px), (pointer: coarse) and (max-height: 520px) {
+  .rlt-ui.is-focus :is(.plan-kicker, .plan-step-note, .plan-hint, .plan-step-more, .plan-effort-word, .plan-no-ask) {
+    font-size: 0.8125rem;
+  }
+  .rlt-ui.is-focus .plan-brief summary {
+    min-height: 2.75rem;
+  }
+  /* (an <h4>: base.css resets h1–h3 only, and its 19 px margins above and below pushed the card's head off the chat) */
+  .rlt-ui.is-focus .plan-title {
+    margin: 0;
+  }
+  .rlt-ui.is-focus .plan-step-model select {
+    min-height: 2.75rem;
+  }
+  /* "Open run" under a started plan: a 18 px line of text, a 44 px target */
+  .rlt-ui.is-focus .plan-open-run {
+    position: relative;
+  }
+  .rlt-ui.is-focus .plan-open-run::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 2.75rem);
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+  /* the plan's name goes to the next line whole: cut at a space, it left "→ Review”" alone on the second line */
+  .rlt-ui.is-focus .inbox-plan-name {
+    display: inline-block;
+    max-width: 100%;
+  }
+}

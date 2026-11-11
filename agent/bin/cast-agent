@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# cast-agent: CAST's AI agent (a fork of omp, oh-my-pi; see ../FORK.md).
+#
+# Runs the bundled CLI (packages/coding-agent/dist/cli.js, built by cast/build.sh exactly like
+# upstream's npm `gen:bundle`) with Bun, using the prebuilt pi_natives addon copied into
+# packages/natives/native/.
+#
+# Env:
+#   CAST_AGENT_BUN=/path/to/bun   Bun binary to use (default: `bun` on PATH; needs >= 1.3.14)
+#   CAST_AGENT_SOURCE=1           run the TypeScript sources (src/cli.ts) instead of the bundle,
+#                                 for working on the agent without rebuilding
+# Everything else (PI_CODING_AGENT_DIR, args, stdin/stdout) is passed through untouched.
+set -euo pipefail
+
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+	dir="$(cd -P "$(dirname "$src")" && pwd)"
+	src="$(readlink "$src")"
+	case "$src" in /*) ;; *) src="$dir/$src" ;; esac
+done
+ROOT="$(cd -P "$(dirname "$src")/.." && pwd)"
+BUN="${CAST_AGENT_BUN:-bun}"
+
+if [ "${CAST_AGENT_SOURCE:-}" = "1" ]; then
+	ENTRY="$ROOT/packages/coding-agent/src/cli.ts"
+else
+	ENTRY="$ROOT/packages/coding-agent/dist/cli.js"
+fi
+
+if [ ! -f "$ENTRY" ]; then
+	echo "cast-agent: $ENTRY is missing. Build it first: run \`bun run build\` in the CAST folder (or $ROOT/cast/build.sh)" >&2
+	exit 127
+fi
+
+exec "$BUN" "$ENTRY" "$@"

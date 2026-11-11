@@ -1,0 +1,861 @@
+/* Tokens, reset, glass surfaces and shared atoms (buttons, inputs, chips, avatars, kbd). */
+/* tokens:begin */
+/* Colour tokens (#77). Dark is the default; <html data-theme="light"> swaps in the light set. ui/theme.ts sets it
+   from Settings → Theme (System / Dark / Light) and the OS's prefers-color-scheme, and an inline script in
+   index.html does the same before the first paint. Components use only these tokens; the *-rgb ones are channel
+   triplets for tints and overlays at any strength: rgb(var(--amber-rgb) / 0.14). Contrast of every text token on
+   its surfaces is checked in tests/a11y/theme.test.ts (AA 4.5:1 for text, 3:1 for UI colours). */
+:root {
+  color-scheme: dark;
+  --bg: #0e0d0c; /* behind the town, the board and the boot screen */
+  --glass: rgba(20, 20, 24, 0.64);
+  --glass-strong: rgba(22, 21, 25, 0.9);
+  --solid: #18171b; /* opaque panel: solid mode, the phone's sheet */
+  --solid-2: #1d1c20; /* raised and opaque: select options, popover cards */
+  --sheen: linear-gradient(180deg, rgba(255, 238, 214, 0.05), rgba(255, 238, 214, 0) 42%);
+  --glass-edge: rgba(255, 244, 228, 0.07); /* the glass's lit top edge */
+  --surface-rgb: 22 21 25; /* the glass colour, for rings cut out of it and denser glass */
+  --fg-rgb: 255 255 255; /* overlay ink: hairlines, fills, quiet strokes */
+  --shade-rgb: 0 0 0; /* shadows and wells: rgb(var(--shade-rgb) / calc(A * var(--shade))) */
+  --shade: 1;
+  --hair: rgba(255, 255, 255, 0.08);
+  --hair-2: rgba(255, 255, 255, 0.14);
+  --fill-1: rgba(255, 255, 255, 0.035);
+  --fill-2: rgba(255, 255, 255, 0.07);
+  --fill-3: rgba(255, 255, 255, 0.11);
+  --well: rgba(0, 0, 0, 0.24);
+  --scrim-rgb: 12 11 10; /* behind a modal: rgb(var(--scrim-rgb) / calc(A * var(--scrim-k))) */
+  --scrim-k: 1;
+  --veil-1: rgba(40, 30, 20, 0.35); /* the first-run screens over the town (centre → edge) */
+  --veil-2: rgba(10, 9, 8, 0.72);
+  --text: #f4f1ec;
+  --text-rgb: 244 241 236;
+  --text-2: #a8a29e;
+  --text-3: #9a938e; /* faint text (paths, labels, placeholders): AA on every dark surface, quiet fills included */
+  --ink: #1b1a18; /* text on the primary (text-coloured) button */
+  --primary-hover: #fff;
+  --primary-edge: rgba(255, 255, 255, 0.6);
+  --on-fill-rgb: 0 0 0; /* quiet marks (key caps) on the primary and amber buttons */
+  --amber: #f5a524;
+  --amber-rgb: 245 165 36;
+  --amber-hover: #ffb53d;
+  --amber-text: #ffc768;
+  --on-amber: #1f1405; /* text on an amber or sun fill */
+  --ok: #3fb37f;
+  --ok-rgb: 63 179 127;
+  --ok-text: #6fd3a5;
+  --err: #e5484d;
+  --err-rgb: 229 72 77;
+  --err-text: #ff8a8d;
+  --err-text-hover: #ffa3a5;
+  --err-fill: #d6393f; /* a danger button's face: white text on it at 4.6:1 */
+  --err-fill-hover: #c4343a;
+  --on-err: #fff;
+  --work: #7aa7f7;
+  --work-rgb: 122 167 247;
+  --work-text: #a9c6fa;
+  --sun: #f5c26b;
+  --sun-rgb: 245 194 107;
+  --sun-text: #f2cc8a;
+  --brand-sun: #f5c26b; /* the mark's lamp (shared/brand.ts BRAND_COLORS) */
+  --shadow: 0 28px 64px -24px rgba(12, 9, 6, 0.6), 0 10px 22px -12px rgba(12, 9, 6, 0.45);
+  --scrollbar: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.13);
+  --text-soft: #e9e4dc; /* a name that is not the selected one */
+  --text-warm: #e7dccb; /* body text on the warm banners and the first-run screens */
+  --warm-hi: rgba(255, 236, 205, 0.16); /* warm light in the corner of a tile */
+  --panel-2: #1b1a1e; /* opaque behind pictures (checkerboard) and sticky table cells */
+  --board-end: #121115; /* the board's lower colour: the page around it too (under the browser's bars) */
+  --board-bg: linear-gradient(180deg, #19181c, var(--board-end)); /* the Town board */
+  --term-bg: rgba(19, 18, 22, 0.94);
+  --attn-surface: rgba(58, 46, 30, 0.9); /* a waiting question's card edge */
+  --attn-head: linear-gradient(180deg, rgba(50, 40, 27, 0.98), rgba(44, 36, 25, 0.96));
+  --amber-text-2: #ffd590; /* code and warnings on an amber tint */
+  --on-work: #0c1830;
+  --tint-mix: #fff; /* a colour of its own (job kind, vendor) as text: mixed toward this, at --tint-k of its share */
+  --tint-k: 1;
+  --diff-add-text: #b9f0d2;
+  --diff-del-text: #ffd0d1;
+  --code-text: #ece6dd;
+  --code-inline: #f7e6c8;
+  --code-ln: #5f5954;
+  --code-dim: #6f6a64;
+  --code-gutter: #19181c;
+  --code-head: #242227;
+  --hl-comment: #8c847c;
+  --hl-keyword: #f4a37c;
+  --hl-string: #a9d48f;
+  --hl-number: #f5c26b;
+  --hl-title: #8fbcf7;
+  --hl-type: #e7b0d8;
+  --hl-attr: #ecc98a;
+  --hl-tag: #f08f86;
+  --hl-var: #ebe3d7;
+  --hl-meta: #b9a7f5;
+  --plan-bg: #1d1916; /* the room plan drawing */
+  --plan-floor: #382d25;
+  --plan-ink-rgb: 231 220 205;
+  --plan-taken-1: #2b241f;
+  --plan-taken-2: #221c18;
+}
+
+/* Warm paper glass. Text colours hold AA on the glass even over a black night scene; accents are darker hues so
+   rings, dots and borders keep 3:1 on the light surfaces. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f1ece4;
+  --glass: rgba(250, 248, 245, 0.88);
+  --glass-strong: rgba(251, 250, 248, 0.95);
+  --solid: #f8f6f2;
+  --solid-2: #ffffff;
+  --sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 42%);
+  --glass-edge: rgba(255, 255, 255, 0.8);
+  --surface-rgb: 250 248 245;
+  --fg-rgb: 45 35 25;
+  --shade-rgb: 60 45 30;
+  --shade: 0.32;
+  --hair: rgba(45, 35, 25, 0.12);
+  --hair-2: rgba(45, 35, 25, 0.2);
+  --fill-1: rgba(45, 35, 25, 0.035);
+  --fill-2: rgba(45, 35, 25, 0.065);
+  --fill-3: rgba(45, 35, 25, 0.1);
+  --well: rgba(60, 45, 30, 0.06);
+  --scrim-rgb: 40 32 24;
+  --scrim-k: 0.62;
+  --veil-1: rgba(250, 247, 242, 0.78);
+  --veil-2: rgba(241, 236, 228, 0.93);
+  --text: #1f1b17;
+  --text-rgb: 31 27 23;
+  --text-2: #4d463f;
+  --text-3: #5e564f;
+  --ink: #fbf9f6;
+  --primary-hover: #000;
+  --primary-edge: rgba(255, 255, 255, 0.12);
+  --on-fill-rgb: 255 255 255;
+  --amber: #a35f00;
+  --amber-rgb: 163 95 0;
+  --amber-hover: #8d5200;
+  --amber-text: #824a00;
+  --on-amber: #fff;
+  --ok: #1b7d51;
+  --ok-rgb: 27 125 81;
+  --ok-text: #136a44;
+  --err: #cc3339;
+  --err-rgb: 204 51 57;
+  --err-text: #a8252b;
+  --err-text-hover: #8f1d22;
+  --err-fill: #cc3339;
+  --err-fill-hover: #b42a30;
+  --on-err: #fff;
+  --work: #3567c8;
+  --work-rgb: 53 103 200;
+  --work-text: #2853a8;
+  --sun: #966200;
+  --sun-rgb: 150 98 0;
+  --sun-text: #7a4e00;
+  --brand-sun: #e0932a;
+  --shadow: 0 24px 56px -28px rgba(60, 45, 30, 0.34), 0 8px 20px -12px rgba(60, 45, 30, 0.22);
+  --scrollbar: rgba(45, 35, 25, 0.22);
+  --scrollbar-thumb: rgba(45, 35, 25, 0.2);
+  --text-soft: #2e2924;
+  --text-warm: #3d342b;
+  --warm-hi: rgba(255, 255, 255, 0.7);
+  --panel-2: #f1ede7;
+  --board-end: #ece6dd;
+  --board-bg: linear-gradient(180deg, #f7f3ed, var(--board-end));
+  --term-bg: rgba(251, 250, 248, 0.97);
+  --attn-surface: rgba(248, 236, 214, 0.97);
+  --attn-head: linear-gradient(180deg, rgba(251, 242, 226, 0.99), rgba(248, 238, 219, 0.98));
+  --amber-text-2: #7a4500;
+  --on-work: #fff;
+  --tint-mix: #000;
+  --tint-k: 0.62;
+  --diff-add-text: #0f5634;
+  --diff-del-text: #8c1d22;
+  --code-text: #2b2520;
+  --code-inline: #6e3d0c;
+  --code-ln: #8a8279;
+  --code-dim: #7b736b;
+  --code-gutter: #f3f0eb;
+  --code-head: #ebe6df;
+  --hl-comment: #6f665e;
+  --hl-keyword: #a8441a;
+  --hl-string: #39731c;
+  --hl-number: #8a5a00;
+  --hl-title: #2a5aa8;
+  --hl-type: #93367d;
+  --hl-attr: #80520a;
+  --hl-tag: #ad3129;
+  --hl-var: #3a332d;
+  --hl-meta: #6046b8;
+  --plan-bg: #e9e1d5;
+  --plan-floor: #f8f3eb;
+  --plan-ink-rgb: 74 58 42;
+  --plan-taken-1: #f3ece2;
+  --plan-taken-2: #ebe2d6;
+}
+/* tokens:end */
+
+/* The board on: the page around the UI layer (what a phone's browser shows under its bars, where the fixed layer
+   doesn't reach) is the board's colour, not the splash's near-black band. The 3D town keeps the splash's. */
+html:has(> body .rlt-ui.is-focus),
+html:has(> body .rlt-ui.is-focus) > body {
+  background: var(--board-end);
+}
+
+/* Layout tokens stay on the UI root: the phone and narrow layouts override them there. */
+.rlt-ui {
+  --radius: 0.875rem;
+  --radius-sm: 0.625rem;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --font: 'Inter', 'IBM Plex Sans Thai', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --gap: 0.75rem;
+  --top-h: 2.75rem;
+  /* 420px at the default text size; with larger text it grows (up to half the window) so a line still fits */
+  --panel-w: max(420px, min(26.25rem, 50vw));
+  --panel-top: calc(var(--gap) * 2 + var(--top-h));
+
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  color: var(--text);
+  font: 400 0.84375rem/1.5 var(--font);
+  font-feature-settings: 'cv11', 'ss01';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+/* The iOS Home Screen app: the page, not the viewport, which WebKit can make too short there (index.html). */
+:root[data-ios-app] .rlt-ui {
+  position: absolute;
+}
+/* A wide screen: a width dragged on this device (--panel-user-w, panel-resize.ts) replaces the usual one, kept
+   between 320px and 65% of the window (the same limits as there) so the town keeps the rest. Phones never read it:
+   the sheet has its own width and the phone held sideways sets --panel-w itself (mobile.css). */
+@media (min-width: 821px) {
+  .rlt-ui {
+    --panel-w: clamp(320px, var(--panel-user-w, max(420px, min(26.25rem, 50vw))), max(320px, 65vw));
+  }
+}
+
+.rlt-ui *,
+.rlt-ui *::before,
+.rlt-ui *::after {
+  box-sizing: border-box;
+}
+.rlt-ui [hidden] {
+  display: none !important;
+}
+.rlt-ui button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: inherit;
+}
+.rlt-ui button:disabled {
+  cursor: not-allowed;
+}
+.rlt-ui h1,
+.rlt-ui h2,
+.rlt-ui h3,
+.rlt-ui p {
+  margin: 0;
+}
+.rlt-ui code,
+.rlt-ui pre,
+.rlt-ui kbd {
+  font-family: var(--mono);
+}
+.rlt-ui .ic {
+  flex-shrink: 0;
+  display: block;
+}
+.rlt-ui :focus-visible {
+  outline: 2px solid var(--sun);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+.rlt-ui .num {
+  font-variant-numeric: tabular-nums;
+}
+.rlt-ui .muted {
+  color: var(--text-2);
+}
+.rlt-ui .small {
+  font-size: 0.75rem;
+}
+.rlt-ui .add {
+  color: var(--ok-text);
+}
+.rlt-ui .del {
+  color: var(--err-text);
+}
+.rlt-ui .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Scrollbars: thin and quiet */
+.rlt-ui * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+.rlt-ui ::-webkit-scrollbar {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+.rlt-ui ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 0.625rem;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.rlt-ui ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ── Glass ─────────────────────────────────────────── */
+.rlt-ui .glass,
+.rlt-ui .glass-strong {
+  pointer-events: auto;
+  border: 1px solid var(--hair);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--glass-edge);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+.rlt-ui .glass {
+  background: var(--sheen), var(--glass);
+}
+.rlt-ui .glass-strong {
+  background: var(--sheen), var(--glass-strong);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+}
+
+/* ── Buttons ───────────────────────────────────────── */
+.rlt-ui .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  height: 2.25rem;
+  padding: 0 0.875rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-weight: 500;
+  font-size: 0.84375rem;
+  white-space: nowrap;
+  transition: background-color 0.15s var(--ease), border-color 0.15s, color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.rlt-ui .btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.rlt-ui .btn:disabled {
+  opacity: 0.42;
+}
+.rlt-ui .btn-sm {
+  height: 1.875rem;
+  padding: 0 0.6875rem;
+  font-size: 0.78125rem;
+  border-radius: 0.5rem;
+  gap: 0.375rem;
+}
+.rlt-ui .btn-lg {
+  height: 2.875rem;
+  padding: 0 1.375rem;
+  font-size: 0.90625rem;
+  border-radius: 0.75rem;
+  gap: 0.5625rem;
+}
+.rlt-ui .btn-block {
+  width: 100%;
+}
+.rlt-ui .btn-primary {
+  background: var(--text);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 var(--primary-edge), 0 8px 20px -10px rgb(var(--shade-rgb) / calc(0.6 * var(--shade)));
+}
+.rlt-ui .btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+.rlt-ui .btn-soft {
+  background: var(--fill-2);
+  border-color: var(--hair);
+  color: var(--text);
+}
+.rlt-ui .btn-soft:hover:not(:disabled) {
+  background: var(--fill-3);
+  border-color: var(--hair-2);
+}
+.rlt-ui .btn-ghost {
+  color: var(--text-2);
+}
+.rlt-ui .btn-ghost:hover:not(:disabled) {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .btn-amber {
+  background: var(--amber);
+  color: var(--on-amber);
+  font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 18px -8px rgb(var(--amber-rgb) / 0.7);
+}
+.rlt-ui .btn-amber:hover:not(:disabled) {
+  background: var(--amber-hover);
+}
+.rlt-ui .btn-danger {
+  background: var(--err-fill);
+  color: var(--on-err);
+}
+.rlt-ui .btn-danger:hover:not(:disabled) {
+  background: var(--err-fill-hover);
+}
+.rlt-ui .btn-deny {
+  color: var(--err-text);
+}
+.rlt-ui .btn-deny:hover:not(:disabled) {
+  background: rgb(var(--err-rgb) / 0.12);
+  color: var(--err-text-hover);
+}
+.rlt-ui .btn kbd {
+  margin-left: 0.125rem;
+}
+.rlt-ui .btn-amber kbd,
+.rlt-ui .btn-primary kbd {
+  background: rgb(var(--on-fill-rgb) / 0.1);
+  border-color: rgb(var(--on-fill-rgb) / 0.14);
+  color: rgb(var(--on-fill-rgb) / 0.6);
+}
+.rlt-ui .icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5625rem;
+  display: inline-grid;
+  place-items: center;
+  color: var(--text-2);
+  flex-shrink: 0;
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .icon-btn:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .link-btn {
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--fg-rgb) / 0.25);
+  text-underline-offset: 0.125rem;
+}
+.rlt-ui .link-btn:hover {
+  text-decoration-color: currentColor;
+}
+
+/* ── Inputs ────────────────────────────────────────── */
+.rlt-ui .input {
+  width: 100%;
+  background: var(--well);
+  border: 1px solid var(--hair-2);
+  border-radius: 0.5625rem;
+  color: var(--text);
+  font: 400 0.84375rem/1.5 var(--font);
+  padding: 0.4375rem 0.6875rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.rlt-ui .input::placeholder {
+  color: var(--text-3);
+}
+.rlt-ui .input:focus {
+  outline: none;
+  border-color: rgb(var(--sun-rgb) / 0.55);
+  box-shadow: 0 0 0 3px rgb(var(--sun-rgb) / 0.12);
+}
+.rlt-ui textarea.input {
+  resize: none;
+  min-height: 2.375rem;
+  display: block;
+}
+.rlt-ui .input-mono {
+  font-family: var(--mono);
+  font-size: 0.78125rem;
+  line-height: 1.6;
+}
+.rlt-ui select.input {
+  appearance: none;
+  padding-right: 1.875rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23857e78' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9.5l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+  cursor: pointer;
+}
+.rlt-ui select.input option {
+  background: var(--solid-2);
+  color: var(--text);
+}
+.rlt-ui .input-inline {
+  width: auto;
+  display: inline-block;
+  height: 1.875rem;
+  padding: 0.1875rem 1.625rem 0.1875rem 0.5625rem;
+  font-size: 0.78125rem;
+}
+.rlt-ui .input-num {
+  width: 3.625rem;
+  padding-right: 0.375rem;
+}
+.rlt-ui .input.is-invalid {
+  border-color: var(--err);
+  animation: rlt-shake 0.32s;
+}
+.rlt-ui .field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.rlt-ui .field-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.rlt-ui .field-hint {
+  font-size: 0.71875rem;
+  color: var(--text-3);
+  margin: 0;
+}
+.rlt-ui .field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.rlt-ui .form-error {
+  color: var(--err-text);
+  font-size: 0.78125rem;
+}
+
+/* Segmented control */
+.rlt-ui .segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 0.1875rem;
+  gap: 0.125rem;
+  background: var(--well);
+  border: 1px solid var(--hair);
+  border-radius: 0.625rem;
+  max-width: 100%;
+}
+.rlt-ui .seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.75rem;
+  padding: 0 0.6875rem;
+  border-radius: 0.4375rem;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui .seg:hover {
+  color: var(--text);
+}
+.rlt-ui .seg.is-on {
+  background: rgb(var(--fg-rgb) / 0.12);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(var(--shade-rgb) / calc(0.3 * var(--shade))), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ── Atoms ─────────────────────────────────────────── */
+.rlt-ui kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.3125rem;
+  border-radius: 0.3125rem;
+  font: 500 0.65625rem/1 var(--font);
+  color: var(--text-2);
+  background: rgb(var(--fg-rgb) / 0.07);
+  border: 1px solid rgb(var(--fg-rgb) / 0.1);
+  border-bottom-width: 1.5px;
+}
+.rlt-ui .kbd-group {
+  display: inline-flex;
+  gap: 0.1875rem;
+}
+.rlt-ui .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.1875rem;
+  padding: 0 0.4375rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+  background: var(--fill-2);
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.rlt-ui .chip-ok {
+  background: rgb(var(--ok-rgb) / 0.15);
+  color: var(--ok-text);
+}
+.rlt-ui .chip-warn {
+  background: rgb(var(--amber-rgb) / 0.15);
+  color: var(--amber-text);
+}
+.rlt-ui .avatar {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  color: #fff; /* theme: fixed — white on the person's own colour */
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgb(var(--shade-rgb) / calc(0.25 * var(--shade)));
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--vc) 62%, #fff) 0%, var(--vc) 52%, color-mix(in srgb, var(--vc) 72%, #000) 100%);
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.18);
+}
+.rlt-ui .avatar-xs {
+  width: 1.125rem;
+  height: 1.125rem;
+  font-size: 0.59375rem;
+}
+.rlt-ui .avatar-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.6875rem;
+}
+.rlt-ui .avatar-md {
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.8125rem;
+}
+.rlt-ui .avatar-lg {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.0625rem;
+}
+.rlt-ui .avatar-sm.tone-work,
+.rlt-ui .avatar-lg.tone-work {
+  box-shadow: 0 0 0 2px rgb(var(--surface-rgb) / 0.95), 0 0 0 3.5px var(--work);
+}
+.rlt-ui .avatar-sm.tone-wait,
+.rlt-ui .avatar-lg.tone-wait {
+  box-shadow: 0 0 0 2px rgb(var(--surface-rgb) / 0.95), 0 0 0 3.5px var(--amber), 0 0 14px rgb(var(--amber-rgb) / 0.5);
+}
+.rlt-ui .avatar-sm.tone-error,
+.rlt-ui .avatar-lg.tone-error {
+  box-shadow: 0 0 0 2px rgb(var(--surface-rgb) / 0.95), 0 0 0 3.5px var(--err);
+}
+.rlt-ui .avatar.tone-off {
+  filter: saturate(0.55) brightness(0.85);
+}
+.rlt-ui .status-dot {
+  display: inline-block;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-3);
+}
+.rlt-ui .status-dot.tone-work {
+  background: var(--work);
+}
+.rlt-ui .status-dot.tone-wait {
+  background: var(--amber);
+  box-shadow: 0 0 8px rgb(var(--amber-rgb) / 0.7);
+}
+.rlt-ui .status-dot.tone-error {
+  background: var(--err);
+}
+.rlt-ui .status-dot.tone-ok {
+  background: var(--ok);
+}
+.rlt-ui .status-dot.tone-off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--text-3);
+}
+.rlt-ui .vendor-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rlt-ui .spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--fg-rgb) / 0.14);
+  border-top-color: var(--work);
+  animation: rlt-spin 0.8s linear infinite;
+}
+.rlt-ui .spinner-sm {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-width: 1.75px;
+}
+.rlt-ui .empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.375rem;
+  padding: 2.25rem 1.25rem 1.5rem;
+}
+.rlt-ui .empty-icon {
+  width: 2.875rem;
+  height: 2.875rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--fill-2);
+  color: var(--text-2);
+  margin-bottom: 0.375rem;
+  box-shadow: inset 0 0 0 1px var(--hair);
+}
+.rlt-ui .empty-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+.rlt-ui .empty-body {
+  color: var(--text-2);
+  max-width: 19.375rem;
+  font-size: 0.8125rem;
+}
+.rlt-ui .loading-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  color: var(--text-2);
+  padding: 1.5rem 1rem;
+  justify-content: center;
+}
+.rlt-ui .branch-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  height: 1.375rem;
+  padding: 0 0.5rem;
+  border-radius: 0.4375rem;
+  background: var(--fill-2);
+  font: 500 0.71875rem var(--mono);
+  color: var(--text);
+}
+.rlt-ui .git-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  height: 1.125rem;
+  padding: 0 0.375rem;
+  border-radius: 0.3125rem;
+  background: rgb(var(--sun-rgb) / 0.13);
+  color: var(--sun-text);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+@keyframes rlt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes rlt-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+@keyframes rlt-pop {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rlt-drop {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rlt-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rlt-caret {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes rlt-shake {
+  25% {
+    transform: translateX(-0.25rem);
+  }
+  75% {
+    transform: translateX(0.25rem);
+  }
+}
+@keyframes rlt-amber-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px rgb(var(--amber-rgb) / 0.35), 0 0 0 rgb(var(--amber-rgb) / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgb(var(--amber-rgb) / 0.6), 0 0 18px rgb(var(--amber-rgb) / 0.35);
+  }
+}
+@keyframes rlt-baton {
+  0%,
+  100% {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--vc) 70%, transparent), 0 0 10px -2px var(--vc);
+  }
+  50% {
+    box-shadow: 0 0 0 1px var(--vc), 0 0 20px 0 color-mix(in srgb, var(--vc) 80%, transparent);
+  }
+}
+@keyframes rlt-shimmer {
+  from {
+    background-position: -120px 0;
+  }
+  to {
+    background-position: 120px 0;
+  }
+}
+
+/* Code reads literally: no programming ligatures (=== stays three characters). */
+.rlt-ui code,
+.rlt-ui pre,
+.rlt-ui kbd,
+.rlt-ui .d2h-wrapper {
+  font-variant-ligatures: none;
+  font-feature-settings: 'liga' 0, 'calt' 0;
+}

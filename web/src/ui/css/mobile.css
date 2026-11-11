@@ -1,0 +1,1488 @@
+/* Phones, tablets and touch screens. Loaded after responsive.css, which it refines: safe areas, the chat sheet (a
+   compact header, the on-screen keyboard, a phone held sideways), touch targets, the More menu, the tablet action bar,
+   the phone diff viewer. The queries match ui/touch.ts (NARROW_QUERY, LANDSCAPE_PHONE_QUERY, TOUCH_QUERY). */
+
+/* ── Safe areas: index.html asks for viewport-fit=cover, so the UI keeps clear of notches, rounded corners and the
+   home indicator itself. All zero on a desktop. ── */
+.rlt-ui {
+  --sa-t: env(safe-area-inset-top, 0px);
+  --sa-r: env(safe-area-inset-right, 0px);
+  --sa-b: env(safe-area-inset-bottom, 0px);
+  --sa-l: env(safe-area-inset-left, 0px);
+  --gap-t: max(var(--gap), var(--sa-t));
+  --gap-r: max(var(--gap), var(--sa-r));
+  --gap-b: max(var(--gap), var(--sa-b));
+  --gap-l: max(var(--gap), var(--sa-l));
+  --panel-top: calc(var(--gap-t) + var(--gap) + var(--top-h));
+}
+.rlt-ui .topbar {
+  top: var(--gap-t);
+  left: var(--gap-l);
+  right: var(--gap-r);
+}
+.rlt-ui .sidepanel {
+  right: var(--gap-r);
+  bottom: var(--gap-b);
+}
+.rlt-ui .floor-switch {
+  left: var(--gap-l);
+}
+.rlt-ui .approval-stack {
+  right: var(--gap-r);
+  bottom: var(--gap-b);
+}
+.rlt-ui .term-dock {
+  left: var(--gap-l);
+  right: var(--gap-r);
+  bottom: var(--gap-b);
+}
+.rlt-ui .focus-view {
+  padding-left: max(1.75rem, var(--sa-l));
+  padding-right: max(1.75rem, var(--sa-r));
+  padding-bottom: max(1.75rem, var(--sa-b));
+}
+.rlt-ui .palette-backdrop {
+  padding-top: max(13vh, var(--sa-t));
+}
+.rlt-ui .onb-backdrop {
+  padding-top: max(2rem, var(--sa-t));
+  padding-bottom: max(2rem, var(--sa-b));
+}
+
+/* ── The city switcher's slot (contract C4; filled by the multi-city module, hidden while empty) ── */
+.rlt-ui .tb-city {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.rlt-ui .tb-city:empty {
+  display: none;
+}
+/* The left island never grows past its column: the house name ends in "…" instead of running under the spend pill. */
+.rlt-ui .tb-left {
+  max-width: 100%;
+}
+.rlt-ui .crumbs {
+  overflow: hidden;
+}
+.rlt-ui .crumb {
+  min-width: 0;
+}
+/* (the button is a flex box: the ellipsis needs the name in its own box) */
+.rlt-ui .crumb-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A phone held upright (≤ 430 px): the left island holds the brand (Home) and the city switcher, and the right one
+   took their room — both ended up clipped under it, the switcher out of sight while a city reconnects. As at 320 px
+   below, the providers dot gives way (Models and providers is always in the More menu) — except "Connect AI", since
+   nobody can work until an account is connected: then the spend gives way to it instead (More → Spend; with no
+   account it is $0.00), or the switcher lost its name and dot — and the inbox button shows
+   only while something waits for you or went wrong (the panel's Inbox tab is always there). The connection dot gives
+   way too: the city switcher's own dot turns amber (its label says "reconnecting") and the reconnect banner says it
+   in words. At the city level the switcher's name says where you are, so the lone "City" crumb goes; inside a house
+   the house's name gets the room and the switcher keeps its icon and dot (the city's name is in its menu, title and
+   aria-label). The brand keeps its 44 px; names end in "…" first. In em (430 px at the default text size), like the
+   320 px step below. */
+@media (max-width: 26.875em) {
+  .rlt-ui .tb-right .tb-providers:not(.is-none),
+  .rlt-ui .tb-right .tb-bell:not(.is-alert):not(.has-errors),
+  .rlt-ui .tb-right .tb-conn,
+  .rlt-ui .crumbs > .crumb.is-current:only-child,
+  .rlt-ui .tb-left:has(.crumbs > .crumb.is-current:not(:only-child)) .city-switcher .city-name,
+  .rlt-ui .tb-right:has(.tb-providers.is-none) .tb-cost {
+    display: none;
+  }
+  .rlt-ui .tb-left .brand {
+    flex-shrink: 0;
+  }
+  /* with a house's panel open its head names the house (and the crumb would only open that panel): the crumbs give
+     way instead of shrinking to an "…" too narrow to tap */
+  .rlt-ui.has-panel .tb-left .crumbs {
+    display: none;
+  }
+  /* inside a house its name comes before the town view switch (More → Town board does the same): with a "needs you"
+     pill the switch left the name 0–40 px ("t…") */
+  .rlt-ui[data-view='house'] .tb-right .tb-focus {
+    display: none;
+  }
+}
+/* 320 px (iPhone SE): the house name needs the room beside the spend. The providers dot moves to the More menu (but
+   "Connect AI" stays, in the spend's place: above), and the inbox button shows only while something waits for you (the panel's Inbox tab is always
+   there). In em (359 px at the default text size), so a phone set to larger text gets the same room-making. */
+@media (max-width: 22.4375em) {
+  .rlt-ui .tb-right .tb-providers:not(.is-none),
+  .rlt-ui .tb-right .tb-bell:not(.is-alert) {
+    display: none;
+  }
+  .rlt-ui .tb-right .tb-conn {
+    margin: 0 0.5rem 0 0.25rem;
+  }
+  /* The 3D / Board switch is the More menu's first item too: here it would leave the house name no room at all */
+  .rlt-ui .tb-right .tb-focus {
+    display: none;
+  }
+  /* …and inside a house a "needs you" pill takes the spend's place (More → Spend): beside both, the name had ~5
+     letters ("todo-…") */
+  .rlt-ui[data-view='house'] .tb-right:has(.tb-bell.is-alert) .tb-cost {
+    display: none;
+  }
+  /* A house's six captioned buttons (Ask … Exit) fit the action bar: Exit ran off the screen. With larger text the
+     bar scrolls sideways rather than cutting a button off. */
+  .rlt-ui .actionbar {
+    gap: 0.125rem;
+    padding: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui .ab-btn {
+    flex-shrink: 0;
+    min-width: 2.75rem;
+    padding: 0 0.25rem;
+  }
+  .rlt-ui .ab-btn .ab-short {
+    font-size: 0.6875rem;
+  }
+}
+
+/* ── More (⋯): phones and touch screens only; it holds what their top bar has no room for ── */
+.rlt-ui .tb-more {
+  display: none;
+}
+@media (max-width: 820px), (hover: none) {
+  .rlt-ui .tb-more {
+    display: inline-flex;
+  }
+}
+/* A phone's top bar keeps the town view switch (a11y.css) and leaves Settings and Help to the More menu */
+@media (max-width: 820px) {
+  .rlt-ui .tb-right .tb-settings,
+  .rlt-ui .tb-right .tb-help {
+    display: none;
+  }
+}
+/* The board on a phone wider than 820 px held sideways (iPhone 15: 844 × 390): the top bar condenses as a narrower
+   phone's does (responsive.css, topbar.css). With every desktop control at once the right island crushed Home's
+   island to a sliver ("\", "C"). Search, Settings and Help are in the More menu. */
+@media (pointer: coarse) and (max-height: 520px) and (min-width: 821px) {
+  .rlt-ui.is-focus :is(.tb-sep, .tb-cost-bar, .tb-quality, .tb-palette, .tb-settings, .tb-help, .crumb-sep, .tb-conn.is-up),
+  .rlt-ui.is-focus .crumbs > .crumb:not(.is-current) {
+    display: none;
+  }
+  .rlt-ui.is-focus .crumb {
+    max-width: 9.375rem;
+  }
+}
+.rlt-ui .more-menu {
+  width: min(18.75rem, calc(100vw - 1rem));
+}
+
+/* ── Key tips: a whole tip goes on touch screens (not just its keys); on a desktop it never wraps ── */
+.rlt-ui .kbd-hint {
+  white-space: nowrap;
+}
+@media (hover: none) {
+  .rlt-ui .kbd-hint {
+    display: none;
+  }
+}
+
+/* ── Floor buttons: a red dot for a floor whose job hit an error (amber = waiting for you wins) ── */
+.rlt-ui .fs-err {
+  position: absolute;
+  top: -0.125rem;
+  right: -0.125rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--err);
+  border: 2px solid rgb(var(--surface-rgb) / 0.95);
+}
+
+/* ── Approval commands wrap at spaces, not inside a flag ("tail -" / "n 15", "--no-" / "color"): each word is its own
+   box (approvals.ts), and a word too long for the line still breaks rather than overflowing ── */
+.rlt-ui .approval-detail pre {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .approval-detail .cmd-word {
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+
+/* ── A 320 px phone: the chips under the chat box keep to one row — the model's (or account's) name ends in "…"
+   before Effort drops to a second row and takes a line from the conversation (#9) ── */
+@container composer-foot (max-width: 380px) {
+  .rlt-ui .composer-mode {
+    flex-wrap: nowrap;
+  }
+  .rlt-ui .composer-mode > * {
+    flex-shrink: 0;
+  }
+  .rlt-ui .composer-mode > :is(.chip-model, .chip-account) {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}
+
+/* ── Thread bar: the short "New" label exists for phones ── */
+.rlt-ui .thread-new-short {
+  display: none;
+}
+
+/* ── Side panel: a short panel (half sheet, phone held sideways, 200 % zoom — sidepanel.ts sets .is-short) folds the
+   job row, people strip and chat bar; the chevron in its header (.panel-chrome) shows them again. The on-screen
+   keyboard (.is-kb on the root, touch.ts) folds the tabs as well: while typing, the conversation gets the room. ── */
+.rlt-ui .panel-chrome {
+  display: none;
+}
+.rlt-ui .panel-chrome svg {
+  transition: transform 0.2s var(--ease);
+}
+.rlt-ui .sidepanel.is-chrome-open .panel-chrome svg {
+  transform: rotate(180deg);
+}
+.rlt-ui .sidepanel.is-short .panel-chrome,
+.rlt-ui.is-kb .sidepanel .panel-chrome {
+  display: inline-grid;
+}
+.rlt-ui .sidepanel.is-short:not(.is-chrome-open) :is(.jobs, .people, .thread-bar),
+.rlt-ui.is-kb .sidepanel:not(.is-chrome-open) :is(.jobs, .people, .thread-bar, .panel-tabs) {
+  display: none;
+}
+/* a phone, even with the sheet all the way up: the job row and the chat bar wait behind the chevron too (the people
+   strip stays: it is how you switch person) */
+@media (max-width: 820px) {
+  .rlt-ui .sidepanel .panel-chrome {
+    display: inline-grid;
+  }
+  .rlt-ui .sidepanel:not(.is-chrome-open) :is(.jobs, .thread-bar) {
+    display: none;
+  }
+}
+/* A short panel with those rows open on the chat: they pushed the chat box off the panel (a phone held sideways, a
+   short window). Now the whole panel scrolls, the chat box stays pinned at its foot and the conversation keeps a few
+   lines; picking a person or starting to type folds the rows away again (sidepanel.ts). */
+.rlt-ui .sidepanel.is-short.is-chrome-open:has(#ppane-chat:not([hidden])) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rlt-ui .sidepanel.is-short.is-chrome-open .panel-body:has(> #ppane-chat:not([hidden])) {
+  flex: none;
+}
+.rlt-ui .sidepanel.is-short.is-chrome-open #ppane-chat {
+  position: relative;
+  inset: auto;
+}
+.rlt-ui .sidepanel.is-short.is-chrome-open #ppane-chat > .tab-chat {
+  flex: none;
+}
+.rlt-ui .sidepanel.is-short.is-chrome-open .tab-chat > .transcript-wrap {
+  flex: 0 0 4.5rem;
+}
+.rlt-ui .sidepanel.is-short.is-chrome-open .tab-chat > .composer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: linear-gradient(rgb(var(--shade-rgb) / calc(0.1 * var(--shade))), rgb(var(--shade-rgb) / calc(0.1 * var(--shade)))), rgb(var(--surface-rgb));
+}
+/* a short panel keeps the box one line tall: with Stop and Send now beside it (a person at work) "Message Assistant…"
+   broke over two lines and showed half of the second; it stays on one line, cut at the box's edge, until you type */
+.rlt-ui .sidepanel.is-short .composer-input:placeholder-shown {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* very short (a phone held sideways with its keyboard up): the chips under the box wait too — not a closed box's hint */
+.rlt-ui .sidepanel.is-tiny:not(.is-chrome-open) .composer:not(.is-locked) .composer-foot {
+  display: none;
+}
+/* the person's card as one line (status · cost): the selected chip in the people strip — or the name here when there
+   is no strip — says who, the model chip under the box says which model */
+.rlt-ui .sidepanel.is-tight .agent-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3125rem 0.875rem;
+}
+.rlt-ui .sidepanel.is-tight .agent-head > .avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.6875rem;
+}
+.rlt-ui .sidepanel.is-tight .agent-id {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.rlt-ui .sidepanel.is-tight .agent-name {
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.rlt-ui .sidepanel.is-tight :is(.agent-model, .ctx-meter),
+.rlt-ui .sidepanel.is-tight .agent-cost .muted {
+  display: none;
+}
+.rlt-ui .sidepanel.is-tight .agent-status {
+  margin-top: 0;
+}
+.rlt-ui .sidepanel.is-tight .agent-cost {
+  align-self: center;
+  padding-top: 0;
+  white-space: nowrap; /* a long cost broke over two lines and doubled the line's height; the status gives way ("…") */
+}
+/* (the strip is on screen: the panel isn't folded, or its chevron is open) */
+.rlt-ui:not(.is-kb) .sidepanel.is-tight:not(.is-short) .tab-chat:has(> .people:not([hidden])) :is(.agent-head > .avatar, .agent-name),
+.rlt-ui .sidepanel.is-tight.is-chrome-open .tab-chat:has(> .people:not([hidden])) :is(.agent-head > .avatar, .agent-name) {
+  display: none;
+}
+.rlt-ui .sidepanel.is-tight .agent-name-row {
+  min-width: 0;
+}
+.rlt-ui:not(.is-kb) .sidepanel.is-tight:not(.is-short) .tab-chat:has(> .people:not([hidden])) .agent-name-row:not(:has(> :not(.agent-name))),
+.rlt-ui .sidepanel.is-tight.is-chrome-open .tab-chat:has(> .people:not([hidden])) .agent-name-row:not(:has(> :not(.agent-name))) {
+  display: none;
+}
+.rlt-ui .sidepanel.is-tight .people {
+  padding-top: 0.375rem;
+}
+.rlt-ui .sidepanel.is-tight .thread-bar {
+  padding-top: 0.1875rem;
+  padding-bottom: 0.1875rem;
+}
+
+/* ── Phones: the bottom sheet ── */
+@media (max-width: 820px) {
+  .rlt-ui .toasts {
+    top: var(--panel-top);
+  }
+  .rlt-ui .offline-banner,
+  .rlt-ui.has-panel .offline-banner,
+  .rlt-ui .omp-warn,
+  .rlt-ui.has-panel .omp-warn {
+    top: calc(var(--panel-top) + 2.75rem);
+  }
+  .rlt-ui .floor-switch {
+    left: auto;
+    right: var(--gap-r);
+  }
+  .rlt-ui .approval-stack,
+  .rlt-ui.has-panel .approval-stack {
+    left: var(--gap-l);
+    right: var(--gap-r);
+  }
+  .rlt-ui .approval-stack {
+    bottom: calc(4.75rem + var(--sa-b));
+  }
+  .rlt-ui .focus-view {
+    padding: calc(var(--panel-top) + 2.75rem) max(0.75rem, var(--sa-r)) max(0.75rem, var(--sa-b)) max(0.75rem, var(--sa-l));
+  }
+  /* (responsive.css's phone values, kept clear of the notch: the safe-area rules above would otherwise undo them) */
+  .rlt-ui .palette-backdrop {
+    padding-top: max(0.625rem, var(--sa-t));
+  }
+  .rlt-ui .onb-backdrop {
+    padding-top: max(1.75rem, var(--sa-t));
+    padding-bottom: max(1.75rem, var(--sa-b));
+  }
+  /* the sheet: its own padding keeps the composer off the home indicator */
+  .rlt-ui .sidepanel {
+    right: 0;
+    bottom: 0;
+    padding-bottom: var(--sa-b);
+    padding-left: var(--sa-l);
+    padding-right: var(--sa-r);
+  }
+  .rlt-ui .sidepanel.is-dragging {
+    transition: none;
+  }
+  /* one header row: the grab bar sits over the house name / close row instead of taking its own; the row is where a
+     finger drags the sheet (sidepanel.ts), so the browser must not take that drag for a scroll */
+  .rlt-ui .sheet-handle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    z-index: 1;
+    width: 88px;
+    height: 2.75rem;
+    margin-left: -2.75rem;
+    place-items: start center;
+    padding-top: 0.4375rem;
+    touch-action: none;
+  }
+  .rlt-ui .panel-head {
+    min-height: 2.875rem;
+    padding: 0.375rem 0.25rem 0 0.5rem;
+    touch-action: none;
+  }
+  .rlt-ui .panel-project {
+    max-width: calc(50% - 3rem);
+  }
+  /* the keyboard is up: the sheet stands on it and fills what is left to see (the visual viewport) */
+  .rlt-ui.is-kb .sidepanel {
+    bottom: var(--kb);
+    height: calc(var(--vvh) - 0.5rem);
+    padding-bottom: 0;
+  }
+  .rlt-ui.is-kb .modal-backdrop {
+    padding-bottom: var(--kb);
+  }
+  .rlt-ui.is-kb .modal {
+    max-height: calc(var(--vvh) - 1rem);
+  }
+  /* modals as bottom sheets: off the home indicator too, and clear of the notch when the phone is held sideways */
+  .rlt-ui .modal {
+    padding-bottom: var(--sa-b);
+  }
+  .rlt-ui .modal-backdrop {
+    padding-left: var(--sa-l);
+    padding-right: var(--sa-r);
+  }
+  .rlt-ui .diff-panel {
+    padding: var(--sa-t) var(--sa-r) var(--sa-b) var(--sa-l);
+  }
+  /* an approval with a change is taller than a phone's chat: the chat scrolls to its buttons, so its head (who asks,
+     for what) stays at the top of the chat while the diff scrolls under it (#12). -1rem: the transcript's top padding. */
+  .rlt-ui .chat-inline-approvals .approval.has-change .approval-head {
+    position: sticky;
+    top: -1rem;
+    z-index: 1;
+    margin: -0.75rem -0.75rem 0;
+    padding: 0.75rem;
+    border-radius: 0.75rem 0.75rem 0 0;
+    /* --attn-head is 1–4 % see-through: over an opaque base, so the diff scrolling under it doesn't show through */
+    background: var(--attn-head), rgb(var(--surface-rgb));
+  }
+  /* …and the change's file row stays right under that head while its diff scrolls (it went under the head, leaving
+     diff lines without their file name). --apv-head is the head's height (approvals.ts measures it); the change box
+     clips instead of hiding overflow, which made it a scroll box of its own that the row could not stick in. */
+  .rlt-ui .chat-inline-approvals .approval.has-change .approval-change {
+    overflow: clip;
+  }
+  .rlt-ui .chat-inline-approvals .approval.has-change .approval-change-head {
+    position: sticky;
+    top: calc(var(--apv-head, 4rem) - 1rem);
+    z-index: 1;
+    background: var(--attn-head), rgb(var(--surface-rgb));
+  }
+  /* a pending plan card: Run / Cancel stay at the bottom of the chat while its people are read and changed */
+  .rlt-ui .plan.is-pending .plan-foot {
+    container: plan-foot / inline-size;
+    position: sticky;
+    bottom: -0.75rem; /* the transcript's bottom padding */
+    z-index: 1;
+    margin: 0 -0.75rem -0.75rem;
+    padding: 0.625rem 0.75rem 0.75rem;
+    border-top: 1px solid rgb(var(--amber-rgb) / 0.26);
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: linear-gradient(rgb(var(--amber-rgb) / 0.07), rgb(var(--amber-rgb) / 0.07)), rgb(var(--surface-rgb) / 0.97);
+  }
+  .rlt-ui .plan-step-model .plan-model {
+    flex: 1 1 100%;
+  }
+  /* New chat keeps a word ("New"); Compact is in the chat menu, where it says what it does */
+  .rlt-ui .thread-bar .thread-compact {
+    display: none;
+  }
+  .rlt-ui .thread-bar .thread-new:not(.thread-compact) {
+    width: auto;
+    padding: 0 0.625rem 0 0.5rem;
+  }
+  .rlt-ui .thread-bar .thread-new .thread-new-long {
+    display: none;
+  }
+  /* (beats chat.css's ≤ 480 px rule that hides the button's last span) */
+  .rlt-ui .thread-bar .thread-new > span.thread-new-short {
+    display: inline;
+  }
+  /* the diff on a phone: line by line only (diff-overlay.ts), one line-number gutter, long lines wrapped */
+  .rlt-ui .diff-head .segmented {
+    display: none;
+  }
+  .rlt-ui .diff-body .d2h-code-linenumber {
+    width: 3.6em;
+  }
+  .rlt-ui .diff-body .line-num1,
+  .rlt-ui .diff-body .line-num2 {
+    float: none;
+    display: block;
+    width: auto;
+    padding: 0 0.4em;
+  }
+  .rlt-ui .diff-body .line-num1:has(+ .line-num2:not(:empty)),
+  .rlt-ui .diff-body .line-num2:empty {
+    display: none;
+  }
+  .rlt-ui .diff-body .d2h-code-line {
+    padding: 0 0.5em 0 4em;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  /* wrapped: nothing scrolls sideways, so the number column can be a plain cell as tall as its wrapped line, and the
+     +/- stays on the line it marks */
+  .rlt-ui .diff-body.is-wrap .d2h-code-linenumber {
+    position: static;
+    display: table-cell;
+    vertical-align: top;
+  }
+  /* (diff2html's zero-width space after the numbers would make every row two lines tall in a plain cell) */
+  .rlt-ui .diff-body.is-wrap .d2h-code-linenumber::after {
+    content: none;
+  }
+  .rlt-ui .diff-body.is-wrap .d2h-code-line {
+    white-space: normal;
+    padding-left: 0.5em;
+  }
+  .rlt-ui .diff-body.is-wrap .d2h-code-line-ctn {
+    display: inline;
+    width: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+/* too narrow for "Don't ask again", Cancel and Run on one row (a 320 px phone): the link takes a row of its own and
+   Cancel / Run stay side by side (Run alone on a third row read as a separate choice, and fell under the chat box) */
+@container plan-foot (max-width: 18.75rem) {
+  .rlt-ui .plan-actions {
+    flex: 1 1 100%;
+    justify-content: flex-end;
+  }
+  .rlt-ui .plan-no-ask {
+    flex: 1 1 100%;
+    margin-right: 0;
+    text-align: left;
+  }
+}
+.rlt-ui .diff-wrap {
+  display: none;
+}
+@media (max-width: 820px) {
+  .rlt-ui .diff-wrap {
+    display: inline-flex;
+  }
+  .rlt-ui .diff-wrap[aria-pressed='true'] {
+    color: var(--sun-text);
+    background: rgb(var(--sun-rgb) / 0.12);
+  }
+}
+@media (max-width: 23.75em) {
+  .rlt-ui .diff-wrap {
+    font-size: 0;
+    gap: 0;
+  }
+}
+
+/* ── A phone held sideways: the panel docks at the right, full height, and the town stays visible on the left ── */
+@media (max-width: 820px) and (max-height: 520px) and (orientation: landscape) {
+  .rlt-ui {
+    --panel-w: min(400px, 54vw);
+  }
+  /* the chat shows a few lines here (iPhone 13: 138 px): a stuck approval head (4 rem) covered Approve, Allow and Deny
+     where the chat rests (at its end), so the card scrolls as one piece (upright phones keep #12's sticky head) */
+  .rlt-ui .chat-inline-approvals .approval.has-change .approval-head,
+  .rlt-ui .chat-inline-approvals .approval.has-change .approval-change-head {
+    position: static;
+  }
+  .rlt-ui .sidepanel,
+  .rlt-ui .sidepanel.is-expanded {
+    top: 0;
+    bottom: var(--kb, 0px);
+    left: auto;
+    right: 0;
+    width: calc(var(--panel-w) + var(--sa-r));
+    height: auto;
+    padding-left: 0;
+    padding-right: var(--sa-r);
+    padding-bottom: var(--sa-b);
+    border-radius: 1rem 0 0 1rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--hair);
+    transform: translateX(100%);
+  }
+  .rlt-ui .sidepanel.is-open {
+    transform: none;
+  }
+  .rlt-ui.is-kb .sidepanel {
+    height: auto;
+    padding-bottom: 0;
+  }
+  .rlt-ui.is-kb .sidepanel:not(.is-chrome-open) .panel-head {
+    display: none;
+  }
+  .rlt-ui .sheet-handle {
+    display: none;
+  }
+  .rlt-ui .panel-head {
+    touch-action: auto;
+  }
+  .rlt-ui .panel-project {
+    max-width: none;
+  }
+  .rlt-ui.has-panel .topbar {
+    right: calc(var(--panel-w) + var(--sa-r) + var(--gap));
+  }
+  /* beside the docked panel the top bar has ~300 px: what the More menu or the panel already offers gives way, so
+     Home and the city switcher keep their room (the right island squeezed them to nothing); the panel's head names
+     the house, so the crumbs go too */
+  .rlt-ui.has-panel .tb-right :is(.tb-providers, .tb-bell:not(.is-alert):not(.has-errors), .tb-focus, .tb-conn, .tb-sep),
+  .rlt-ui.has-panel .tb-left .crumbs {
+    display: none;
+  }
+  /* inside a house, the panel closed: the house's name comes before the town view switch (More → Town board), as on
+     an upright phone (an iPhone SE held sideways had "todo-a…") */
+  .rlt-ui[data-view='house'] .tb-right .tb-focus {
+    display: none;
+  }
+  .rlt-ui.has-panel .approval-stack {
+    right: calc(var(--panel-w) + var(--sa-r) + var(--gap));
+    bottom: var(--gap-b);
+  }
+  .rlt-ui.has-panel .toasts {
+    left: calc((100% - var(--panel-w)) / 2);
+    width: min(28.75rem, calc(100% - var(--panel-w) - 2rem));
+  }
+  .rlt-ui .floor-switch,
+  .rlt-ui.has-panel .floor-switch {
+    left: var(--gap-l);
+    right: auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .rlt-ui.has-panel .focus-view {
+    padding-right: calc(var(--panel-w) + var(--sa-r) + 0.75rem);
+    padding-bottom: 0.75rem;
+  }
+  .rlt-ui .modal {
+    max-height: calc(100% - 0.5rem);
+  }
+}
+
+/* ── A phone held sideways, inside the panel: its 342 px (iPhone 13) left ~90 px of conversation under the header, the
+   tabs, the person's line and the chat box. The tabs become a rail down the panel's left edge (icon over a short
+   name), giving the conversation the tab row's height. The on-screen keyboard still folds the header and the tabs
+   (the rail's column then takes no room). Only where the panel is at least 360 px wide (667 px screens and up): on a
+   smaller phone (iPhone SE, 568 px) the rail would leave a busy chat box no room to type in. The chevron's rows: see
+   "a short panel" above. ── */
+@media (min-width: 667px) and (max-width: 820px) and (max-height: 520px) and (orientation: landscape) {
+  .rlt-ui .sidepanel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+  .rlt-ui .sidepanel > .panel-head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    padding-top: 0.1875rem;
+    padding-bottom: 0.1875rem;
+    border-bottom: 1px solid var(--hair);
+  }
+  .rlt-ui .sidepanel > .jobs {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .rlt-ui .sidepanel > .panel-asks {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .rlt-ui .sidepanel > .panel-body {
+    grid-column: 2;
+    grid-row: 4;
+  }
+  .rlt-ui .sidepanel > .panel-tabs {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.375rem 0.25rem;
+    border-bottom: 0;
+    border-right: 1px solid var(--hair);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui .sidepanel .panel-tab {
+    flex: none;
+    flex-direction: column;
+    gap: 0.125rem;
+    width: 3.5rem;
+    height: 2.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.6875rem;
+    line-height: 1.1;
+  }
+  .rlt-ui .sidepanel .panel-tab.is-on {
+    background: var(--fill-2);
+  }
+  .rlt-ui .sidepanel .panel-tab.is-on::after {
+    left: auto;
+    right: -0.3125rem;
+    top: 0.625rem;
+    bottom: 0.625rem;
+    width: 0.125rem;
+    height: auto;
+    border-radius: 0.125rem 0 0 0.125rem;
+  }
+  .rlt-ui .sidepanel .panel-tab .tab-badge {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.25rem;
+  }
+}
+/* …and the board's chat page on a phone wider than 820 px held sideways (iPhone 15: 844 × 390): its tab row took 44 of
+   the 390 px and left ~140 px of conversation. The same rail, with the same size of names (3D keeps its docked panel
+   there). */
+@media (pointer: coarse) and (max-height: 520px) and (min-width: 821px) and (orientation: landscape) {
+  .rlt-ui.is-focus .sidepanel {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto auto minmax(0, 1fr);
+  }
+  .rlt-ui.is-focus .sidepanel > .panel-head {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+  .rlt-ui.is-focus .sidepanel > .jobs {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .rlt-ui.is-focus .sidepanel > .panel-asks {
+    grid-column: 2;
+    grid-row: 3;
+  }
+  .rlt-ui.is-focus .sidepanel > .panel-body {
+    grid-column: 2;
+    grid-row: 4;
+  }
+  .rlt-ui.is-focus .sidepanel > .panel-tabs {
+    grid-column: 1;
+    grid-row: 2 / -1;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.375rem 0.25rem;
+    border-bottom: 0;
+    border-right: 1px solid var(--hair);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab {
+    flex: none;
+    flex-direction: column;
+    gap: 0.125rem;
+    width: 3.5rem;
+    height: 2.875rem;
+    border-radius: 0.625rem;
+    font-size: 0.6875rem;
+    line-height: 1.1;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab.is-on {
+    background: var(--fill-2);
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab.is-on::after {
+    left: auto;
+    right: -0.3125rem;
+    top: 0.625rem;
+    bottom: 0.625rem;
+    width: 0.125rem;
+    height: auto;
+    border-radius: 0.125rem 0 0 0.125rem;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab .tab-badge {
+    position: absolute;
+    top: 0.125rem;
+    right: 0.25rem;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab span:not(.tab-badge) {
+    font-size: 0.78125rem;
+  }
+}
+
+/* ── Tablets and zoomed laptops (821–1100 px) with the panel open: the action bar fits the strip left of the panel,
+   with the phone's captioned buttons, instead of sliding under the panel and its safety chips ── */
+@media (min-width: 821px) and (max-width: 68.75em) {
+  .rlt-ui.has-panel .actionbar {
+    max-width: calc(100% - var(--panel-w) - var(--gap) * 3);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .rlt-ui.has-panel .ab-btn kbd,
+  .rlt-ui.has-panel .ab-btn .kbd-group,
+  .rlt-ui.has-panel .ab-btn .ab-label,
+  .rlt-ui.has-panel .ab-btn .ab-chev {
+    display: none;
+  }
+  .rlt-ui.has-panel .ab-btn {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.125rem;
+    height: 2.875rem;
+    min-width: 3.375rem;
+    padding: 0 0.5rem;
+  }
+  .rlt-ui.has-panel .ab-btn .ab-short {
+    display: block;
+    font-size: 0.75rem;
+    line-height: 1;
+    font-weight: 500;
+  }
+}
+
+/* ── Busy chat on a touch screen: the box takes the whole row and Stop / Send now / Queue get words underneath
+   (they differ only in their tooltips otherwise, and a finger never sees a tooltip) ── */
+.rlt-ui .composer-send-label {
+  display: none;
+}
+@media (hover: none) {
+  .rlt-ui .composer.is-busy .composer-row {
+    flex-wrap: wrap;
+  }
+  .rlt-ui .composer.is-busy .composer-input {
+    order: -1;
+    flex: 1 1 100%;
+    padding-left: 0.4375rem;
+  }
+  .rlt-ui .composer.is-busy .composer-stop {
+    margin-right: auto;
+  }
+  .rlt-ui .composer.is-busy .composer-stop,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop,
+  .rlt-ui .composer.is-busy .composer-steer {
+    width: auto;
+    padding: 0 0.75rem;
+  }
+  .rlt-ui .composer.is-busy .composer-stop span,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop span,
+  .rlt-ui .composer.is-busy .composer-steer span {
+    display: inline;
+  }
+  .rlt-ui .composer.is-busy .composer-send:has(.composer-send-label) {
+    width: auto;
+    gap: 0.375rem;
+    padding: 0 0.75rem;
+    display: inline-flex;
+    align-items: center;
+  }
+  .rlt-ui .composer.is-busy .composer-send-label {
+    display: inline;
+    font-size: 0.78125rem;
+    font-weight: 600;
+  }
+}
+/* …but a phone held sideways has no room for a second row: one row of icons there (their names are in aria-label) */
+@media (hover: none) and (max-height: 520px) {
+  .rlt-ui .composer.is-busy .composer-row {
+    flex-wrap: nowrap;
+  }
+  .rlt-ui .composer.is-busy .composer-input {
+    order: 0;
+    flex: 1 1 auto;
+  }
+  .rlt-ui .composer.is-busy .composer-stop {
+    margin-right: 0;
+  }
+  .rlt-ui .composer.is-busy .composer-stop,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop,
+  .rlt-ui .composer.is-busy .composer-steer,
+  .rlt-ui .composer.is-busy .composer-send:has(.composer-send-label) {
+    width: 2.75rem;
+    padding: 0;
+    justify-content: center;
+  }
+  .rlt-ui .composer.is-busy .composer-stop span,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop span,
+  .rlt-ui .composer.is-busy .composer-steer span,
+  .rlt-ui .composer.is-busy .composer-send-label {
+    display: none;
+  }
+}
+/* …and a 320 px phone fits the row under the box on one line (it took a third row, and a pending plan's Run went
+   under the chat box): Stop keeps its red icon (its name is in aria-label), Send now and Queue keep their words */
+@media (hover: none) and (max-width: 22.4375em) {
+  .rlt-ui .composer.is-busy .composer-row {
+    column-gap: 0.25rem;
+  }
+  .rlt-ui .composer.is-busy .composer-stop,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop {
+    width: 2.75rem;
+    padding: 0;
+    justify-content: center;
+  }
+  .rlt-ui .composer.is-busy .composer-stop span,
+  .rlt-ui .composer.is-busy.has-draft .composer-stop span {
+    display: none;
+  }
+  .rlt-ui .composer.is-busy .composer-steer,
+  .rlt-ui .composer.is-busy .composer-send:has(.composer-send-label) {
+    padding: 0 0.5rem;
+  }
+}
+
+/* ── Touch targets: at least 44 × 44 px under a finger (WCAG 2.5.5, Apple's 44 pt). Small pills keep their look and
+   get an invisible hit area around them instead (::after), so the chat keeps its room. ── */
+@media (pointer: coarse) {
+  .rlt-ui {
+    --top-h: 3rem;
+  }
+  .rlt-ui .tb-btn {
+    height: 2.75rem;
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+  .rlt-ui .brand {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .panel-project-btn {
+    height: 2.75rem;
+  }
+  .rlt-ui .job-main {
+    min-height: 2.75rem;
+  }
+  .rlt-ui .crumb {
+    height: 2.5rem;
+  }
+  .rlt-ui .icon-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .btn,
+  .rlt-ui .btn-sm {
+    min-height: 2.75rem;
+  }
+  .rlt-ui .menu-item,
+  .rlt-ui .thread-item,
+  .rlt-ui .pal-item {
+    min-height: 2.75rem;
+  }
+  .rlt-ui .seg {
+    height: 2.5rem;
+  }
+  .rlt-ui .panel-tab {
+    height: 2.75rem;
+  }
+  .rlt-ui .composer-send,
+  .rlt-ui .composer-attach,
+  .rlt-ui .composer-steer,
+  .rlt-ui .composer-stop {
+    min-width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .composer-send {
+    width: 2.75rem;
+  }
+  .rlt-ui .composer.is-busy .composer-steer,
+  .rlt-ui .composer.is-busy .composer-stop {
+    width: auto;
+  }
+  .rlt-ui .person {
+    height: 2.5rem;
+  }
+  .rlt-ui .person.is-helper {
+    height: 2.25rem;
+  }
+  .rlt-ui .thread-btn,
+  .rlt-ui .thread-new {
+    height: 2.5rem;
+  }
+  .rlt-ui .jobs-new {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .jobs-bar .job-more {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+  .rlt-ui .fs-btn {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .fs-add {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui .term-tab {
+    height: 2.5rem;
+  }
+  .rlt-ui .term-tab-x {
+    width: 2.25rem;
+    height: 2.25rem;
+    margin-left: 0.375rem;
+  }
+  .rlt-ui .term-key {
+    height: 2.5rem;
+  }
+  .rlt-ui .goal-btn {
+    min-height: 2.25rem;
+  }
+  /* the chips under the chat box, queue chips, image ×: their look stays, their hit area grows */
+  .rlt-ui .perm-chip,
+  .rlt-ui .qchip-x,
+  .rlt-ui .att-x,
+  .rlt-ui .agent-whole,
+  .rlt-ui .composer-stop-helpers {
+    position: relative;
+  }
+  .rlt-ui .perm-chip {
+    height: 1.875rem;
+  }
+  .rlt-ui :is(.perm-chip, .qchip-x, .att-x, .agent-whole, .composer-stop-helpers)::after {
+    content: '';
+    position: absolute;
+    top: min(0px, calc((100% - 2.75rem) / 2));
+    bottom: min(0px, calc((100% - 2.75rem) / 2));
+    left: min(0px, calc((100% - 2.75rem) / 2));
+    right: min(0px, calc((100% - 2.75rem) / 2));
+  }
+  .rlt-ui .composer-mode {
+    gap: 0.5rem;
+  }
+  /* Approve and Deny: full height, and apart, so a thumb can't hit the wrong one */
+  .rlt-ui .approval-actions {
+    gap: 0.625rem;
+  }
+  .rlt-ui .approval-actions .btn-deny {
+    margin-left: auto;
+  }
+  .rlt-ui .tb-providers {
+    min-width: 2.75rem;
+    justify-content: center;
+  }
+  .rlt-ui .plan-step-model select {
+    min-height: 2.5rem;
+  }
+  /* Controls that came after the first touch pass (#31): the city switcher and the 3D / Board switch. Full height,
+     and at least 40 px wide; the 3D / Board pills keep their look and get an invisible 44 px tall hit area. (Selectors
+     a step stronger than cities.css and a11y.css, which load later.) */
+  .rlt-ui .tb-left .city-switcher {
+    height: 2.75rem;
+    min-width: 2.5rem;
+    justify-content: center;
+  }
+  .rlt-ui .tb-view .tb-view-opt {
+    position: relative;
+    min-width: 2.5rem;
+    justify-content: center;
+  }
+  .rlt-ui .tb-view .tb-view-opt::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: min(0px, calc((100% - 2.75rem) / 2));
+    bottom: min(0px, calc((100% - 2.75rem) / 2));
+  }
+  /* the Town board's people rows (each opens that person's chat) */
+  .rlt-ui .fv-person {
+    min-height: 2.75rem;
+  }
+  /* the chat box's text field: a whole finger tall (the row already is, for the Send button) */
+  .rlt-ui .composer-input {
+    min-height: 2.75rem;
+    padding-top: 0.6875rem;
+    padding-bottom: 0.6875rem;
+  }
+  /* the plan card's small word buttons ("More" in a step's text, "Don't ask again for this job"): an invisible 44 px
+     hit area, so the line keeps its look */
+  .rlt-ui .plan-step-more,
+  .rlt-ui .plan-no-ask {
+    position: relative;
+  }
+  .rlt-ui .plan-step-more::after,
+  .rlt-ui .plan-no-ask::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 2.75rem);
+    height: 2.75rem;
+    transform: translate(-50%, -50%);
+  }
+}
+/* …and the room for those on an upright phone comes out of the islands' padding, not the house name */
+@media (pointer: coarse) and (max-width: 26.875em) {
+  .rlt-ui .tb-left {
+    padding: 0 0.3125rem 0 0.25rem;
+  }
+  .rlt-ui .tb-right {
+    gap: 0;
+    padding: 0 0.125rem;
+  }
+}
+/* The board on a touch screen: iOS Safari zooms the page into a text field under 16 px when it gets focus (and stays
+   zoomed after). The board's fields are 1rem (16 px at the default text size). (Not xterm's hidden input: its size
+   places the IME, not text.) */
+@media (pointer: coarse) {
+  .rlt-ui.is-focus :is(textarea, select, input:not([type='checkbox'], [type='radio'], [type='range'], [type='file'], [type='color'])):not(.xterm-helper-textarea) {
+    font-size: 1rem;
+  }
+}
+/* The board on an upright phone: with "waiting for you" or "Connect AI" in the top bar, the 3D / Board switch pushed
+   the right island over Home and the city switcher. It gives way then (More → Switch to the 3D town). */
+@media (max-width: 26.875em) {
+  .rlt-ui.is-focus .tb-right:has(.tb-bell.is-alert) .tb-focus,
+  .rlt-ui.is-focus .tb-right:has(.tb-bell.has-errors) .tb-focus,
+  .rlt-ui.is-focus .tb-right:has(.tb-providers.is-none) .tb-focus {
+    display: none;
+  }
+  /* inside a house the left island is Home, the city switcher and the house's name: the name had 46 px ("termi…")
+     beside "1 waiting" and Connect AI; the room comes from the gaps and the crumb's padding */
+  .rlt-ui.is-focus .tb-left {
+    gap: 0.125rem;
+  }
+  .rlt-ui.is-focus .tb-left .crumb {
+    padding: 0 0.3125rem;
+  }
+}
+
+/* ── Board on a phone (upright or sideways) or a narrow window: the chat is a whole page, not a sheet over the board.
+   Under a half sheet the board's cards left the conversation 160–270 px (Safari on an iPhone: four lines); even the
+   full sheet stopped 64 px short for the top bar, and in the installed app (status bar over the page) it slid under
+   that bar and hid Home, the inbox and More. Here the page covers the top bar (Close or Back return to it) and keeps
+   clear of the notch and the home indicator itself. The header names the job and is the chevron for the job, people
+   and chat rows; the run strip it covers becomes a pill in the header; a busy person's Stop sits beside an empty box
+   instead of taking a row, and with something typed the buttons under it stay slim. Same query as touch.ts
+   PHONE_BOARD_QUERY (sidepanel.ts opens the page expanded and turns the sheet drag off). 3D keeps its sheet. ── */
+@media (max-width: 820px), (pointer: coarse) and (max-height: 520px) {
+  .rlt-ui.is-focus .sidepanel,
+  .rlt-ui.is-focus .sidepanel.is-expanded {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    padding: var(--sa-t) var(--sa-r) var(--sa-b) var(--sa-l);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: rgb(var(--surface-rgb));
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  /* the keyboard is up: the page stands on it and fills what is left to see (as the sheet does, touch.ts) */
+  .rlt-ui.is-focus.is-kb .sidepanel {
+    top: auto;
+    bottom: var(--kb);
+    height: var(--vvh);
+    padding-bottom: 0;
+  }
+  .rlt-ui.is-focus .sheet-handle,
+  .rlt-ui.is-focus .sidepanel .panel-chrome,
+  .rlt-ui.is-focus .sidepanel .panel-collapse {
+    display: none;
+  }
+  .rlt-ui.is-focus .sidepanel > .panel-head {
+    min-height: 3rem;
+    gap: 0.25rem;
+    padding: 0.25rem 0.25rem 0.25rem 0.375rem;
+    border-bottom: 0;
+    touch-action: auto;
+  }
+  .rlt-ui.is-focus .panel-project {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    max-width: none;
+  }
+  /* "Uxui ⌄" over "terminal": which chat this is, and the way to the house's other jobs */
+  .rlt-ui.is-focus .panel-project-btn.has-job {
+    display: grid;
+    grid-template-columns: minmax(0, auto) auto;
+    grid-template-areas: 'job chev' 'house house';
+    align-items: center;
+    justify-items: start;
+    column-gap: 0.25rem;
+    min-width: 0;
+    height: auto;
+    min-height: 2.75rem;
+    padding: 0.1875rem 0.5rem;
+    text-align: left;
+  }
+  .rlt-ui.is-focus .panel-project-btn.has-job > svg {
+    display: none;
+  }
+  .rlt-ui.is-focus .panel-project-btn.has-job .panel-job-name {
+    display: block;
+    grid-area: job;
+    max-width: 100%;
+    font-size: 1rem;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .rlt-ui.is-focus .panel-project-btn.has-job .panel-project-name {
+    grid-area: house;
+    max-width: 100%;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-3);
+  }
+  .rlt-ui.is-focus .panel-project-btn.has-job .panel-title-chev {
+    display: inline-grid;
+    grid-area: chev;
+    transition: transform 0.2s var(--ease);
+  }
+  .rlt-ui.is-focus .panel-title-chev svg {
+    color: var(--text-2);
+  }
+  .rlt-ui.is-focus .sidepanel.is-chrome-open .panel-title-chev {
+    transform: rotate(180deg);
+  }
+  /* the job's team run (the top bar's run strip is under the page): working or waiting for you; opens the run */
+  .rlt-ui.is-focus .panel-run:not([hidden]) {
+    position: relative;
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+    max-width: 42%;
+    height: 2rem;
+    padding: 0 0.625rem;
+    border-radius: 999px;
+    background: rgb(var(--work-rgb) / 0.12);
+    color: var(--work-text);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .rlt-ui.is-focus .panel-run.is-waiting {
+    background: rgb(var(--amber-rgb) / 0.16);
+    color: var(--amber-text);
+  }
+  .rlt-ui.is-focus .panel-run::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc((100% - 2.75rem) / 2);
+    bottom: calc((100% - 2.75rem) / 2);
+  }
+  .rlt-ui.is-focus .panel-run-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* the house's ⋯ with the header's other buttons (run pill, Close), not floating after the job's name */
+  .rlt-ui.is-focus .panel-project .panel-house-menu {
+    margin-left: auto;
+  }
+  /* the person's line: a long status ("Waiting for you: plan for “Fix → Review”") squeezed the name's box below the
+     name, which ran into the status dot ("Assistant●"); the status gives way ("…") first */
+  .rlt-ui.is-focus .sidepanel.is-tight .agent-name-row {
+    flex-shrink: 0;
+    max-width: 60%;
+  }
+  .rlt-ui.is-focus .sidepanel.is-tight .agent-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* (the chips under the chat box — permission, model, effort — stay on show: hidden until you typed, they were out of
+     reach once the keyboard closed, and the model couldn't be changed at all) */
+  /* a busy person, nothing typed: Stop beside the box (Send now and Queue have nothing to send yet) — one row, not two */
+  .rlt-ui.is-focus .sidepanel .composer.is-busy:not(.has-draft) .composer-row {
+    flex-wrap: nowrap;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy:not(.has-draft) .composer-input {
+    order: 0;
+    flex: 1 1 auto;
+    padding-left: 0;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy:not(.has-draft) :is(.composer-steer, .composer-send) {
+    display: none;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy:not(.has-draft) .composer-stop {
+    margin-right: 0;
+  }
+  /* …something typed: the row under the text (attach, Stop, Send now, Queue) was four 44 px pills around 12 px words.
+     They look 36 px tall; an invisible strip keeps each one 44 px under a finger. */
+  .rlt-ui.is-focus .sidepanel .composer.is-busy.has-draft .composer-row {
+    row-gap: 0.25rem;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy.has-draft .composer-row > :is(.composer-attach, .composer-stop, .composer-steer, .composer-send) {
+    position: relative;
+    height: 2.25rem;
+    min-height: 0;
+    font-size: 0.8125rem;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy.has-draft .composer-send-label {
+    font-size: 0.8125rem;
+  }
+  .rlt-ui.is-focus .sidepanel .composer.is-busy.has-draft .composer-row > :is(.composer-attach, .composer-stop, .composer-steer, .composer-send)::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -0.25rem;
+    bottom: -0.25rem;
+  }
+  /* the chips under the chat box (permission, model, effort, account): one row that slides sideways — on a wider
+     phone they wrapped to two rows and took a line from the conversation. The padding holds each chip's 44 px hit
+     area (the scroll box would cut it); the right edge fades where more chips wait. */
+  .rlt-ui.is-focus .sidepanel .composer-mode {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    margin: -0.4375rem 0;
+    padding: 0.4375rem 1.5rem 0.4375rem 0;
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 1.5rem), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 1.5rem), transparent);
+  }
+  .rlt-ui.is-focus .sidepanel .composer-mode::-webkit-scrollbar {
+    display: none;
+  }
+  .rlt-ui.is-focus .sidepanel .composer-mode > * {
+    flex-shrink: 0;
+  }
+  /* toasts: at the top they covered the page's title, Close and the tabs; above the chat box they covered what was
+     being typed (a busy box with a queued message is ~200 px tall). They sit under the header, the tabs and the
+     person's line, over the oldest lines on screen (the keyboard folds the tabs away). */
+  .rlt-ui.is-focus.has-panel .toasts {
+    top: calc(var(--sa-t) + 8.5rem);
+  }
+  .rlt-ui.is-focus.has-panel.is-kb .toasts {
+    top: calc(var(--sa-t) + 6.25rem);
+  }
+  /* the board scrolls under the top bar (and, in the installed app, under the status bar's clock): a backdrop keeps
+     both readable */
+  .rlt-ui.is-focus .topbar {
+    isolation: isolate;
+  }
+  .rlt-ui.is-focus .topbar::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    top: calc(-1 * var(--gap-t));
+    left: calc(-1 * var(--gap-l));
+    right: calc(-1 * var(--gap-r));
+    height: calc(var(--gap-t) + 100% + var(--gap));
+    background: linear-gradient(rgb(var(--surface-rgb) / 0.94) 65%, rgb(var(--surface-rgb) / 0));
+    pointer-events: none;
+  }
+  /* the 3D town's run strip: the house's card already shows its run ("1 working", the workflow's pill), and here the
+     strip hung under the top bar over "Town board" (the chat page's header has its own run pill) */
+  .rlt-ui.is-focus .topbar .runstrip {
+    display: none;
+  }
+  /* controls that came after the touch pass, at least 44 px under a finger: the city switcher, the house's crumb, the
+     jobs bar's ⋯ and "N needs you", the chat bar, the people strip, the Workflow tab's chip and Team heading. The Team
+     heading's icons get a box of their own (side by side, hit areas around them would overlap). */
+  .rlt-ui.is-focus .tb-left .city-switcher {
+    min-width: 2.75rem;
+  }
+  .rlt-ui.is-focus .crumb,
+  .rlt-ui.is-focus .thread-bar :is(.thread-btn, .thread-new) {
+    height: 2.75rem;
+  }
+  .rlt-ui.is-focus .jobs-bar .job-more,
+  .rlt-ui.is-focus .wf-section-head :is(.wf-delete, .wf-promote) {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .rlt-ui.is-focus :is(.jobs-peek, .person, .ws-chip, .wf-section-head .link-btn) {
+    position: relative;
+  }
+  .rlt-ui.is-focus :is(.jobs-peek, .person, .ws-chip, .wf-section-head .link-btn)::after {
+    content: '';
+    position: absolute;
+    top: min(0px, calc((100% - 2.75rem) / 2));
+    bottom: min(0px, calc((100% - 2.75rem) / 2));
+    left: min(0px, calc((100% - 2.75rem) / 2));
+    right: min(0px, calc((100% - 2.75rem) / 2));
+  }
+  /* (the strip scrolls sideways, so it clips what sticks out of it: room for the pills' hit areas) */
+  .rlt-ui.is-focus .sidepanel .people {
+    padding-bottom: 0.25rem;
+  }
+  /* "Create with the Assistant": the tab is a flex column, and with a long team below the button was squashed to 22 px */
+  .rlt-ui.is-focus .wf-add {
+    flex-shrink: 0;
+    height: auto;
+    min-height: 2.75rem;
+  }
+}
+/* upright: a slimmer tab row (the sideways rail keeps its own size); each tab stays 44 px under a finger (::after is
+   the selected tab's underline) */
+@media (max-width: 820px) and (orientation: portrait) {
+  .rlt-ui.is-focus .sidepanel > .panel-tabs {
+    padding: 0 0.375rem;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab {
+    height: 2.5rem;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -0.125rem;
+    bottom: -0.125rem;
+  }
+  .rlt-ui.is-focus .sidepanel .panel-tab span:not(.tab-badge) {
+    font-size: 0.8125rem;
+  }
+}
+/* 320 px: four tabs with icons fill the row, and a live run's dot on Workflow touched the Changes icon */
+@media (max-width: 22.4375em) {
+  .rlt-ui.is-focus .sidepanel .panel-tab {
+    gap: 0.25rem;
+  }
+}
+/* a busy person with something typed, upright on a touch screen: the text has a row of its own over the buttons, and
+   the box's bottom padding left an empty strip between the two */
+@media (hover: none) and (max-width: 820px) and (min-height: 521px) {
+  .rlt-ui.is-focus .sidepanel .composer.is-busy.has-draft .composer-input {
+    min-height: 2.25rem;
+    padding-bottom: 0.25rem;
+  }
+}
+/* sideways: typing leaves ~180 px, so the header and the person's line go too (the tabs already do); a phone wider
+   than 820 px held sideways gets the sheet's "who waits" bar (houses.css) and loses the floating cards the page would
+   cover */
+@media (pointer: coarse) and (max-height: 520px) {
+  .rlt-ui.is-focus.is-kb .sidepanel:not(.is-chrome-open) > .panel-head,
+  .rlt-ui.is-focus.is-kb .sidepanel:not(.is-chrome-open) .agent-head {
+    display: none;
+  }
+}
+@media (pointer: coarse) and (max-height: 520px) and (min-width: 821px) {
+  .rlt-ui.is-focus.has-panel .approval-stack {
+    display: none;
+  }
+  .rlt-ui.is-focus .sidepanel.is-expanded .panel-asks:not([hidden]) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.375rem 0.5rem 0;
+    min-height: 2.5rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    background: rgb(var(--amber-rgb) / 0.14);
+    border: 1px solid rgb(var(--amber-rgb) / 0.35);
+    color: var(--amber-text);
+    font-size: 0.8125rem;
+    text-align: left;
+  }
+  .rlt-ui.is-focus .panel-asks-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+  }
+  .rlt-ui.is-focus .panel-asks-go {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+}

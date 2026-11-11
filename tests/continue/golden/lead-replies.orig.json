@@ -1,0 +1,16 @@
+{
+  "completed/status/en": "The team's last run, **P3 team**, completed in Ns ($0.00).\n\n- A: done\n- B: done\n- C: done\n- R: approved\n\nR: “Checked.”\n\nWhat changed is in the Changes tab (each step's notes: `.rlt/runs/run-ID/`).",
+  "completed/update/en": "The team finished **P3 team** in Ns ($0.00) — A done, B done + C done, R approved.\n\nR: “Checked.”\n\nThe changed files are in the Changes tab — worth a look and a test run before you build on it.\n\n(Each step's notes: Open run in the Workflow tab, or `.rlt/runs/run-ID/`.)",
+  "completed/status/th": "รอบล่าสุดของทีม **P3 team** เสร็จแล้วค่ะ (ใช้เวลา Ns, $0.00)\n\n- A: เสร็จ\n- B: เสร็จ\n- C: เสร็จ\n- R: อนุมัติ\n\nR: “Checked.”\n\nไฟล์ที่เปลี่ยนดูได้ในแท็บ Changes ค่ะ (บันทึกของแต่ละขั้นตอน: `.rlt/runs/run-ID/`)",
+  "completed/update/th": "ทีมทำ **P3 team** เสร็จแล้วค่ะ (ใช้เวลา Ns, $0.00) — A เสร็จ, B เสร็จ + C เสร็จ, R อนุมัติ\n\nR: “Checked.”\n\nไฟล์ที่เปลี่ยนดูได้ในแท็บ Changes ค่ะ ลองดูแล้วรันเทสต์ก่อนทำต่อนะคะ\n\n(บันทึกของแต่ละขั้นตอน: กด Open run ในแท็บ Workflow หรือดูใน `.rlt/runs/run-ID/`)",
+  "failed/status/en": "The team's last run, **P3 team**, failed after Ns.\n\n- A: done\n- B: failed\n- C: skipped\n\nB: “boom”\n\nEach step's notes are in `.rlt/runs/run-ID/`.",
+  "failed/update/en": "The team's run **P3 team** failed after Ns — A done, B failed, C skipped.\n\nB: “boom”\n\nDetails are in `.rlt/runs/run-ID/`. Want me to look into what went wrong, or start the team again?",
+  "failed/status/th": "รอบล่าสุดของทีม **P3 team** ไม่สำเร็จค่ะ (หลัง Ns)\n\n- A: เสร็จ\n- B: ไม่สำเร็จ\n- C: ข้าม\n\nB: “boom”\n\nบันทึกของแต่ละขั้นตอนอยู่ใน `.rlt/runs/run-ID/` ค่ะ",
+  "failed/update/th": "รอบนี้ทีมทำ **P3 team** ไม่สำเร็จค่ะ (หลัง Ns) — A เสร็จ, B ไม่สำเร็จ, C ข้าม\n\nB: “boom”\n\nรายละเอียดอยู่ใน `.rlt/runs/run-ID/` ให้ช่วยดูว่าติดตรงไหน หรือเริ่มทีมใหม่อีกรอบดีคะ?",
+  "running/status/en": "The team is on **P3 team** — Ns so far, $0.00.\n\n- A: done\n- B: working\n- C: not started\n\nI'll tell you when they finish — ask me anything meanwhile.",
+  "running/status/th": "ทีมกำลังทำ **P3 team** อยู่ค่ะ (ผ่านไป Ns, $0.00)\n\n- A: เสร็จ\n- B: กำลังทำ\n- C: ยังไม่เริ่ม\n\nทีมเสร็จเมื่อไหร่จะบอกนะคะ ระหว่างนี้ถามอะไรก็ได้ค่ะ",
+  "stopped/status/en": "The team's last run, **P3 team**, was stopped after Ns.\n\n- A: done\n- B: failed\n- C: skipped\n\nB: “partial work”\n\nEach step's notes are in `.rlt/runs/run-ID/`.",
+  "stopped/update/en": "The team's run **P3 team** was stopped after Ns — A done, B failed, C skipped. Files they already changed stay as they are; you can revert the run in the Workflow tab.",
+  "stopped/status/th": "รอบล่าสุดของทีม **P3 team** ถูกหยุดไปแล้วค่ะ\n\n- A: เสร็จ\n- B: ไม่สำเร็จ\n- C: ข้าม\n\nB: “partial work”\n\nบันทึกของแต่ละขั้นตอนอยู่ใน `.rlt/runs/run-ID/` ค่ะ",
+  "stopped/update/th": "ทีมหยุดทำ **P3 team** แล้วค่ะ — A เสร็จ, B ไม่สำเร็จ, C ข้าม ไฟล์ที่ทีมแก้ไปแล้วยังอยู่เหมือนเดิม ถ้าอยากย้อนกลับ ทำได้ในแท็บ Workflow ค่ะ"
+}

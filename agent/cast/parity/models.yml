@@ -1,0 +1,24 @@
+# Keyless provider for cast/parity: "anthropic" overridden to point at mock-llm.ts (no real provider, no key).
+providers:
+  anthropic:
+    baseUrl: __MOCK_URL__/v1
+    auth: none
+    api: openai-completions
+    compat:
+      reasoningContentField: reasoning_content
+      supportsUsageInStreaming: true
+    models:
+      - id: "claude-opus-5-5"
+        name: "Claude Opus 5.5"
+        reasoning: true
+        input: [text]
+        cost: { input: 4, output: 20, cacheRead: 0.4, cacheWrite: 5 }
+        contextWindow: 400000
+        maxTokens: 32000
+      - id: "claude-sonnet-5-5"
+        name: "Claude Sonnet 5.5"
+        reasoning: true
+        input: [text]
+        cost: { input: 2, output: 10, cacheRead: 0.2, cacheWrite: 2.5 }
+        contextWindow: 400000
+        maxTokens: 32000

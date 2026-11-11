@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>CAST</title>
+    <link rel="icon" href="data:," />
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #1a1917;
+      }
+      /* Painted stand-ins for the 3D views, so the glass can be judged over a bright, busy scene. */
+      .bg {
+        position: fixed;
+        inset: 0;
+        transition: opacity 0.4s, filter 0.4s;
+      }
+      .bg svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .bg-house {
+        opacity: 0;
+      }
+      body[data-view='house'] .bg-house {
+        opacity: 1;
+      }
+      body[data-view='house'] .bg-city {
+        opacity: 0;
+      }
+      body.paused .bg {
+        filter: grayscale(0.6) brightness(0.6);
+      }
+    </style>
+  </head>
+  <body data-view="city">
+    <div class="bg bg-city" aria-hidden="true">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6f9fd0" />
+            <stop offset="0.55" stop-color="#b9d3ea" />
+            <stop offset="1" stop-color="#f4d9b2" />
+          </linearGradient>
+          <radialGradient id="sun" cx="0.78" cy="0.2" r="0.35">
+            <stop offset="0" stop-color="#fff4d6" stop-opacity="0.95" />
+            <stop offset="0.25" stop-color="#ffe2a8" stop-opacity="0.5" />
+            <stop offset="1" stop-color="#ffe2a8" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8fb070" />
+            <stop offset="1" stop-color="#4f7a3f" />
+          </linearGradient>
+          <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7c7b7a" />
+            <stop offset="1" stop-color="#4a4947" />
+          </linearGradient>
+          <filter id="soft"><feGaussianBlur stdDeviation="14" /></filter>
+        </defs>
+        <rect width="1600" height="900" fill="url(#sky)" />
+        <rect width="1600" height="900" fill="url(#sun)" />
+        <g fill="#fff" opacity="0.75" filter="url(#soft)">
+          <ellipse cx="260" cy="150" rx="170" ry="38" />
+          <ellipse cx="380" cy="130" rx="110" ry="30" />
+          <ellipse cx="980" cy="110" rx="200" ry="34" />
+          <ellipse cx="1420" cy="230" rx="160" ry="28" />
+        </g>
+        <path d="M0 470 Q 240 420 480 455 T 980 440 T 1600 450 V 900 H 0 Z" fill="#a8b98f" opacity="0.7" />
+        <path d="M0 500 L1600 470 L1600 900 L0 900 Z" fill="url(#grass)" />
+        <!-- distant skyline -->
+        <g fill="#c9c2b6">
+          <rect x="120" y="390" width="70" height="110" /><rect x="200" y="360" width="56" height="140" /><rect x="270" y="410" width="90" height="90" />
+          <rect x="1180" y="370" width="80" height="120" /><rect x="1270" y="340" width="60" height="150" /><rect x="1340" y="400" width="110" height="90" />
+        </g>
+        <g fill="#f4c97a" opacity="0.8">
+          <rect x="132" y="405" width="8" height="10" /><rect x="152" y="425" width="8" height="10" /><rect x="214" y="380" width="8" height="10" />
+          <rect x="1290" y="360" width="8" height="10" /><rect x="1194" y="390" width="8" height="10" />
+        </g>
+        <!-- avenue in perspective -->
+        <path d="M640 900 L760 480 L840 480 L1060 900 Z" fill="url(#road)" />
+        <path d="M800 490 L800 900" stroke="#f1ece2" stroke-width="5" stroke-dasharray="26 30" opacity="0.8" />
+        <path d="M640 900 L760 480 M1060 900 L840 480" stroke="#d6cfc2" stroke-width="10" opacity="0.6" />
+        <!-- houses left -->
+        <g>
+          <path d="M330 640 L520 600 L520 760 L330 820 Z" fill="#efe7da" />
+          <path d="M520 600 L600 640 L600 790 L520 760 Z" fill="#d6c7b1" />
+          <path d="M310 650 L430 540 L540 600 L520 600 Z" fill="#8c5a45" />
+          <path d="M430 540 L620 640 L600 640 L520 600 Z" fill="#6e4535" />
+          <rect x="360" y="670" width="40" height="34" fill="#ffd58a" /><rect x="430" y="655" width="40" height="34" fill="#9cc7e6" />
+          <rect x="455" y="720" width="34" height="60" fill="#4a3b33" />
+        </g>
+        <g>
+          <path d="M60 560 L230 530 L230 690 L60 730 Z" fill="#b9694e" />
+          <path d="M230 530 L300 560 L300 710 L230 690 Z" fill="#9a5a45" />
+          <path d="M45 565 L150 470 L240 530 Z" fill="#5b4636" />
+          <rect x="90" y="590" width="34" height="30" fill="#ffd58a" /><rect x="160" y="580" width="34" height="30" fill="#ffd58a" />
+        </g>
+        <!-- office right -->
+        <g>
+          <path d="M1120 380 L1260 360 L1260 760 L1120 800 Z" fill="#7eafd6" />
+          <path d="M1260 360 L1330 390 L1330 780 L1260 760 Z" fill="#4f7fae" />
+          <g stroke="#e8f3fb" stroke-opacity="0.5" stroke-width="2">
+            <path d="M1120 430 L1260 412 M1120 480 L1260 462 M1120 530 L1260 512 M1120 580 L1260 562 M1120 630 L1260 612 M1120 680 L1260 662 M1120 730 L1260 712" />
+          </g>
+          <rect x="1150" y="540" width="26" height="20" fill="#ffd58a" opacity="0.9" />
+        </g>
+        <g>
+          <path d="M1360 600 L1560 640 L1560 820 L1360 770 Z" fill="#efe7da" />
+          <path d="M1340 605 L1470 520 L1580 645 Z" fill="#8c5a45" />
+          <rect x="1400" y="660" width="40" height="32" fill="#9cc7e6" /><rect x="1480" y="675" width="40" height="32" fill="#ffd58a" />
+        </g>
+        <!-- trees -->
+        <g>
+          <circle cx="620" cy="620" r="34" fill="#5e8f4c" /><circle cx="606" cy="606" r="20" fill="#7fae62" />
+          <circle cx="1090" cy="640" r="40" fill="#5e8f4c" /><circle cx="1075" cy="622" r="24" fill="#7fae62" />
+          <circle cx="260" cy="800" r="46" fill="#4f7a3f" /><circle cx="1500" cy="860" r="60" fill="#4f7a3f" />
+          <circle cx="720" cy="520" r="18" fill="#6f9e58" /><circle cx="880" cy="515" r="16" fill="#6f9e58" />
+        </g>
+      </svg>
+    </div>
+    <div class="bg bg-house" aria-hidden="true">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#c9935f" />
+            <stop offset="1" stop-color="#8a5a35" />
+          </linearGradient>
+          <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#efe3d3" />
+            <stop offset="1" stop-color="#d8c6b0" />
+          </linearGradient>
+          <radialGradient id="lamp" cx="0.45" cy="0.45" r="0.5">
+            <stop offset="0" stop-color="#fff1cf" stop-opacity="0.65" />
+            <stop offset="1" stop-color="#fff1cf" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="1600" height="900" fill="#2a2420" />
+        <path d="M220 330 L800 120 L1380 330 L800 620 Z" fill="url(#floor)" />
+        <g stroke="#7a4f2f" stroke-opacity="0.35" stroke-width="2">
+          <path d="M330 370 L910 160 M440 410 L1020 200 M550 450 L1130 240 M660 490 L1240 280 M770 530 L1350 320" />
+        </g>
+        <path d="M220 330 L800 120 L800 20 L220 230 Z" fill="url(#wall)" />
+        <path d="M800 120 L1380 330 L1380 230 L800 20 Z" fill="#e6d6c2" />
+        <path d="M220 330 L800 620 L800 650 L220 360 Z" fill="#cdb79c" />
+        <path d="M800 620 L1380 330 L1380 360 L800 650 Z" fill="#bca487" />
+        <rect width="1600" height="900" fill="url(#lamp)" />
+        <!-- sofa -->
+        <path d="M520 380 L680 320 L760 360 L600 425 Z" fill="#2f4a7a" />
+        <path d="M520 380 L600 425 L600 450 L520 405 Z" fill="#253c63" />
+        <!-- desk + monitor -->
+        <path d="M980 300 L1110 350 L1060 375 L930 325 Z" fill="#9aa0a6" />
+        <rect x="1010" y="280" width="46" height="32" fill="#1f2a36" />
+        <!-- tv -->
+        <rect x="620" y="110" width="120" height="66" fill="#16191d" transform="skewY(-20) translate(0 230)" />
+        <!-- plants + people -->
+        <circle cx="330" cy="330" r="22" fill="#5e8f4c" />
+        <circle cx="1250" cy="350" r="26" fill="#5e8f4c" />
+        <g><circle cx="820" cy="300" r="11" fill="#e8b796" /><rect x="808" y="312" width="24" height="34" rx="9" fill="#d97757" /><rect x="810" y="344" width="20" height="26" fill="#4b4f57" /></g>
+        <g><circle cx="1030" cy="250" r="10" fill="#c99b7b" /><rect x="1019" y="261" width="22" height="30" rx="8" fill="#4d6bfe" /></g>
+        <g><circle cx="600" cy="300" r="10" fill="#e2c2a6" /><rect x="589" y="311" width="22" height="30" rx="8" fill="#10a37f" /></g>
+      </svg>
+    </div>
+    <div id="app"></div>
+    <script type="module" src="./ui.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,1081 @@
+/* Floating HUD pieces: approval stack, bottom action bar, toasts, offline banner, focus-mode board. */
+
+/* Approvals */
+.rlt-ui .approval-stack {
+  position: absolute;
+  right: var(--gap);
+  bottom: var(--gap);
+  width: 380px;
+  max-width: calc(100vw - 2 * var(--gap));
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+  transition: right 0.22s var(--ease);
+}
+.rlt-ui.has-panel .approval-stack {
+  right: calc(var(--panel-w) + var(--gap) * 2);
+}
+/* Lift the stack over the action bar wherever the two would meet. */
+.rlt-ui.has-panel .approval-stack {
+  bottom: calc(var(--gap) + 3.875rem);
+}
+/* the house's bar (with Files) is ~850 px wide: it meets the 380 px stack below ~1650 px */
+@media (max-width: 106.25em) {
+  .rlt-ui .approval-stack {
+    bottom: calc(var(--gap) + 3.875rem);
+  }
+}
+.rlt-ui.is-focus .approval-stack {
+  bottom: var(--gap);
+}
+.rlt-ui .approval-peek {
+  height: 1rem;
+  margin: 0 1.125rem -1.125rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: var(--attn-surface);
+  border: 1px solid rgb(var(--amber-rgb) / 0.42);
+  border-bottom: 0;
+  pointer-events: auto;
+}
+.rlt-ui .approval-front {
+  position: relative;
+  padding: 0;
+  border-radius: 0.875rem;
+  border-color: rgb(var(--amber-rgb) / 0.4);
+  box-shadow: var(--shadow), 0 0 40px -10px rgb(var(--amber-rgb) / 0.45);
+  animation: rlt-pop 0.22s var(--ease);
+}
+.rlt-ui .approval-front .approval {
+  border: 0;
+  box-shadow: none;
+  border-radius: 0.8125rem;
+}
+.rlt-ui .approval-more {
+  align-self: flex-end;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  height: 1.625rem;
+  padding: 0 0.625rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  background: var(--glass-strong);
+  border: 1px solid var(--hair);
+  pointer-events: auto;
+}
+.rlt-ui .approval-more:hover {
+  color: var(--text);
+}
+.rlt-ui .approval {
+  position: relative;
+  min-width: 0; /* a wide diff line scrolls inside the card, never widens it (cards sit in grids) */
+  padding: 12px;
+  border-radius: 0.75rem;
+  background: linear-gradient(180deg, rgb(var(--amber-rgb) / 0.11), rgb(var(--amber-rgb) / 0.035));
+  border: 1px solid rgb(var(--amber-rgb) / 0.36);
+  box-shadow: 0 0 26px -10px rgb(var(--amber-rgb) / 0.5);
+  transition: opacity 0.2s;
+}
+.rlt-ui .approval.is-answering {
+  opacity: 0.5;
+}
+.rlt-ui .approval-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+.rlt-ui .approval-hand {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--amber);
+  background: rgb(var(--amber-rgb) / 0.18);
+  box-shadow: 0 0 0 4px rgb(var(--amber-rgb) / 0.07);
+}
+.rlt-ui .approval-titles {
+  min-width: 0;
+}
+.rlt-ui .approval-title {
+  font-size: 0.84375rem;
+  line-height: 1.45;
+}
+.rlt-ui .approval-title .room-code {
+  margin-right: 0.375rem;
+  vertical-align: 1px;
+}
+.rlt-ui .approval-job {
+  max-width: 9.375rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+.rlt-ui .approval-floor,
+.rlt-ui .approval-project,
+.rlt-ui .approval-meta .muted {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.rlt-ui .approval-floor {
+  padding: 0 0.375rem;
+  border-radius: 0.375rem;
+  font-size: 0.6875rem;
+  background: rgb(var(--fg-rgb) / 0.08);
+  color: var(--text-2);
+}
+.rlt-ui .approval-title code {
+  font-size: 0.75rem;
+  padding: 1px 0.375rem;
+  border-radius: 0.3125rem;
+  background: rgb(var(--amber-rgb) / 0.16);
+  color: var(--amber-text-2);
+}
+.rlt-ui .approval-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.1875rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+.rlt-ui .approval-detail {
+  margin-top: 0.625rem;
+  padding: 0.4375rem 0.625rem 0.5rem;
+  border-radius: 0.5rem;
+  background: rgb(var(--shade-rgb) / calc(0.38 * var(--shade)));
+  border: 1px solid rgb(var(--fg-rgb) / 0.06);
+}
+.rlt-ui .approval-detail-label {
+  font-size: 0.65625rem;
+  color: var(--text-3);
+}
+.rlt-ui .approval-detail pre {
+  margin: 0.125rem 0 0;
+  font-size: 0.78125rem;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-all;
+  max-height: 120px;
+  overflow: auto;
+}
+.rlt-ui .approval-none {
+  margin: 0.5625rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.rlt-ui .approval-auto {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  margin: 0.5625rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--amber-text);
+}
+.rlt-ui .approval-auto .icon {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .approval-notify {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  margin-top: 0.5625rem;
+  font-size: 0.71875rem;
+  color: var(--text-3);
+}
+.rlt-ui .approval-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.6875rem;
+}
+/* What an edit would change (finding #12): +N −M, the first diff lines, Show all, full diff on the TV. A long
+   floating card scrolls under its header, so who asks (and which room) stays in view; a card in the chat scrolls
+   with the conversation like any message. */
+.rlt-ui .approval-front {
+  max-height: calc(100dvh - 150px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.rlt-ui .approval-front .approval.has-change .approval-head {
+  position: sticky;
+  top: -0.75rem;
+  z-index: 1;
+  margin: -0.75rem -0.75rem 0;
+  padding: 0.75rem;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background: var(--attn-head);
+}
+/* the change's file row stays under that head too (--apv-head: the head's height, from approvals.ts; clip, not hidden,
+   so the row can stick) */
+.rlt-ui .approval-front .approval.has-change .approval-change {
+  overflow: clip;
+}
+.rlt-ui .approval-front .approval.has-change .approval-change-head {
+  position: sticky;
+  top: calc(var(--apv-head, 4rem) - 0.75rem);
+  z-index: 1;
+  background: var(--attn-head), rgb(var(--surface-rgb));
+}
+.rlt-ui .approval-change {
+  margin-top: 0.625rem;
+  border-radius: 0.5rem;
+  background: rgb(var(--shade-rgb) / calc(0.38 * var(--shade)));
+  border: 1px solid rgb(var(--fg-rgb) / 0.06);
+  overflow: hidden;
+}
+.rlt-ui .approval-change-head {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.1875rem 0.1875rem 0.1875rem 0.625rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / 0.06);
+}
+.rlt-ui .approval-change-file {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  color: var(--text);
+}
+.rlt-ui .approval-change-num {
+  flex-shrink: 0;
+}
+.rlt-ui .approval-change-open {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.rlt-ui .approval-diff {
+  margin: 0;
+  padding: 0.3125rem 0;
+  font-family: var(--mono);
+  font-size: 0.71875rem;
+  line-height: 1.55;
+  white-space: pre;
+  max-height: 230px;
+  overflow: auto;
+}
+.rlt-ui .approval-diff.is-open {
+  max-height: min(50vh, 27.5rem);
+}
+.rlt-ui .approval-diff .dl {
+  display: block;
+  min-width: max-content;
+  padding: 0 0.625rem;
+  color: var(--text-2);
+}
+.rlt-ui .approval-diff .dl-add {
+  background: rgb(var(--ok-rgb) / 0.16);
+  color: var(--diff-add-text);
+}
+.rlt-ui .approval-diff .dl-del {
+  background: rgb(var(--err-rgb) / 0.16);
+  color: var(--diff-del-text);
+}
+.rlt-ui .approval-diff .dl-hunk {
+  color: var(--text-3);
+}
+.rlt-ui .approval-diff .dl-file {
+  padding-top: 0.25rem;
+  font-weight: 600;
+  color: var(--amber-text);
+}
+.rlt-ui .approval-diff-more {
+  display: block;
+  padding: 0.1875rem 0.625rem 0.4375rem;
+  font-size: 0.71875rem;
+}
+.rlt-ui .approval-change-note {
+  margin: 0;
+  padding: 0.3125rem 0.625rem 0.4375rem;
+  font-size: 0.71875rem;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+/* An agent's question (ask, choice, confirm): the whole question, every option with its description, the user's own
+   words. Long text (Thai has no spaces) wraps inside the card, never cut or widening it. */
+.rlt-ui .approval-ask {
+  display: grid;
+  gap: 0.875rem;
+  margin-top: 0.625rem;
+}
+.rlt-ui .ask-q {
+  display: grid;
+  gap: 0.4375rem;
+  min-width: 0;
+}
+.rlt-ui .ask-q + .ask-q {
+  padding-top: 0.875rem;
+  border-top: 1px solid rgb(var(--amber-rgb) / 0.22);
+}
+.rlt-ui .ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+}
+.rlt-ui .ask-chip {
+  max-width: 100%;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  background: rgb(var(--amber-rgb) / 0.16);
+  color: var(--amber-text-2);
+}
+.rlt-ui .ask-count {
+  font-size: 0.6875rem;
+  color: var(--text-3);
+}
+.rlt-ui .ask-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .approval-question {
+  margin-top: 0.5rem;
+}
+.rlt-ui .approval-question-more {
+  margin: 0.25rem 0 0;
+  font-size: 0.78125rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .ask-opts {
+  display: grid;
+  gap: 0.375rem;
+  min-width: 0;
+}
+.rlt-ui .ask-picks {
+  flex: 1;
+}
+.rlt-ui .ask-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5625rem;
+  width: 100%;
+  min-width: 0;
+  padding: 0.5rem 0.6875rem;
+  border-radius: 0.5625rem;
+  border: 1px solid var(--hair-2);
+  background: var(--fill-1);
+  color: var(--text);
+  text-align: left;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+.rlt-ui .ask-opt:hover:not(:disabled) {
+  background: var(--fill-2);
+  border-color: rgb(var(--amber-rgb) / 0.4);
+}
+.rlt-ui .ask-opt.is-on {
+  background: rgb(var(--amber-rgb) / 0.13);
+  border-color: rgb(var(--amber-rgb) / 0.75);
+}
+.rlt-ui .ask-mark {
+  position: relative;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+  border: 1.5px solid var(--text-3);
+  border-radius: 50%;
+}
+.rlt-ui .ask-mark-checkbox {
+  border-radius: 0.25rem;
+}
+.rlt-ui .ask-opt.is-on .ask-mark-radio {
+  border-color: var(--amber);
+  background: radial-gradient(circle, var(--amber) 0 3.5px, transparent 4px);
+}
+.rlt-ui .ask-opt.is-on .ask-mark-checkbox {
+  border-color: var(--amber);
+  background: var(--amber);
+}
+.rlt-ui .ask-opt.is-on .ask-mark-checkbox::after {
+  content: '';
+  position: absolute;
+  left: 0.27rem;
+  top: 0.08rem;
+  width: 0.28rem;
+  height: 0.52rem;
+  border: solid var(--on-amber);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.rlt-ui .ask-opt-text {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.rlt-ui .ask-opt-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.rlt-ui .ask-opt-desc {
+  font-size: 0.75rem;
+  line-height: 1.55;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+.rlt-ui .ask-rec {
+  display: inline-block;
+  margin-left: 0.375rem;
+  padding: 0 0.375rem;
+  border-radius: 0.3125rem;
+  font-size: 0.65625rem;
+  font-weight: 600;
+  line-height: 1.5;
+  vertical-align: 1px;
+  white-space: nowrap;
+  background: rgb(var(--ok-rgb) / 0.16);
+  color: var(--ok-text);
+}
+.rlt-ui .ask-opt-own .ask-opt-label {
+  font-weight: 500;
+}
+.rlt-ui .ask-own {
+  min-height: 3.5rem;
+}
+.rlt-ui .ask-actions {
+  align-items: center;
+  margin-top: 0;
+}
+.rlt-ui .ask-hint {
+  font-size: 0.75rem;
+  color: var(--text-3);
+}
+.rlt-ui .ask-open {
+  display: none;
+  justify-self: start;
+}
+
+/* Bottom action bar */
+.rlt-ui .actionbar {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--gap) + 0.25rem);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.3125rem;
+  border-radius: 0.9375rem;
+  transition: left 0.22s var(--ease);
+}
+.rlt-ui.has-panel .actionbar {
+  left: calc((100% - var(--panel-w) - var(--gap)) / 2);
+}
+.rlt-ui .ab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.375rem;
+  padding: 0 0.8125rem;
+  border-radius: 0.625rem;
+  font-size: 0.84375rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.15s;
+}
+.rlt-ui .ab-btn:hover,
+.rlt-ui .ab-btn[aria-expanded='true'] {
+  background: var(--fill-2);
+}
+.rlt-ui .ab-btn.is-primary {
+  background: var(--text);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 var(--primary-edge);
+}
+.rlt-ui .ab-btn.is-primary:hover {
+  background: var(--primary-hover);
+}
+.rlt-ui .ab-btn.is-primary kbd {
+  background: rgb(var(--on-fill-rgb) / 0.08);
+  border-color: rgb(var(--on-fill-rgb) / 0.12);
+  color: rgb(var(--on-fill-rgb) / 0.55);
+}
+.rlt-ui .ab-short {
+  display: none;
+}
+.rlt-ui .ab-chev {
+  color: var(--text-3);
+  margin-left: -0.1875rem;
+}
+.rlt-ui .ab-sep {
+  width: 1px;
+  height: 1.375rem;
+  margin: 0 0.1875rem;
+  background: var(--hair);
+}
+.rlt-ui .ab-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0 0.625rem;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.rlt-ui .ab-hint .kbd-group {
+  margin-left: 0.375rem;
+}
+.rlt-ui .ab-hint .kbd-group:first-child {
+  margin-left: 0;
+}
+.rlt-ui.is-focus .actionbar {
+  display: none;
+}
+/* Desktop: the bar keeps one line at its natural width, and when that doesn't fit beside the panel (actionbar.ts
+   measures) it steps down: no key hints (is-snug), then icons only, like the terminal's strip (is-compact). */
+@media (min-width: 821px) {
+  .rlt-ui .actionbar {
+    width: max-content;
+  }
+  .rlt-ui .actionbar.is-snug .ab-btn kbd,
+  .rlt-ui .actionbar.is-snug .ab-btn .kbd-group,
+  .rlt-ui .actionbar.is-snug .ab-hint {
+    display: none;
+  }
+  .rlt-ui .actionbar.is-compact .ab-label,
+  .rlt-ui .actionbar.is-compact .ab-chev,
+  .rlt-ui .actionbar.is-compact .ab-sep {
+    display: none;
+  }
+  .rlt-ui .actionbar.is-compact .ab-btn {
+    width: 2.375rem;
+    padding: 0;
+    justify-content: center;
+  }
+}
+
+/* Toasts */
+.rlt-ui .toasts {
+  position: absolute;
+  top: calc(var(--panel-top) + 0.125rem);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(28.75rem, calc(100vw - 2rem));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.rlt-ui .toast {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  max-width: 100%;
+  padding: 0.5rem 0.375rem 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 0.8125rem;
+  animation: rlt-drop 0.22s var(--ease);
+  transition: opacity 0.18s, transform 0.18s;
+}
+.rlt-ui .toast.is-leaving {
+  opacity: 0;
+  transform: translateY(-0.375rem);
+}
+.rlt-ui .toast-icon {
+  display: grid;
+  color: var(--sun);
+}
+.rlt-ui .toast-success .toast-icon {
+  color: var(--ok);
+}
+.rlt-ui .toast-warn .toast-icon {
+  color: var(--amber);
+}
+.rlt-ui .toast-error .toast-icon {
+  color: var(--err);
+}
+.rlt-ui .toast-error {
+  border-color: rgb(var(--err-rgb) / 0.35);
+}
+.rlt-ui .toast-text {
+  flex: 1;
+  min-width: 0;
+}
+.rlt-ui .toast-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.125rem;
+}
+/* A toast's own button (e.g. "Bring back" after Undo changes) */
+.rlt-ui .toast-action {
+  flex-shrink: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.4375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sun-text);
+  background: var(--fill-2);
+}
+.rlt-ui .toast-action:hover {
+  background: var(--fill-3);
+}
+/* Phones: the chat sheet comes later in the page and would cover the toasts (and their Bring back) */
+@media (max-width: 820px) {
+  .rlt-ui .toasts {
+    z-index: 5;
+  }
+}
+@media (pointer: coarse) {
+  .rlt-ui .toast-action {
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+  }
+}
+.rlt-ui .toast-close {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.4375rem;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.rlt-ui .toast-close:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .offline-banner {
+  position: absolute;
+  top: calc(var(--panel-top) + 0.125rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 999px;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--amber-text);
+  border-color: rgb(var(--amber-rgb) / 0.35);
+  animation: rlt-pop 0.2s var(--ease);
+}
+.rlt-ui.has-panel .offline-banner {
+  left: calc((100% - var(--panel-w) - var(--gap)) / 2);
+}
+.rlt-ui .offline-banner .spinner {
+  border-top-color: var(--amber);
+}
+/* omp version warning (omp-warning.ts): same spot as the reconnect banner, which it gives way to */
+.rlt-ui .omp-warn {
+  position: absolute;
+  top: calc(var(--panel-top) + 0.125rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: max-content;
+  max-width: min(38.75rem, calc(100% - 2rem));
+  display: flex;
+  align-items: center;
+  gap: 0.5625rem;
+  padding: 0.375rem 0.375rem 0.375rem 0.875rem;
+  border-radius: 1.125rem;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--amber-text);
+  border-color: rgb(var(--amber-rgb) / 0.35);
+  pointer-events: auto;
+  animation: rlt-pop 0.2s var(--ease);
+}
+.rlt-ui.has-panel .omp-warn {
+  left: calc((100% - var(--panel-w) - var(--gap)) / 2);
+  max-width: min(38.75rem, calc(100% - var(--panel-w) - var(--gap) - 2rem));
+}
+.rlt-ui .omp-warn-icon {
+  display: grid;
+  flex: none;
+  color: var(--amber);
+}
+.rlt-ui .omp-warn-text {
+  min-width: 0;
+}
+.rlt-ui .omp-warn-close {
+  flex: none;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.rlt-ui .omp-warn-close:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+
+/* Focus mode board. It comes after the top bar in the page (reading and Tab order), but must paint under it and under
+   every floating part of the UI: the bottom layer of .rlt-ui's stacking context. */
+.rlt-ui .focus-view {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: auto;
+  overflow-y: auto;
+  padding: calc(var(--panel-top) + 0.75rem) 1.75rem 1.75rem;
+  background:
+    radial-gradient(1100px 520px at 18% -10%, rgb(var(--sun-rgb) / 0.13), transparent 60%),
+    radial-gradient(900px 600px at 90% 110%, rgb(var(--work-rgb) / 0.08), transparent 60%),
+    var(--board-bg);
+  animation: rlt-fade 0.25s var(--ease);
+}
+.rlt-ui.has-panel .focus-view {
+  padding-right: calc(var(--panel-w) + var(--gap) * 2 + 1rem);
+}
+.rlt-ui .fv-head {
+  margin-bottom: 1.25rem;
+}
+.rlt-ui .fv-head h2 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.rlt-ui .fv-head p {
+  margin-top: 0.25rem;
+}
+.rlt-ui .fv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.875rem;
+  align-items: start;
+}
+.rlt-ui .fv-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.rlt-ui .fv-card.is-waiting {
+  border-color: rgb(var(--amber-rgb) / 0.4);
+  box-shadow: var(--shadow), 0 0 34px -12px rgb(var(--amber-rgb) / 0.55);
+}
+.rlt-ui .fv-art {
+  height: 132px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--hair);
+}
+.rlt-ui .fv-art svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.rlt-ui .fv-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.625rem;
+  min-width: 0;
+}
+/* the house's name over its folder (focus-view.ts); the buttons beside them */
+.rlt-ui .fv-name {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.rlt-ui .fv-title h3 {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .fv-enter {
+  flex-shrink: 0;
+  padding-right: 0.5rem;
+}
+.rlt-ui .fv-body {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem 0.875rem;
+}
+.rlt-ui .fv-body h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.rlt-ui .fv-path {
+  font: 0.71875rem var(--mono);
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A path whose start gives way before the folder's name (path-line.ts, finding #85) */
+.rlt-ui .path-line {
+  display: flex;
+  min-width: 0;
+}
+.rlt-ui .path-head {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .path-tail {
+  flex: 0 0 auto;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .fv-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.rlt-ui .fv-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  max-width: 100%;
+  height: 1.3125rem;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  font-size: 0.71875rem;
+  font-weight: 500;
+  background: var(--fill-2);
+  color: var(--text-2);
+}
+/* a long workflow name ends in "…" on the pill's one line (it wrapped out of the pill) */
+.rlt-ui .fv-pill > svg {
+  flex-shrink: 0;
+}
+.rlt-ui .fv-pill-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rlt-ui .fv-pill.is-amber {
+  background: rgb(var(--amber-rgb) / 0.16);
+  color: var(--amber-text);
+}
+.rlt-ui .fv-pill.is-work {
+  background: rgb(var(--work-rgb) / 0.15);
+  color: var(--work-text);
+}
+.rlt-ui .fv-people {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1px;
+}
+.rlt-ui .fv-person {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.5rem auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3125rem 0.375rem;
+  border-radius: 0.5rem;
+  text-align: left;
+}
+.rlt-ui .fv-person:hover {
+  background: var(--fill-2);
+}
+.rlt-ui .fv-person-name {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+.rlt-ui .fv-person-status {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rlt-ui .fv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.125rem;
+}
+.rlt-ui .fv-add {
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 240px;
+  border: 1px dashed var(--hair-2);
+  border-radius: var(--radius);
+  color: var(--text-2);
+  pointer-events: auto;
+  transition: color 0.15s, border-color 0.15s, background-color 0.15s;
+}
+.rlt-ui .fv-add:hover {
+  color: var(--text);
+  border-color: rgb(var(--fg-rgb) / 0.28);
+  background: var(--fill-1);
+}
+.rlt-ui .fv-add > span:first-of-type {
+  font-weight: 600;
+}
+/* No AI account yet: the first card leads to Models & providers, amber like the top bar's Connect AI (shorter than a
+   house card: on a phone it would push the town off the screen) */
+.rlt-ui .fv-add.is-setup {
+  min-height: 8.75rem;
+  border-color: rgb(var(--amber-rgb) / 0.5);
+  color: var(--amber-text);
+}
+.rlt-ui .fv-add.is-setup:hover {
+  border-color: rgb(var(--amber-rgb) / 0.75);
+  background: rgb(var(--amber-rgb) / 0.08);
+  color: var(--amber-text);
+}
+/* Board on a phone: seven houses were ~4,300px of scrolling, mostly illustration. The card keeps its name, path,
+   status, jobs and actions; the picture shrinks to a thumbnail beside the name; the lead and a quiet house's district
+   go. It also has to breathe: cards 10 px apart with 12 px inside, a solid Enter on every card and four boxed action
+   buttons read as one crowded wall. Cards stand apart, the page and cards get more inner room, Enter is soft (the one
+   solid button left is the house you are in: Open chat) and the actions are quiet icons under a hairline. (Same
+   query as PHONE_BOARD_QUERY in touch.ts; the job rows: houses.css.) */
+@media (max-width: 820px), (pointer: coarse) and (max-height: 520px) {
+  .rlt-ui.is-focus .focus-view {
+    padding-left: max(1rem, var(--sa-l));
+    padding-right: max(1rem, var(--sa-r));
+    padding-bottom: max(1.5rem, var(--sa-b));
+  }
+  .rlt-ui.is-focus .fv-head {
+    margin-bottom: 0.875rem;
+  }
+  .rlt-ui.is-focus .fv-head h2 {
+    font-size: 1.25rem;
+  }
+  .rlt-ui.is-focus .fv-head .fv-lead {
+    display: none;
+  }
+  .rlt-ui.is-focus .fv-grid {
+    gap: 1rem;
+  }
+  .rlt-ui.is-focus .fv-card {
+    position: relative;
+  }
+  .rlt-ui.is-focus .fv-art {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--hair);
+    border-radius: 0.625rem;
+  }
+  /* (one column that never grows past the card: a long run name or path pushed Enter and the actions off it) */
+  .rlt-ui.is-focus .fv-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    padding: 1rem 1rem 0.375rem;
+  }
+  .rlt-ui.is-focus .fv-title {
+    gap: 0.25rem;
+    min-height: 2.75rem;
+    margin-left: 3.5rem;
+  }
+  .rlt-ui.is-focus .fv-body h3 {
+    font-size: 1.0625rem;
+    line-height: 1.3;
+  }
+  /* (in the UI's font: in mono the folder's path looked spaced out beside the name). Beside the name there is room
+     for ~20 letters: the path gives way from its start ("…workspace/new-novel"), so it always meets the folder's
+     name — cut at its end, it left a gap of up to two letters before it */
+  .rlt-ui.is-focus .fv-path {
+    font: 0.8125rem/1.3 var(--font);
+  }
+  .rlt-ui.is-focus .fv-path .path-head {
+    direction: rtl;
+  }
+  .rlt-ui.is-focus .fv-card:not(.is-here) .fv-enter {
+    background: var(--fill-2);
+    border-color: var(--hair);
+    color: var(--text);
+    box-shadow: none;
+  }
+  .rlt-ui.is-focus .fv-status.is-quiet {
+    display: none;
+  }
+  /* the house's actions on one row: icon over a one-word caption, as the 3D action bar on a phone (four buttons took
+     two rows) — no box each: a hairline sets them off from the jobs */
+  .rlt-ui.is-focus .fv-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.25rem;
+    margin: 0.125rem -0.5rem 0;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--hair);
+  }
+  .rlt-ui.is-focus .fv-actions > .btn {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.1875rem;
+    min-width: 0;
+    height: auto;
+    min-height: 3rem;
+    padding: 0.25rem 0.125rem;
+    background: none;
+    border-color: transparent;
+    color: var(--text-2);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+  .rlt-ui.is-focus .fv-actions > .btn:hover:not(:disabled) {
+    background: var(--fill-2);
+    color: var(--text);
+  }
+  .rlt-ui.is-focus .fv-actions > .btn > .muted {
+    display: none;
+  }
+  .rlt-ui.is-focus .fv-add {
+    min-height: 5rem;
+  }
+  .rlt-ui.is-focus .fv-waiting {
+    padding: 0.875rem 1rem 0.625rem;
+    margin-bottom: 1rem;
+  }
+  .rlt-ui.is-focus .fv-wait-row {
+    gap: 0.625rem;
+    padding: 0.5rem 0.375rem;
+  }
+  /* the path keeps its "…" beside a long name: squeezed to nothing it left a cut letter before the folder's name */
+  .rlt-ui.is-focus .fv-path .path-head {
+    min-width: 1em;
+  }
+  .rlt-ui.is-focus .fv-path .path-head + .path-tail {
+    max-width: calc(100% - 1em);
+  }
+}
+/* 320 px: beside Open chat and ⋯ the name of the house you are in kept four letters ("term…"); the button's icon goes */
+@media (max-width: 22.4375em) {
+  .rlt-ui.is-focus .fv-card.is-here .fv-enter {
+    padding: 0 0.625rem;
+  }
+  .rlt-ui.is-focus .fv-card.is-here .fv-enter > svg {
+    display: none;
+  }
+}

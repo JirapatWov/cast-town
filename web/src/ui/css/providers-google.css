@@ -1,0 +1,91 @@
+/* The Google card of Models & providers (providers-google.ts): the other ways in, the Antigravity warning, the Cloud
+   project line and the inline key / project forms. Also the link and Details of a failed sign-in (providers.ts). */
+.rlt-ui .g-ways {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.rlt-ui .g-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4375rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--sun-text);
+}
+.rlt-ui .g-warn svg {
+  flex-shrink: 0;
+  margin-top: 0.125rem;
+}
+.rlt-ui .g-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-2);
+}
+.rlt-ui .g-line-label {
+  color: var(--text-2);
+  font-weight: 600;
+}
+.rlt-ui .g-line code {
+  font-size: 0.71875rem;
+  color: var(--text);
+  word-break: break-all;
+}
+.rlt-ui .g-line-note {
+  color: var(--text-3);
+}
+.rlt-ui .g-form {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.625rem 0.6875rem;
+  border-radius: 0.625rem;
+  background: rgb(var(--shade-rgb) / calc(0.22 * var(--shade)));
+  border: 1px solid var(--hair-2);
+}
+.rlt-ui .g-note {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.rlt-ui .g-connected {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--hair-2);
+}
+
+/* A failed sign-in: where the fix is done, and omp's own words behind Details */
+.rlt-ui .signin-link {
+  justify-self: start;
+}
+.rlt-ui .signin-details summary {
+  width: fit-content;
+  font-size: 0.75rem;
+  color: var(--text-3);
+  cursor: pointer;
+}
+.rlt-ui .signin-details summary:hover {
+  color: var(--text-2);
+}
+.rlt-ui .signin-details pre {
+  margin: 0.375rem 0 0;
+  max-height: 180px;
+  overflow: auto;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  background: rgb(var(--shade-rgb) / calc(0.32 * var(--shade)));
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-2);
+}
+
+/* Antigravity is offered quietly (unofficial), but it is still a button: an outline, not bare text on touch screens */
+.rlt-ui .g-antigravity {
+  border: 1px solid var(--hair-2);
+}

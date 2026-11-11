@@ -1,0 +1,171 @@
+/* "You" settings popover: show the homeowner avatar, pick a look (portrait cards), WASD walking. */
+.rlt-ui .you-pop {
+  width: 316px;
+  max-width: calc(100vw - 1rem);
+  padding: 0.75rem;
+  border-radius: 0.875rem;
+  box-shadow: var(--shadow);
+}
+.rlt-ui .you-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.rlt-ui .you-row-text {
+  flex: 1;
+  min-width: 0;
+}
+.rlt-ui .you-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 0.1875rem;
+  flex-wrap: wrap;
+}
+.rlt-ui .you-title kbd {
+  font: 600 0.65625rem var(--mono);
+  min-width: 1.0625rem;
+  padding: 1px 0.25rem;
+  border-radius: 0.3125rem;
+  text-align: center;
+  background: var(--fill-2);
+  border: 1px solid var(--hair-2);
+  color: var(--text);
+}
+.rlt-ui .you-hint {
+  margin-top: 0.1875rem;
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.rlt-ui .you-sep {
+  height: 1px;
+  margin: 0.75rem -0.75rem;
+  background: var(--hair);
+}
+.rlt-ui .you-label {
+  margin-bottom: 0.5rem;
+  font-size: 0.71875rem;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+/* switch */
+.rlt-ui .you-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.3125rem;
+  margin-top: 1px;
+  border-radius: 999px;
+  background: var(--fill-3);
+  border: 1px solid var(--hair-2);
+  transition: background 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.rlt-ui .you-switch-knob {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 1px 3px rgb(var(--shade-rgb) / calc(0.35 * var(--shade)));
+  transition: transform 0.18s var(--ease);
+}
+.rlt-ui .you-switch[aria-checked='true'] {
+  background: var(--sun);
+  border-color: transparent;
+}
+.rlt-ui .you-switch[aria-checked='true'] .you-switch-knob {
+  transform: translateX(0.9375rem);
+  background: #fffaf1; /* theme: fixed — the knob on the sun-coloured track */
+}
+.rlt-ui .you-switch:focus-visible {
+  outline: 2px solid var(--sun);
+  outline-offset: 2px;
+}
+
+/* look cards */
+.rlt-ui .you-looks {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+.rlt-ui .you-look {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 0.6875rem;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 18%, var(--warm-hi), rgb(var(--fg-rgb) / 0.03) 62%), var(--fill-1);
+  border: 1px solid var(--hair);
+  transition: border-color 0.15s var(--ease), transform 0.15s var(--ease), box-shadow 0.15s var(--ease);
+}
+.rlt-ui .you-look:hover {
+  border-color: var(--hair-2);
+  transform: translateY(-1px);
+}
+.rlt-ui .you-look:focus-visible {
+  outline: 2px solid var(--sun);
+  outline-offset: 2px;
+}
+.rlt-ui .you-look.is-on {
+  border-color: rgb(var(--sun-rgb) / 0.85);
+  box-shadow: 0 0 0 1px rgb(var(--sun-rgb) / 0.5), 0 8px 18px -10px rgb(var(--sun-rgb) / 0.6);
+}
+.rlt-ui .you-look-img {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  color: rgb(var(--fg-rgb) / 0.12);
+}
+.rlt-ui .you-look-img svg {
+  width: 70%;
+  height: auto;
+  animation: you-breathe 1.6s ease-in-out infinite;
+}
+.rlt-ui .you-look-img.is-flat svg {
+  animation: none;
+}
+.rlt-ui .you-look-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: rlt-fade 0.25s var(--ease);
+}
+.rlt-ui .you-look-check {
+  position: absolute;
+  top: 0.3125rem;
+  right: 0.3125rem;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--sun);
+  color: var(--ink);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.15s var(--ease), transform 0.15s var(--ease);
+}
+.rlt-ui .you-look.is-on .you-look-check {
+  opacity: 1;
+  transform: none;
+}
+@keyframes you-breathe {
+  50% {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rlt-ui .you-look-img svg {
+    animation: none;
+  }
+  .rlt-ui .you-look,
+  .rlt-ui .you-switch-knob {
+    transition: none;
+  }
+}

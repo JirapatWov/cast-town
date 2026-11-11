@@ -1,0 +1,438 @@
+/* Top bar: three floating islands. */
+.rlt-ui .topbar {
+  position: absolute;
+  top: var(--gap);
+  left: var(--gap);
+  right: var(--gap);
+  display: grid;
+  /* the left island gives way (its names shorten) before it would slide under the right one, e.g. with large text */
+  grid-template-columns: minmax(0, max-content) minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: var(--gap);
+  pointer-events: none;
+}
+.rlt-ui .tb-island {
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.rlt-ui .tb-left {
+  justify-self: start;
+  gap: 0.25rem;
+  padding: 0 0.5rem 0 0.375rem;
+}
+.rlt-ui .tb-right {
+  justify-self: end;
+  grid-column: 3;
+  gap: 0.125rem;
+  padding: 0 0.25rem;
+}
+.rlt-ui .brand {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 0.625rem;
+  background: linear-gradient(160deg, var(--warm-hi), rgb(var(--fg-rgb) / 0.04));
+  box-shadow: inset 0 0 0 1px rgb(var(--fg-rgb) / 0.08);
+}
+.rlt-ui .brand-mark svg {
+  display: block;
+}
+/* the mark's ink and lamp follow the theme (shared/brand.ts draws them for dark surfaces) */
+.rlt-ui .brand-mark path {
+  stroke: var(--text);
+}
+.rlt-ui .brand-mark circle {
+  fill: var(--brand-sun);
+}
+.rlt-ui .crumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  min-width: 0;
+}
+.rlt-ui .crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.875rem;
+  padding: 0 0.5625rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 13.75rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+.rlt-ui button.crumb:hover {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .crumb.is-current {
+  color: var(--text);
+  font-weight: 600;
+}
+.rlt-ui .crumb-sep {
+  color: var(--text-3);
+}
+
+/* Right island controls */
+.rlt-ui .tb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4375rem;
+  height: 2.25rem;
+  padding: 0 0.625rem;
+  border-radius: 0.625rem;
+  color: var(--text-2);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background-color 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.rlt-ui .tb-btn:hover,
+.rlt-ui .tb-btn[aria-expanded='true'] {
+  background: var(--fill-2);
+  color: var(--text);
+}
+.rlt-ui .tb-icon {
+  width: 2.25rem;
+  padding: 0;
+  justify-content: center;
+}
+.rlt-ui .tb-icon.is-on {
+  color: var(--sun);
+  background: rgb(var(--sun-rgb) / 0.12);
+}
+.rlt-ui .tb-bell.is-alert {
+  color: var(--amber-text);
+  background: rgb(var(--amber-rgb) / 0.12);
+  animation: rlt-amber-glow 2.4s ease-in-out infinite;
+}
+.rlt-ui .tb-cost-total {
+  color: var(--text);
+}
+.rlt-ui .tb-cost-bar {
+  display: flex;
+  gap: 0.09375rem;
+  width: 2.625rem;
+  height: 0.3125rem;
+  border-radius: 0.1875rem;
+  overflow: hidden;
+  background: var(--fill-2);
+}
+.rlt-ui .tb-cost-bar > span {
+  display: block;
+  height: 100%;
+}
+.rlt-ui .tb-cost-bar > .is-empty {
+  flex: 1;
+}
+.rlt-ui .prov-dot {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.rlt-ui .tb-providers.is-none {
+  color: var(--sun-text);
+}
+.rlt-ui .tb-providers.is-none .prov-dot {
+  background: var(--sun);
+  box-shadow: 0 0 8px rgb(var(--sun-rgb) / 0.7);
+}
+.rlt-ui .tb-providers.is-live .prov-dot {
+  background: var(--ok);
+  box-shadow: 0 0 8px rgb(var(--ok-rgb) / 0.6);
+}
+.rlt-ui .tb-sep {
+  width: 1px;
+  height: 1.25rem;
+  margin: 0 0.25rem;
+  background: var(--hair);
+}
+.rlt-ui .tb-palette {
+  gap: 0.5rem;
+}
+.rlt-ui .tb-conn {
+  width: 0.5rem;
+  height: 0.5rem;
+  margin: 0 0.625rem 0 0.5rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rlt-ui .tb-conn.is-up {
+  background: var(--ok);
+  box-shadow: 0 0 0 3px rgb(var(--ok-rgb) / 0.16);
+}
+.rlt-ui .tb-conn.is-down {
+  background: var(--amber);
+  box-shadow: 0 0 0 3px rgb(var(--amber-rgb) / 0.2);
+  animation: rlt-pulse 1.2s ease-in-out infinite;
+}
+
+/* Run strip — the relay */
+.rlt-ui .runstrip {
+  grid-column: 2;
+  justify-self: center;
+  max-width: 100%;
+  overflow: hidden;
+  height: var(--top-h);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.875rem 0 0.625rem;
+  min-width: 0;
+  transition: box-shadow 0.2s, border-color 0.2s;
+  animation: rlt-drop 0.24s var(--ease);
+}
+.rlt-ui .runstrip:hover {
+  border-color: var(--hair-2);
+}
+.rlt-ui .runstrip.run-waiting_approval {
+  border-color: rgb(var(--amber-rgb) / 0.4);
+}
+.rlt-ui .rs-project {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding-right: 0.125rem;
+}
+.rlt-ui .rs-chips {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  /* squeezed (a finished run adds its status word, the side panel narrows the bar, a long relay): the chips are cut
+     at the edge of their own box instead of running under the status and the clock */
+  overflow: hidden;
+}
+.rlt-ui .rs-chip {
+  --vc: #9ca3af;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 1.625rem;
+  padding: 0 0.625rem 0 0.3125rem;
+  border-radius: 999px;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--vc) 12%, transparent);
+  white-space: nowrap;
+  min-width: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+.rlt-ui .rs-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rlt-ui .rs-dot {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff; /* theme: fixed — on the person's colour */
+  border: 1.5px solid var(--vc);
+  flex-shrink: 0;
+}
+.rlt-ui .rs-chip.is-done {
+  color: var(--text);
+}
+.rlt-ui .rs-chip.is-done .rs-dot {
+  background: var(--vc);
+}
+.rlt-ui .rs-chip.is-running {
+  color: var(--text);
+  background: color-mix(in srgb, var(--vc) 24%, transparent);
+  animation: rlt-baton 2s ease-in-out infinite;
+}
+.rlt-ui .rs-chip.is-running .rs-dot {
+  background: radial-gradient(circle, var(--vc) 0 3px, transparent 3.5px);
+}
+.rlt-ui .rs-chip.is-waiting {
+  color: var(--amber-text);
+  background: rgb(var(--amber-rgb) / 0.14);
+  box-shadow: 0 0 0 1px rgb(var(--amber-rgb) / 0.5);
+}
+.rlt-ui .rs-chip.is-waiting .rs-dot {
+  border-color: var(--amber);
+  background: var(--amber);
+  color: var(--on-amber);
+}
+.rlt-ui .rs-chip.is-pending {
+  background: var(--fill-1);
+  color: var(--text-3);
+}
+.rlt-ui .rs-chip.is-pending .rs-dot {
+  border-style: dashed;
+  border-color: var(--text-3);
+}
+.rlt-ui .rs-chip.is-failed .rs-dot {
+  background: var(--err);
+  border-color: var(--err);
+}
+.rlt-ui .rs-attempt {
+  font-size: 0.6875rem;
+  color: var(--text-2);
+}
+.rlt-ui .rs-link {
+  width: 0.875rem;
+  height: 0.125rem;
+  margin: 0 0.1875rem;
+  border-radius: 0.125rem;
+  background: var(--hair-2);
+}
+.rlt-ui .rs-link.is-lit {
+  background: linear-gradient(90deg, var(--vc), color-mix(in srgb, var(--vc) 40%, transparent));
+}
+.rlt-ui .rs-loop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1875rem;
+  height: 1.375rem;
+  padding: 0 0.4375rem;
+  border-radius: 0.375rem;
+  font-size: 0.71875rem;
+  font-weight: 600;
+  color: var(--amber-text);
+  background: rgb(var(--amber-rgb) / 0.12);
+}
+.rlt-ui .rs-status {
+  font-size: 0.78125rem;
+  font-weight: 600;
+}
+.rlt-ui :is(.rs-status, .rs-time, .rs-cost, .rs-loop, .rs-project) {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.rlt-ui .run-completed .rs-status {
+  color: var(--ok-text);
+}
+.rlt-ui .run-failed .rs-status {
+  color: var(--err-text);
+}
+.rlt-ui .run-aborted .rs-status {
+  color: var(--text-2);
+}
+.rlt-ui .rs-time,
+.rlt-ui .rs-cost {
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .rs-cost {
+  padding-left: 0.625rem;
+  border-left: 1px solid var(--hair);
+}
+/* A strip that doesn't fit steps down (runstrip.ts fit()): the cost goes, and a finished run's clock and review-round
+   count (the Workflow tab shows all three), and names get shorter; then only the dots stay, as on a phone. Names stay
+   in the chips' tooltips. */
+.rlt-ui .runstrip.is-snug .rs-cost,
+.rlt-ui .runstrip.is-snug:is(.run-completed, .run-failed, .run-aborted) :is(.rs-time, .rs-loop) {
+  display: none;
+}
+.rlt-ui .runstrip.is-snug .rs-name {
+  max-width: 3.25rem;
+}
+.rlt-ui .runstrip.is-compact {
+  gap: 0.5rem;
+}
+/* …and with no room even for that, it gives way (it keeps its box, so the next measure still sees the room) */
+.rlt-ui .runstrip.is-gone {
+  visibility: hidden;
+}
+.rlt-ui .runstrip.is-compact .rs-name {
+  display: none;
+}
+.rlt-ui .runstrip.is-compact .rs-chip {
+  padding: 0 0.3125rem;
+}
+.rlt-ui .runstrip.is-compact .rs-link {
+  width: 0.5rem;
+}
+.rlt-ui .runstrip.is-compact .rs-project {
+  max-width: 6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cost popover */
+.rlt-ui .cost-pop {
+  width: 290px;
+  padding: 0.875rem 1rem;
+}
+.rlt-ui .cost-pop-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.78125rem;
+  color: var(--text-2);
+}
+.rlt-ui .cost-pop-head strong {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.rlt-ui .cost-rows {
+  display: grid;
+  gap: 0.5625rem;
+  margin-top: 0.875rem;
+}
+.rlt-ui .cost-row {
+  display: grid;
+  grid-template-columns: 0.5rem 76px 1fr auto;
+  align-items: center;
+  gap: 0.5625rem;
+  font-size: 0.78125rem;
+}
+.rlt-ui .cost-bar {
+  height: 0.3125rem;
+  border-radius: 0.1875rem;
+  overflow: hidden;
+  background: var(--fill-2);
+}
+.rlt-ui .cost-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 0.1875rem;
+}
+
+/* Phones and narrow windows: the model status keeps its word ("Connect AI", "2 live") — a lone amber dot next to the green
+   connection dot read as two status lights, and it is the way to Models & providers. The connection dot only shows
+   when something is wrong. (More specific than responsive.css, which hides labels at this width.) */
+@media (max-width: 820px) {
+  .rlt-ui .tb-right .tb-providers .tb-btn-label {
+    display: inline;
+  }
+  .rlt-ui .tb-right .tb-providers {
+    gap: 0.375rem;
+  }
+  .rlt-ui .tb-right .tb-conn.is-up {
+    display: none;
+  }
+}
+.rlt-ui .cost-since {
+  margin-top: 0.75rem;
+  font-size: 0.71875rem;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+/* Errors in the Inbox's Recent not seen on this device yet */
+.rlt-ui .tb-bell {
+  position: relative;
+}
+.rlt-ui .tb-bell-dot {
+  position: absolute;
+  top: 0.375rem;
+  right: 0.375rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--err);
+  box-shadow: 0 0 0 2px rgb(var(--surface-rgb) / 0.85);
+}

@@ -1,0 +1,21 @@
+{
+  "source": "https://github.com/microsoft/Microsoft-Rocketbox (MIT), Assets/Avatars/Adults/<name>/{Export,Textures}",
+  "avatars": [
+    { "id": "f02", "name": "Female_Adult_02", "gender": "f", "style": "casual", "label": "Ponytail, white knit, denim skirt" },
+    { "id": "f03", "name": "Female_Adult_03", "gender": "f", "style": "casual", "label": "Black bob, plum top" },
+    { "id": "f05", "name": "Female_Adult_05", "gender": "f", "style": "smart", "label": "Dark bob, pink blazer" },
+    { "id": "f07", "name": "Female_Adult_07", "gender": "f", "style": "casual", "label": "Brown jacket, jeans, boots" },
+    { "id": "f09", "name": "Female_Adult_09", "gender": "f", "style": "smart", "label": "Taupe cardigan, slacks" },
+    { "id": "f15", "name": "Female_Adult_15", "gender": "f", "style": "smart", "label": "Blue blouse, pencil skirt" },
+    { "id": "f17", "name": "Female_Adult_17", "gender": "f", "style": "casual", "label": "Blonde bun, green tee" },
+    { "id": "fp2", "name": "Female_Party_02", "gender": "f", "style": "casual", "label": "Curls, patterned top" },
+    { "id": "m03", "name": "Male_Adult_03", "gender": "m", "style": "smart", "label": "Silver hair, tweed blazer" },
+    { "id": "m04", "name": "Male_Adult_04", "gender": "m", "style": "casual", "label": "Afro, dark jacket" },
+    { "id": "m08", "name": "Male_Adult_08", "gender": "m", "style": "smart", "label": "Sky-blue shirt, chinos" },
+    { "id": "m09", "name": "Male_Adult_09", "gender": "m", "style": "casual", "label": "Long hair, navy tee" },
+    { "id": "m12", "name": "Male_Adult_12", "gender": "m", "style": "casual", "label": "Denim jacket" },
+    { "id": "m14", "name": "Male_Adult_14", "gender": "m", "style": "smart", "label": "Grey shirt, belt, khakis" },
+    { "id": "m16", "name": "Male_Adult_16", "gender": "m", "style": "casual", "label": "Blond, blue tee" },
+    { "id": "m17", "name": "Male_Adult_17", "gender": "m", "style": "casual", "label": "Cap, blue hoodie" }
+  ]
+}

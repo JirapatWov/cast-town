@@ -1,0 +1,4 @@
+# `bun test tests` matches every test file whose path contains "tests", agent/ included (agent/scripts/install-tests/).
+# agent/ is cast-agent with its own suites: run them inside it (agent/FORK.md).
+[test]
+pathIgnorePatterns = ["agent/**"]
