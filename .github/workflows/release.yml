@@ -128,15 +128,18 @@ jobs:
             exit 1
           fi
           echo "::notice title=Developer ID::Signing with $(security find-identity -v -p codesigning "$keychain" | awk -F'"' '/Developer ID Application/ { print $2; exit }')"
-          # The build runs with a throwaway HOME, where codesign wouldn't find this keychain on its own.
+          # build-dmg.sh passes CAST_SIGN_KEYCHAIN to codesign, so it signs from this keychain only.
           printf 'CAST_SIGN_IDENTITY=%s\nCAST_SIGN_ENTITLEMENTS=%s\nCAST_SIGN_KEYCHAIN=%s\n' \
             "$identity" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" "$keychain" >> "$GITHUB_ENV"
 
       - name: Build, sign and self-check the app, then create the dmg
         run: |
-          sandbox="$RUNNER_TEMP/cast-build-home"
-          mkdir -p "$sandbox/home" "$sandbox/agent" "$sandbox/workspace" "$sandbox/tmp"
-          export HOME="$sandbox/home" PI_CODING_AGENT_DIR="$sandbox/agent"
+          # The runner's own HOME stays: codesign looks up the signing keychain and its certificate chain
+          # through HOME (with a throwaway HOME it fails with "could not be found in the keychain").
+          # The runner is discarded after the job; the agent, workspace and temp files still go to a sandbox.
+          sandbox="$RUNNER_TEMP/cast-build-sandbox"
+          mkdir -p "$sandbox/agent" "$sandbox/workspace" "$sandbox/tmp"
+          export PI_CODING_AGENT_DIR="$sandbox/agent"
           export CAST_WORKSPACE="$sandbox/workspace" CAST_FS_ROOTS="$sandbox"
           export TMPDIR="$sandbox/tmp" CAST_PUSH=off
           # The end of the build's output becomes the error annotation, readable on the run's summary page.

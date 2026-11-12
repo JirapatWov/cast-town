@@ -11,8 +11,8 @@
 #
 # Optional release signing: CAST_SIGN_IDENTITY selects an installed Developer ID Application certificate.
 # CAST_SIGN_ENTITLEMENTS must then point to the Bun runtime entitlements (agent/scripts/macos-entitlements.plist
-# in a checkout). CAST_SIGN_KEYCHAIN names the keychain that holds it, so codesign finds it even when HOME points
-# elsewhere (the release workflow runs this with a throwaway HOME). The workflow notarizes the dmg separately.
+# in a checkout). CAST_SIGN_KEYCHAIN optionally names the keychain that holds the certificate (the release workflow's
+# temporary keychain); codesign then signs from that keychain only. The workflow notarizes the dmg separately.
 set -euo pipefail
 
 say() { printf '\n==> %s\n' "$*"; }

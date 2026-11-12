@@ -293,7 +293,7 @@ describe('mac/build-dmg.sh on a fake Mac', () => {
     expect(r.leftovers).toEqual([]);
   });
 
-  test('Developer ID signing looks in CAST_SIGN_KEYCHAIN (the release build runs with a throwaway HOME)', () => {
+  test('Developer ID signing signs from CAST_SIGN_KEYCHAIN and refuses a missing one', () => {
     const kit = makeKit();
     const entitlements = join(kit, '..', 'bun-entitlements.plist');
     copyFileSync(join(repo, 'agent', 'scripts', 'macos-entitlements.plist'), entitlements);
