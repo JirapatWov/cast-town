@@ -9,6 +9,7 @@ const ACTIVITY_KEPT = 150;
 export function emptyState(): ClientState {
   return {
     connected: false,
+    synced: false,
     hello: null,
     city: { lots: [], projects: [] },
     agents: {},
@@ -84,6 +85,7 @@ export function applyServerMsg(s: ClientState, msg: ServerMsg): void {
       s.hello = msg;
       break;
     case 'snapshot': {
+      s.synced = true;
       s.city = msg.city;
       s.agents = byId(msg.agents);
       setWorkflows(s, msg);

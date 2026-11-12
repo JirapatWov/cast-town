@@ -11,6 +11,7 @@ import { icon } from './icons';
 import { pendingPlans } from './plans';
 import type { Shell } from './shell';
 import { threeD } from './view-mode';
+import { housesLoading } from './town-loading';
 
 /** "2 waiting for you, 1 working" — or "quiet". */
 export function houseStatusText(waiting: number, working: number): string {
@@ -54,8 +55,9 @@ export function createMainView(shell: Shell, board: HTMLElement) {
       const working = store.agentsOf(p.id).filter((a) => agentTone(a) === 'work').length;
       return { id: p.id, name: p.name, status: houseStatusText(waiting, working) };
     });
-    const connect = needsAccount(s);
-    if (!changed([rows, threeD.state, connect])) return;
+    const loading = housesLoading(s);
+    const connect = !loading && needsAccount(s); // the accounts come with the snapshot too
+    if (!changed([rows, threeD.state, connect, loading?.title])) return;
     setChildren(list,
       // no AI account yet: nobody can work, so connecting one comes first
       connect
@@ -76,9 +78,12 @@ export function createMainView(shell: Shell, board: HTMLElement) {
           ),
         ),
       ),
-      rows.length
-        ? null
-        : h('li', null, h('button', { type: 'button', class: 'ch-item', onclick: () => shell.openPlacement() }, icon('folderPlus', 15), h('span', null, 'Place your first project'))),
+      // the houses are on their way (before the first snapshot): not "place your first" yet
+      loading
+        ? h('li', { class: 'ch-item is-loading', role: 'status' }, h('span', { class: 'spinner spinner-sm', 'aria-hidden': 'true' }), h('span', null, loading.title))
+        : rows.length
+          ? null
+          : h('li', null, h('button', { type: 'button', class: 'ch-item', onclick: () => shell.openPlacement() }, icon('folderPlus', 15), h('span', null, 'Place your first project'))),
     );
   }
 

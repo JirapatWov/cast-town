@@ -3,7 +3,7 @@
 // give a desktop is here, plus the terminal (a phone has no Ctrl+`; left out when the owner turned it off), help,
 // settings, the Return-key choice and the welcome tour.
 import { agentsState } from './agents-health';
-import { providersStatus } from './model-state';
+import { shownProvidersStatus } from './model-state';
 import { deviceStorage, h } from './dom';
 import { icon } from './icons';
 import { openMenu, type MenuItem, type MenuSection } from './menu';
@@ -42,7 +42,7 @@ export function createMoreButton(shell: Shell, extra: () => (MenuItem | null)[] 
           { label: 'Search and commands', icon: 'search', onSelect: () => shell.openPalette() },
           terminalOffered() ? { label: 'Terminal', icon: 'terminal', onSelect: () => shell.openTerminal() } : null,
           // the top bar's providers button is the first thing a phone's top bar drops: its state comes along here
-          { label: 'Models and providers', hint: providersStatus(agentsState(shell.store.state.hello).kind, shell.store.state).hint, icon: 'key', onSelect: () => shell.openProviders() },
+          { label: 'Models and providers', hint: shownProvidersStatus(agentsState(shell.store.state.hello).kind, shell.store.state).hint, icon: 'key', onSelect: () => shell.openProviders() },
           { label: 'Settings', hint: 'Devices, pairing, your data', icon: 'gear', onSelect: () => openSettings(shell) },
           { label: 'Help', icon: 'help', onSelect: () => shell.openHelp() },
           board ? tour : null,

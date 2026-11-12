@@ -13,6 +13,7 @@ import { viewerFolder } from './changes-tab';
 import { openFolder } from './file-viewer';
 import { isNarrow } from './touch';
 import { kbd } from './widgets';
+import { noHousesItem } from './town-loading';
 
 export function createActionBar(shell: Shell) {
   const { bus, store } = shell;
@@ -61,7 +62,7 @@ export function createActionBar(shell: Shell) {
                 // into the house, not just near it: a house can stand behind taller buildings
                 onSelect: () => shell.enterProject(p.id),
               }))
-            : [{ label: 'No projects yet', disabled: true, onSelect: () => {} }],
+            : [noHousesItem(store.state)],
         },
         {
           title: 'Places',

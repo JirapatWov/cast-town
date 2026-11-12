@@ -1,7 +1,7 @@
 {
   "name": "cast",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A little 3D town where your AI coding agents live and work: a web GUI for cast-agent, the coding agent in agent/.",
   "license": "MIT",
   "repository": {
@@ -29,6 +29,7 @@
     "compat:agent": "bun run scripts/omp-compat/run.ts",
     "gen:omp-logins": "bun run scripts/gen-omp-login-providers.ts",
     "pair": "bun run scripts/pair.ts",
+    "hermes": "bun run hermes/cast-hermes.ts",
     "release:snapshot": "bash scripts/release/snapshot.sh"
   },
   "dependencies": {

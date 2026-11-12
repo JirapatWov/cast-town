@@ -548,8 +548,9 @@ export function createCityView(ctx: AppContext): CityView {
       if (engine.onTimeOfDay) engine.onTimeOfDay((t) => applyNight(t.night));
       else applyNight(0);
       ready = true;
+      // the empty lots' FOR SALE signs wait for the first sync (main.ts: the first snapshot): before it every lot
+      // would read as free, a town with no houses
       if (pending) applySync(...pending);
-      else lots.setEmpty(LOTS);
       pending = null;
     },
     activate() {

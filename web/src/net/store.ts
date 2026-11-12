@@ -68,7 +68,6 @@ export function createStore(url: string = defaultWsUrl()): Store {
       if (i >= 0) outbox.splice(i, 1);
     },
   });
-  let snapshots = 0;
   let offlineSince = Date.now(); // not connected since (0 while connected); the first connect counts from page load
   let offlineTimer: ReturnType<typeof setTimeout> | undefined;
   const offlineLong = () => !state.connected && offlineSince > 0 && Date.now() - offlineSince >= OFFLINE_FAIL_MS;
@@ -130,11 +129,9 @@ export function createStore(url: string = defaultWsUrl()): Store {
     }
     if (!msg || typeof msg !== 'object' || typeof (msg as { t?: unknown }).t !== 'string') return;
     requests.handle(msg);
+    const resyncing = msg.t === 'snapshot' && state.synced; // a later snapshot: after a reconnect
     applyServerMsg(state, msg);
-    if (msg.t === 'snapshot') {
-      snapshots++;
-      if (snapshots > 1) resync();
-    }
+    if (resyncing) resync();
     notify(msg);
   };
 

@@ -45,6 +45,9 @@ export interface Bus {
 // ───────────── Client store (mirrors server state) ─────────────
 export interface ClientState {
   connected: boolean;
+  /** The first snapshot is in: the town's houses, people and accounts are known. Until then an empty list means "not
+   *  here yet", never "none" (ui/town-loading.ts). Stays true across reconnects: the last town is still shown. */
+  synced: boolean;
   hello: Extract<ServerMsg, { t: 'hello' }> | null;
   city: CityState;
   agents: Record<string, AgentInfo>;

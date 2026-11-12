@@ -1065,7 +1065,7 @@ export function createProviders(shell: Shell) {
   /** What the page shows that comes from the server or a request in flight. */
   const dataSig = () => {
     const s = store.state;
-    return JSON.stringify([s.providers, s.models, s.hello?.agents, accounts, accountsErr, accountsBusy, usage, usageErr, usageBusy, order.order, order.error, order.loading, google.sig(), local.sig(), login, whereNow()]);
+    return JSON.stringify([s.synced, s.providers, s.models, s.hello?.agents, accounts, accountsErr, accountsBusy, usage, usageErr, usageBusy, order.order, order.error, order.loading, google.sig(), local.sig(), login, whereNow()]);
   };
   /** Rebuild on the next frame (a user action, or several answers at once). */
   function render() {
@@ -1120,9 +1120,12 @@ export function createProviders(shell: Shell) {
         h('a', { href: 'https://github.com/can1357/oh-my-pi', target: '_blank', rel: 'noopener noreferrer' }, 'omp'),
         '), on this machine. Sign in to a provider here (the agent keeps the sign-in), then pick its models for any role.',
       ),
-      // omp or the account check first; then, with nothing connected (nobody can work), what to do
+      // omp or the account check first; then, with nothing connected (nobody can work), what to do — once the accounts
+      // are known (before the first snapshot an empty list means "not here yet")
       health.kind !== 'ok'
         ? healthNotice(health, !!s.hello?.agents?.checking)
+        : !s.synced
+        ? h('p', { class: 'acct-note', role: 'status' }, h('span', { class: 'spinner spinner-sm', 'aria-hidden': 'true' }), 'Loading your AI accounts…')
         : connected === 0 && !live
         ? h(
             'div',

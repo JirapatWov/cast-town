@@ -45,6 +45,7 @@ CAST.
 | `web/dev/` | Harness pages for single modules (dev server only, not built, not type-checked) |
 | `tests/` | `bun test` suites, see [tests/README.md](tests/README.md) |
 | `agent/` | cast-agent, the agent CAST runs (a fork of omp; build with `bun run build:agent`, see [agent/FORK.md](agent/FORK.md)) |
+| `hermes/` | The Hermes Agent bridge (`bun run hermes`): an MCP server (`mcp.ts`) and a notifier (`notify.ts`) that are clients of `/ws` like a paired browser (`client.ts`), see [hermes/README.md](hermes/README.md) |
 | `scripts/omp-compat/` | Checks an agent build against everything CAST relies on (`bun run compat:agent`) |
 | `scripts/gen-omp-login-providers.ts` | Writes `shared/omp-login-providers.ts` from the agent's source in `agent/` (`bun run gen:omp-logins`) |
 | `tools/` | Offline asset pipelines: `characters/` (avatars), `city/` (tree textures), `splash/` (the iOS launch images: the boot screen's first frame per screen size) |

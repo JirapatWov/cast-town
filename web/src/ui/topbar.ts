@@ -22,7 +22,7 @@ import { onInboxSeen, unseenInboxErrors } from './inbox-tab';
 import type { Shell } from './shell';
 import { modKey } from './widgets';
 import { waitingCount } from './plans';
-import { providersStatus } from './model-state';
+import { shownProvidersStatus } from './model-state';
 import { singleKeysEnabled } from './shortcuts';
 import { TOWN_FILES_SHARE, threeD } from './view-mode';
 import { inboxScope } from './last-house';
@@ -180,9 +180,9 @@ export function createTopBar(shell: Shell) {
 
     // Never a green "0 live": omp missing, the first check running and a failed check each say so (agents-health.ts);
     // otherwise green only when a provider really works — with none connected it is an amber "Connect AI" (phones keep
-    // it too: nobody can work until then).
+    // it too: nobody can work until then). Before the first snapshot the accounts aren't known: a neutral "Loading…".
     const health = agentsState(s.hello);
-    const { tone, label: word, aria } = providersStatus(health.kind, s);
+    const { tone, label: word, aria } = shownProvidersStatus(health.kind, s);
     providers.className = ['tb-btn', 'tb-providers', `is-${tone}`].join(' ');
     providers.title = tone === 'none' ? 'No AI account connected yet — connect one so people can work' : 'Models & providers';
     setChildren(providers, h('span', { class: 'prov-dot', 'aria-hidden': 'true' }), h('span', { class: 'tb-btn-label' }, word));

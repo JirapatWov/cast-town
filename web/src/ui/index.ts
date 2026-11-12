@@ -13,6 +13,7 @@ import { openSettings } from './settings';
 import { takeSettingsLink } from './settings-link';
 import { onSingleKeysChange, singleKeysEnabled } from './shortcuts';
 import { rememberBoard, threeD } from './view-mode';
+import { CONNECTING, LOADING_HOUSES, whenSynced } from './town-loading';
 import { createFloorSwitcher } from './floor-switcher';
 import { openJobDialog, refreshJobDialog } from './job-dialog';
 import { lastHouse, rememberHouse, townPanelHouse } from './last-house';
@@ -325,7 +326,8 @@ export function createUI(ctx: AppContext): UI {
   // one card in one place: whenever the panel opens, closes, folds or changes tab, the stack follows
   const approvals = createApprovalStack(shell, (a) => shownInPanel(panel.view, a));
   panel.onChange(() => schedule('approvals', approvals.render));
-  const offline = h('div', { class: 'offline-banner glass', role: 'status', hidden: true }, h('span', { class: 'spinner spinner-sm' }), `Reconnecting to the ${APP_NAME} server…`);
+  const offlineText = h('span', null, `Reconnecting to the ${APP_NAME} server…`);
+  const offline = h('div', { class: 'offline-banner glass', role: 'status', hidden: true }, h('span', { class: 'spinner spinner-sm' }), offlineText);
   attachCityOffline(offline); // a city through a hub that stays unreachable: offer Back to Home
   const ompWarning = createOmpWarning(shell);
   toasts.onChange(() => schedule('inbox', panel.refreshInbox));
@@ -338,6 +340,7 @@ export function createUI(ctx: AppContext): UI {
     schedule('topbar', topbar.render);
     schedule('floors', floorSwitch.render);
     schedule('main', mainView.render);
+    renderConnection(); // the 3D town says its houses are loading in the banner; the board in its own card
     schedule('title', renderTitle);
     onboarding.onCity(); // an open welcome says which view this is (a board start switches under it)
     announcer.say(on ? 'Board view: every house as a list.' : '3D town.');
@@ -381,23 +384,45 @@ export function createUI(ctx: AppContext): UI {
     schedule('floors', floorSwitch.render);
   }
 
-  let offlineTimer: ReturnType<typeof setTimeout> | null = null;
+  // The banner under the top bar: no connection (the first one is slow, or it was lost), or — in the 3D town, whose
+  // lots would read as empty — connected and the houses still on their way (the board says that in its own card).
+  type Banner = 'connect' | 'reconnect' | 'load';
+  const BANNER_TEXT: Record<Banner, string> = { connect: CONNECTING, reconnect: `Reconnecting to the ${APP_NAME} server…`, load: LOADING_HOUSES };
+  let bannerTimer: ReturnType<typeof setTimeout> | null = null;
+  let banner: Banner | null = null; // what it shows (null: hidden)
   let everConnected = false; // a slow first connect is not a lost connection: say nothing about it
+  const bannerWanted = (): Banner | null => {
+    const s = store.state;
+    if (!s.connected) return everConnected ? 'reconnect' : 'connect';
+    return s.synced || focusMode ? null : 'load';
+  };
+  const showBanner = (kind: Banner | null) => {
+    banner = kind;
+    offline.hidden = !kind;
+    if (kind) offlineText.textContent = BANNER_TEXT[kind];
+    offline.classList.toggle('is-loading', kind === 'load');
+  };
   function renderConnection() {
     if (store.state.connected) {
-      if (offlineTimer) clearTimeout(offlineTimer);
-      offlineTimer = null;
-      if (!offline.hidden && everConnected) announcer.say(`Connected to the ${APP_NAME} server again.`);
+      if (banner === 'reconnect') announcer.say(`Connected to the ${APP_NAME} server again.`);
       everConnected = true;
-      offline.hidden = true;
-    } else if (!offlineTimer && offline.hidden) {
-      // Don't flash the banner for a blip.
-      offlineTimer = setTimeout(() => {
-        offlineTimer = null;
-        if (store.state.connected) return;
-        offline.hidden = false;
+    }
+    const want = bannerWanted();
+    if (!want) {
+      clearTimeout(bannerTimer ?? undefined);
+      bannerTimer = null;
+      showBanner(null);
+    } else if (banner) {
+      if (banner !== want) showBanner(want); // already up: say what it is now (connected, the houses still loading)
+    } else if (!bannerTimer) {
+      // Don't flash the banner for a blip (or for a quick first load).
+      bannerTimer = setTimeout(() => {
+        bannerTimer = null;
+        const kind = bannerWanted();
+        if (!kind) return;
+        showBanner(kind);
         root.classList.toggle('is-offline', true);
-        if (everConnected) announcer.say(`Lost the connection to the ${APP_NAME} server. Reconnecting…`, 'assertive');
+        if (kind === 'reconnect') announcer.say(`Lost the connection to the ${APP_NAME} server. Reconnecting…`, 'assertive');
       }, 1500);
     }
     root.classList.toggle('is-offline', !offline.hidden); // the town board makes room on a phone (health.css)
@@ -467,6 +492,7 @@ export function createUI(ctx: AppContext): UI {
       approvalsKnown(msg.approvals.map((a) => a.id));
       plansKnown((msg.plans ?? []).map((p) => p.id));
       for (const r of msg.runs ?? []) runStatus.set(r.id, r.status);
+      renderConnection(); // the first one: the houses are in, no "loading" banner
     }
     if (msg?.t === 'run') onRun(msg.run);
     if (msg?.t === 'plan') onPlan(msg.plan);
@@ -641,7 +667,9 @@ export function createUI(ctx: AppContext): UI {
       // waits for the next visit
       const settingsLink = takeSettingsLink();
       if (settingsLink !== null) shell.openSettings(settingsLink || undefined);
-      else if (!onboardingDismissed()) onboarding.open();
+      // the welcome's next step is the first house, else placing one, and it says whether an AI account is connected:
+      // it waits for the first snapshot, so it never offers "Place your first project" to a town still on its way
+      else if (!onboardingDismissed()) whenSynced(store, () => !onboardingDismissed() && onboarding.open());
       // the installed app: service worker, icon badge, notifications, shortcuts (web/src/pwa)
       installPwa({ store, toast: shell.toast, openInbox: () => shell.openPanel('inbox'), openSettings: (s) => shell.openSettings(s) });
     },

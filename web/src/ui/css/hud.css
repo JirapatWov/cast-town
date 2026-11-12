@@ -683,6 +683,14 @@
 .rlt-ui .offline-banner .spinner {
   border-top-color: var(--amber);
 }
+/* Connected, the houses still on their way (the first snapshot, ui/town-loading.ts): calm, not a warning */
+.rlt-ui .offline-banner.is-loading {
+  color: var(--text-2);
+  border-color: var(--hair-2);
+}
+.rlt-ui .offline-banner.is-loading .spinner {
+  border-top-color: var(--work);
+}
 /* omp version warning (omp-warning.ts): same spot as the reconnect banner, which it gives way to */
 .rlt-ui .omp-warn {
   position: absolute;
@@ -949,6 +957,14 @@
   border-color: rgb(var(--amber-rgb) / 0.75);
   background: rgb(var(--amber-rgb) / 0.08);
   color: var(--amber-text);
+}
+/* The houses still on their way (before the first snapshot): where they will be, nothing to click yet */
+.rlt-ui .fv-add.is-loading {
+  min-height: 8.75rem;
+  border-style: solid;
+  border-color: var(--hair);
+  background: var(--fill-1);
+  pointer-events: none;
 }
 /* Board on a phone: seven houses were ~4,300px of scrolling, mostly illustration. The card keeps its name, path,
    status, jobs and actions; the picture shrinks to a thumbnail beside the name; the lead and a quiet house's district

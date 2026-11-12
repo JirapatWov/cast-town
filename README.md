@@ -87,6 +87,7 @@ and easiest with a keyboard or screen reader. CAST remembers the choice, and a B
 - [Using CAST](#using-cast)
 - [More than one machine (cities)](#more-than-one-machine-cities)
 - [Phones and other devices](#phones-and-other-devices)
+- [Chat apps through Hermes Agent](#chat-apps-through-hermes-agent)
 - [Install CAST on your phone](#install-cast-on-your-phone)
 - [Configuration](#configuration)
 - [Where CAST keeps things](#where-cast-keeps-things)
@@ -202,12 +203,12 @@ the dmg made on the Mac with the Command Line Tools (`xcode-select --install`; n
 ```bash
 # 1. the kit, in the cast folder (after bun install)
 scripts/mac/build-kit.sh dist/mac
-#    → dist/mac/cast-mac-kit-0.1.0.tar.gz
+#    → dist/mac/cast-mac-kit-0.2.0.tar.gz
 
 # 2. on the Mac
-tar xzf cast-mac-kit-0.1.0.tar.gz && cd cast-mac-kit
+tar xzf cast-mac-kit-0.2.0.tar.gz && cd cast-mac-kit
 shasum -a 256 -c SHA256SUMS      # optional: nothing was damaged on the way
-./build-dmg.sh                   # → CAST-0.1.0-arm64.dmg (CAST.app and a link to Applications)
+./build-dmg.sh                   # → CAST-0.2.0-arm64.dmg (CAST.app and a link to Applications)
 ./build-dmg.sh --run             # or: build CAST.app and start it, without a dmg
 ```
 
@@ -429,6 +430,15 @@ Once one browser is paired, pair the rest from **Settings** (the gear in the top
 
 Never expose CAST to the public internet. Behind your own reverse proxy, add its public origin to
 `CAST_ALLOWED_ORIGINS`, or the browser's live connection is refused.
+
+## Chat apps through Hermes Agent
+
+[Hermes Agent](https://hermes-agent.nousresearch.com/) can drive CAST from LINE, Telegram, Slack or any other chat it
+runs in: give a job's lead work, ask how it is going, and answer approval, question and plan cards. When a card
+starts waiting, CAST tells you in that chat with a short code (`[a7k2q]`); you reply “approve a7k2q”, and Hermes asks
+you to confirm before CAST gets the answer. It takes `bun run hermes pair` once, an MCP server entry and a webhook route
+in Hermes, and `bun run hermes notify` running next to CAST: see [hermes/README.md](hermes/README.md). The bridge is
+listed as **Hermes Agent** in Settings → Devices.
 
 ## Install CAST on your phone
 

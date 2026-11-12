@@ -19,6 +19,7 @@ import { houseTermTarget } from './terminal';
 import { terminalOffered } from './terminal-gate';
 import { pendingPlans } from './plans';
 import { TOWN_FILES_SHARE, threeD } from './view-mode';
+import { housesLoading } from './town-loading';
 
 export function createFocusView(shell: Shell) {
   const { store } = shell;
@@ -127,6 +128,21 @@ export function createFocusView(shell: Shell) {
         ),
       );
     });
+    // the houses are on their way (before the first snapshot): say so, not "place one" or "connect an account" — the
+    // accounts and the free lots come with the snapshot too
+    const loading = housesLoading(s);
+    if (loading) {
+      grid.setAttribute('aria-busy', 'true');
+      setChildren(grid,
+        h('div', { class: 'fv-card fv-add is-loading', role: 'status' },
+          h('span', { class: 'spinner', 'aria-hidden': 'true' }),
+          h('span', null, loading.title),
+          h('span', { class: 'muted small' }, loading.detail),
+        ),
+      );
+      return;
+    }
+    grid.removeAttribute('aria-busy');
     cards.push(
       h(
         'button',

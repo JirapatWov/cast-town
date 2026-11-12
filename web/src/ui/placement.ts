@@ -1,6 +1,6 @@
 // Place-project dialog: pick an existing folder (or create a new one), choose a building style and a lot.
 import { clipName, MAX_PROJECT_NAME } from '../../../shared/limits';
-import type { BuildingStyle, Lot, Project } from '../../../shared/protocol';
+import type { BuildingStyle, Project } from '../../../shared/protocol';
 import { needsAccount } from './agents-health';
 import { h, setChildren } from './dom';
 import { basename, lotLabel, SET_UP_GIT_TEXT, slugify } from './format';
@@ -12,6 +12,7 @@ import { buildingIllustration } from './illustrations';
 import { openModal, type ModalHandle } from './modal';
 import type { Shell } from './shell';
 import { optionNames, segmented } from './widgets';
+import { freeLots, LOADING_HOUSES } from './town-loading';
 
 type Mode = 'pick' | 'create';
 type Template = 'empty' | 'node-api' | 'novel';
@@ -30,11 +31,6 @@ const TEMPLATES: { id: Template; name: string; blurb: string; icon: string }[] =
   { id: 'novel', name: 'Novel', blurb: 'Outline, characters, chapters', icon: 'book' },
 ];
 
-function freeLots(lots: Lot[], projects: Project[]): Lot[] {
-  const taken = new Set(projects.map((p) => p.lotId));
-  return lots.filter((l) => !taken.has(l.id));
-}
-
 export function createPlacement(shell: Shell) {
   const { store, bus } = shell;
   let modal: ModalHandle | null = null;
@@ -52,7 +48,7 @@ export function createPlacement(shell: Shell) {
     let initGit = true; // a folder without git: set it up first (recommended), so changes can be seen and undone
     let nameTouched = false;
     let submitting = false;
-    const lots = () => freeLots(store.state.city.lots, store.state.city.projects);
+    const lots = () => freeLots(store.state) ?? [];
     let lot = lotId ?? lots()[0]?.id ?? '';
 
     // An empty box that reads like a filled one ("my-project" in grey) left people puzzled by a disabled button: say what to do.
@@ -197,8 +193,14 @@ export function createPlacement(shell: Shell) {
 
     const lotSelect = h('select', { class: 'input', 'aria-label': 'Lot' });
     function renderLots() {
-      const free = lots();
-      if (lot && !free.some((l) => l.id === lot)) lot = free[0]?.id ?? '';
+      const free = freeLots(store.state);
+      if (!free) {
+        // the town is still on its way (before the first snapshot): its lots come with it — filled in then
+        setChildren(lotSelect, h('option', { value: '' }, LOADING_HOUSES));
+        lotSelect.disabled = true;
+        return;
+      }
+      if (!free.some((l) => l.id === lot)) lot = free[0]?.id ?? '';
       setChildren(lotSelect, ...free.map((l) => h('option', { value: l.id, selected: l.id === lot }, lotLabel(l))));
       lotSelect.disabled = !free.length;
     }
@@ -280,12 +282,23 @@ export function createPlacement(shell: Shell) {
     renderPicked();
     updateCreateHint();
 
+    // the lead's model is set when the house is placed: with no account yet that is the default, which may not be
+    // the one connected later (said once the accounts are known: before the first snapshot nothing is)
+    const accountNote = h('p', { class: 'picked-note is-warn', hidden: true }, icon('key', 14), 'No AI account yet — connect one first so the lead uses it.');
+    const renderAccount = () => (accountNote.hidden = !(store.state.synced && needsAccount(store.state)));
+    renderAccount();
+    // the town's lots and the accounts can change while this is open (the first snapshot, a house placed elsewhere)
+    const offStore = store.subscribe((_s, msg) => {
+      if (msg?.t !== 'snapshot' && msg?.t !== 'city' && msg?.t !== 'models') return;
+      renderLots();
+      renderFoot();
+      renderAccount();
+    });
+
     const body = h(
       'div',
       { class: 'place' },
-      // the lead's model is set when the house is placed: with no account yet that is the default, which may not be
-      // the one connected later
-      needsAccount(store.state) ? h('p', { class: 'picked-note is-warn' }, icon('key', 14), 'No AI account yet — connect one first so the lead uses it.') : null,
+      accountNote,
       modeToggle,
       pickPane,
       createPane,
@@ -307,6 +320,7 @@ export function createPlacement(shell: Shell) {
       body,
       footer: [h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => modal?.close() }, 'Cancel'), submit],
       onClose: () => {
+        offStore();
         modal = null;
         setLot = null;
         bus.emit('placement:end', {});

@@ -11,6 +11,7 @@ import { recentItems, unseenProblems } from './inbox-recent';
 import { codeBadge } from './job-switcher';
 import { pendingPlans, planFromName, teamLine } from './plans';
 import type { Shell, ToastEntry } from './shell';
+import { housesLoading } from './town-loading';
 import { avatar, emptyState } from './widgets';
 
 const LEVEL_ICON: Record<ToastEntry['level'], string> = { info: 'sparkle', success: 'checkCircle', warn: 'alert', error: 'xCircle' };
@@ -120,11 +121,15 @@ export function createInboxTab(shell: Shell) {
     const waiting = approvals.length + plans.length;
     // the server's activity log + this page's own notes; this house's, plus the ones about no house in particular
     const notes = recentItems(store.state.activity, shell.notifications, 200).filter((n) => !projectId || !n.projectId || n.projectId === projectId).slice(0, 40);
+    // before the first snapshot nothing is known yet: not "nothing needs you" (a board start opens this at once)
+    const loading = housesLoading(store.state);
     setChildren(el,
       h('h3', { class: 'section-title' }, house ? `Waiting in ${house.name}` : 'Waiting for you', waiting ? h('span', { class: 'count is-amber num' }, String(waiting)) : null),
       waiting
         ? h('div', { class: 'inbox-approvals' }, plans.map(planRow), approvals.map((a) => approvalCard(shell, a)))
-        : h('p', { class: 'inbox-clear' }, icon('checkCircle', 15), house ? `Nothing in ${house.name} needs you right now.` : 'Nothing needs you right now.'),
+        : loading
+          ? h('p', { class: 'inbox-clear is-loading', role: 'status' }, h('span', { class: 'spinner spinner-sm', 'aria-hidden': 'true' }), loading.title)
+          : h('p', { class: 'inbox-clear' }, icon('checkCircle', 15), house ? `Nothing in ${house.name} needs you right now.` : 'Nothing needs you right now.'),
       elsewhere(),
       h('h3', { class: 'section-title' }, 'Recent'),
       notes.length
@@ -156,7 +161,9 @@ export function createInboxTab(shell: Shell) {
               );
             }),
           )
-        : emptyState('bell', 'All quiet', 'Finished runs, errors and other updates will collect here.'),
+        : loading
+          ? null
+          : emptyState('bell', 'All quiet', 'Finished runs, errors and other updates will collect here.'),
     );
     // on screen now: the errors in it count as seen (when the tab isn't hidden behind another one)
     if (el.isConnected && el.offsetParent !== null && !document.hidden) markSeen(Math.max(Date.now(), notes[0]?.ts ?? 0));

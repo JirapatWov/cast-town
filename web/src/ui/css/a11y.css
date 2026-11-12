@@ -276,6 +276,13 @@
   outline: 2px solid var(--sun);
   outline-offset: -2px;
 }
+/* the houses still on their way (before the first snapshot): a line, not a button */
+.rlt-ui .ch-item.is-loading {
+  color: var(--text-3);
+}
+.rlt-ui .ch-item.is-loading:hover {
+  background: none;
+}
 .rlt-ui .ch-name {
   flex: 1;
   min-width: 0;

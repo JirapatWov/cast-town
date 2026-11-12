@@ -19,6 +19,7 @@ import { openMenu, type MenuItem } from './menu';
 import type { Shell } from './shell';
 import { confirmTerminal, terminalWhoChip } from './terminal-gate';
 import { isTouchUI } from './touch';
+import { noHousesItem } from './town-loading';
 
 const TABS_KEY = 'rlt.term.tabs';
 const ACTIVE_KEY = 'rlt.term.active';
@@ -494,7 +495,7 @@ export function createTerminalDock(shell: Shell) {
         title: 'Projects',
         items: store.state.city.projects.length
           ? store.state.city.projects.map((p) => item(p.id, 'home'))
-          : [{ label: 'No projects yet', disabled: true, onSelect: () => {} }],
+          : [noHousesItem(store.state)],
       },
       ...(copies.length
         ? [{ title: 'Jobs’ own copies', items: copies.map((j) => { const t = termJobTarget(j.projectId, j.id); return item(t, 'copy', open.has(t) ? 'open' : 'own copy'); }) }]

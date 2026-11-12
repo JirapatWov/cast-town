@@ -13,6 +13,7 @@ import type { Player } from './player';
 import { createUI } from './ui';
 import { blockOpts, bootFootText } from './ui/agents-health';
 import { appNav } from './ui/nav-history';
+import { whenSynced } from './ui/town-loading';
 import { isPhoneSized, isSheetLayout } from './ui/touch';
 import { runAsWorkflow } from './ui/runs';
 import { setTagModels } from './people/tag-state';
@@ -93,20 +94,16 @@ function tagModels(s: Store['state']): string[] | null {
   return o.scripted || o.checking ? null : s.models.filter((m) => m.available).map((m) => m.id);
 }
 
-/** First snapshot (projects + residents) — resolves immediately if already here, or after `ms`. */
+/** First snapshot (projects + residents) — resolves immediately if already here, or false after `ms`. */
 function snapshotArrived(ms: number): Promise<boolean> {
-  if (store.state.city.projects.length) return Promise.resolve(true);
   return new Promise((resolve) => {
     const t = setTimeout(() => {
       off();
       resolve(false);
     }, ms);
-    const off = store.subscribe((_s, msg) => {
-      if (msg?.t === 'snapshot') {
-        clearTimeout(t);
-        off();
-        resolve(true);
-      }
+    const off = whenSynced(store, () => {
+      clearTimeout(t);
+      resolve(true);
     });
   });
 }
@@ -414,7 +411,8 @@ async function main() {
   // ───────── store → 3D ─────────
   let cityQueued = false;
   function syncCity() {
-    if (!city || !ready.city) return;
+    // nothing to show before the first snapshot: the town would stand with every lot FOR SALE, as if it had no houses
+    if (!city || !ready.city || !store.state.synced) return;
     const s = store.state;
     city.sync(s.city, s.agents, s.approvals);
   }
@@ -678,10 +676,21 @@ async function main() {
   const toBoard = () => {
     if (!paused) bus.emit('focusmode:change', { on: true });
   };
-  // without 3D a link to a house (#/house/<id>, a reload) opens it on the town board all the same
-  const openDeepLink = async () => {
-    if (deepLink && store.project(deepLink.projectId)) await doEnter(deepLink.projectId, { instant: true });
-    else if (deepLink) setHash('');
+  // a link to a house (#/house/<id>, a reload) opens it — without 3D on the town board all the same. A first snapshot
+  // that comes after the curtain lifted (a slow connection) opens it then, instead of dropping the link as if the
+  // house were gone.
+  const openDeepLink = async (enter = (id: string) => doEnter(id, { instant: true })) => {
+    if (!deepLink) return;
+    const id = deepLink.projectId;
+    if (store.state.synced) {
+      if (store.project(id)) await enter(id);
+      else setHash('');
+      return;
+    }
+    whenSynced(store, () => {
+      if (!store.project(id)) setHash('');
+      else if (view === 'city' && !houseId) navigate(() => enter(id));
+    });
   };
 
   // switching to 3D from the board builds the town (a board start); after the town's code failed to arrive it
@@ -764,12 +773,9 @@ async function main() {
 
   const haveSnapshot = await snapshotArrived(deepLink ? 6000 : 1500);
   if (haveSnapshot) syncCity();
-  if (deepLink && store.project(deepLink.projectId)) {
-    boot.phase('Opening the house…', 0.6, 0.85, ['house']);
-    // the city camera stands where the house would be left, then enter without the swoop; Back lands in the town
-    nav.seedTown();
-    await doEnter(deepLink.projectId, { instant: true });
-  } else if (deepLink) setHash('');
+  if (deepLink && store.project(deepLink.projectId)) boot.phase('Opening the house…', 0.6, 0.85, ['house']);
+  // the city camera stands where the house would be left, then enter without the swoop; Back lands in the town
+  await openDeepLink((id) => (nav.seedTown(), doEnter(id, { instant: true })));
 
   // the avatar by the parked car: its code and body load once the town is on show
   const meetAvatar = () => {

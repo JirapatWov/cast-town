@@ -51,3 +51,17 @@ export function providersStatus(health: HealthKind, s: ModelState): ProvidersSta
   const hint = st.tone === 'none' ? 'Not connected yet' : `${liveProviders(s)} connected`;
   return { ...st, hint };
 }
+
+/** Before the first snapshot (ClientState.synced) the accounts are not known yet — not "none connected": a neutral,
+ *  pulsing state instead of "Connect AI" (ui/town-loading.ts). */
+export const ACCOUNTS_LOADING: ProvidersStatus = {
+  tone: 'checking',
+  label: 'Loading…',
+  aria: 'Loading your AI accounts — open Models & providers',
+  hint: 'Loading…',
+};
+
+/** The providers status as shown: loading until the first snapshot, then providersStatus. */
+export function shownProvidersStatus(health: HealthKind, s: ModelState & { synced: boolean }): ProvidersStatus {
+  return s.synced ? providersStatus(health, s) : ACCOUNTS_LOADING;
+}
