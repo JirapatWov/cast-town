@@ -83,7 +83,6 @@ jobs:
       VERSION: ${{ needs.kit.outputs.version }}
       MACOS_CERTIFICATE_P12: ${{ secrets.MACOS_CERTIFICATE_P12 }}
       MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
-      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
       APPLE_ID: ${{ secrets.APPLE_ID }}
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
@@ -102,10 +101,10 @@ jobs:
           test "$(uname -m)" = arm64
           tar -xzf "$RUNNER_TEMP/kit-transfer/cast-mac-kit-$VERSION.tar.gz" -C "$RUNNER_TEMP"
 
-      # OPTIONAL: without all six secrets the normal ad hoc build is published.
+      # OPTIONAL: without all five secrets the normal ad hoc build is published.
       # A configured but invalid certificate/notarization must fail the release, not silently fall back.
       - name: Import optional Developer ID certificate
-        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           keychain="$RUNNER_TEMP/cast-signing.keychain-db"
           certificate="$RUNNER_TEMP/cast-signing.p12"
@@ -119,8 +118,7 @@ jobs:
           security list-keychains -d user -s "$keychain"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain"
           rm -f "$certificate"
-          # Sign with the imported certificate itself (its SHA-1), so a stray space or line break in the
-          # MACOS_SIGNING_IDENTITY secret can't make codesign miss it.
+          # Sign with the Developer ID identity in the imported certificate, by its SHA-1.
           identity="$(security find-identity -v -p codesigning "$keychain" | awk '/Developer ID Application/ { print $2; exit }')"
           if [ -z "$identity" ]; then
             echo "::error title=Developer ID::The certificate in MACOS_CERTIFICATE_P12 has no usable Developer ID Application identity."
@@ -152,7 +150,7 @@ jobs:
           exit "$status"
 
       - name: Notarize and staple (optional Apple credentials)
-        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
+        if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           dmg="$RUNNER_TEMP/cast-mac-kit/CAST-$VERSION-arm64.dmg"
           codesign --force --timestamp --keychain "$CAST_SIGN_KEYCHAIN" --sign "$CAST_SIGN_IDENTITY" "$dmg"

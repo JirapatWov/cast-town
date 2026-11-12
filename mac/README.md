@@ -37,16 +37,18 @@ else, the app uses the next free port up to 4879. If the server stops unexpected
 ## Install from a dmg
 
 1. Open `CAST-<version>-arm64.dmg` and drag **CAST** onto **Applications**.
-2. On the Mac that built the dmg, CAST now opens like any app. On a Mac that downloaded it, macOS asks once, because
-   CAST is signed ad hoc, not with an Apple Developer certificate:
+2. Open CAST. Release downloads are signed with a Developer ID and notarized by Apple, so it opens like any app
+   (macOS may ask once whether to open an app downloaded from the internet).
+3. A dmg you built yourself (below) is signed ad hoc. On the Mac that built it, CAST opens like any app. On another
+   Mac, macOS asks once:
    - **macOS 13 Ventura and 14 Sonoma:** in **Applications**, right-click **CAST** and choose **Open**, then
-     **Open** again in the dialog (Control-click works like right-click).
+     **Open** again in the dialog (Control-click works like right-click). If macOS only offers to move it to the Bin,
+     use **Open Anyway** as below.
    - **macOS 15 Sequoia and newer** (right-click → Open no longer skips the check there): double-click **CAST** once
      and close the message, then open **System Settings → Privacy & Security**, scroll down to the message about
      CAST, click **Open Anyway** and confirm with your password.
-3. On macOS 13 or 14, if macOS only offers to move it to the Bin, use **Open Anyway** as in step 2.
 
-After that, CAST opens normally. Look for the building icon at the top right of the screen.
+Look for the building icon at the top right of the screen.
 
 ## Updates
 
@@ -90,14 +92,14 @@ and self-checks the app on an Apple Silicon Mac. It creates or updates the GitHu
 description for the notes shown in the app. Drafts and pre-releases are not offered as updates; versions containing
 `-` are published as pre-releases. To rebuild a release, run the workflow manually with its existing `v<version>` tag.
 
-By default the app is signed ad hoc and **not notarized**; downloaded copies need the opening steps above. Optional
-Developer ID signing and notarization run only when **all six** repository Actions secrets are set:
+Without signing secrets the workflow signs the app ad hoc and does **not notarize** it; downloaded copies then need
+the opening steps above. Developer ID signing and notarization run when **all five** repository Actions secrets are
+set:
 
 | Secret | Value |
 |---|---|
 | `MACOS_CERTIFICATE_P12` | Base64-encoded Developer ID Application certificate and private key, exported as a `.p12` |
 | `MACOS_CERTIFICATE_PASSWORD` | The `.p12` export password (use a nonempty password) |
-| `MACOS_SIGNING_IDENTITY` | The full certificate name, such as `Developer ID Application: Your Name (TEAMID)` |
 | `APPLE_ID` | The Apple Developer account's email address |
 | `APPLE_TEAM_ID` | The Apple Developer team ID |
 | `APPLE_APP_PASSWORD` | An app-specific password for that Apple ID |

@@ -46,7 +46,7 @@
 
 | Your machine | Get CAST |
 |---|---|
-| **macOS** on Apple Silicon, macOS 13 or newer | Download `CAST-<version>-arm64.dmg` from [Releases](https://github.com/JirapatWov/cast-town/releases/latest), drag CAST onto Applications, and right-click → **Open** the first time ([Mac app](#mac-app)). |
+| **macOS** on Apple Silicon, macOS 13 or newer | Download `CAST-<version>-arm64.dmg` from [Releases](https://github.com/JirapatWov/cast-town/releases/latest), drag CAST onto Applications and open it. The app is notarized by Apple ([Mac app](#mac-app)). |
 | **Linux** x64 | Download `cast-<version>-linux-x64.tar.gz` from [Releases](https://github.com/JirapatWov/cast-town/releases/latest), unpack it and run `./cast-server` in its folder. No Bun needed. |
 | **From source** on Linux, macOS or WSL 2 | `git clone`, `bun install`, `bun run build`, `bun run start` ([Install](#install)). |
 
@@ -189,11 +189,12 @@ runs git.
 onto **Applications**. Releases are built by `.github/workflows/release.yml` on an Apple Silicon runner; later
 versions arrive through **Check for Updates…** in the app's menu.
 
-**The first launch.** Unless a release says it is notarized, CAST.app is signed ad hoc (without an Apple Developer
-account), so macOS refuses to open it with a double-click the first time. In Applications, **right-click (or
-Control-click) CAST → Open → Open**. You do this once. On macOS 15 and later, if the dialog has no Open button: try to
-open it once, then **System Settings → Privacy & Security → Open Anyway**. If CAST then says "CAST stopped" with an
-empty log, quit it, run `xattr -dr com.apple.quarantine /Applications/CAST.app` in Terminal and open it again.
+**The first launch.** Release downloads are signed with a Developer ID and notarized by Apple, so CAST opens like any
+app. A dmg you build yourself (below) is signed ad hoc, so on another Mac macOS refuses a double-click the first time:
+in Applications, **right-click (or Control-click) CAST → Open → Open**. On macOS 15 and later, if the dialog has no
+Open button: try to open it once, then **System Settings → Privacy & Security → Open Anyway**. If CAST then says
+"CAST stopped" with an empty log, quit it, run `xattr -dr com.apple.quarantine /Applications/CAST.app` in Terminal and
+open it again.
 
 **Building the dmg yourself** takes two steps: a kit made on any machine with Bun (Linux is fine), then the app and
 the dmg made on the Mac with the Command Line Tools (`xcode-select --install`; no Xcode project, no Apple account).
