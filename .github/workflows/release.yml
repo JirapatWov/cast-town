@@ -119,8 +119,9 @@ jobs:
           security list-keychains -d user -s "$keychain"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain"
           rm -f "$certificate"
-          printf 'CAST_SIGN_IDENTITY=%s\nCAST_SIGN_ENTITLEMENTS=%s\n' \
-            "$MACOS_SIGNING_IDENTITY" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" >> "$GITHUB_ENV"
+          # The build runs with a throwaway HOME, where codesign wouldn't find this keychain on its own.
+          printf 'CAST_SIGN_IDENTITY=%s\nCAST_SIGN_ENTITLEMENTS=%s\nCAST_SIGN_KEYCHAIN=%s\n' \
+            "$MACOS_SIGNING_IDENTITY" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" "$keychain" >> "$GITHUB_ENV"
 
       - name: Build, sign and self-check the app, then create the dmg
         run: |
@@ -135,7 +136,7 @@ jobs:
         if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           dmg="$RUNNER_TEMP/cast-mac-kit/CAST-$VERSION-arm64.dmg"
-          codesign --force --timestamp --sign "$MACOS_SIGNING_IDENTITY" "$dmg"
+          codesign --force --timestamp --keychain "$CAST_SIGN_KEYCHAIN" --sign "$MACOS_SIGNING_IDENTITY" "$dmg"
           xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
             --password "$APPLE_APP_PASSWORD" --wait
           xcrun stapler staple "$dmg"

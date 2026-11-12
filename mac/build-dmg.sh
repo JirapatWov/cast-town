@@ -11,7 +11,8 @@
 #
 # Optional release signing: CAST_SIGN_IDENTITY selects an installed Developer ID Application certificate.
 # CAST_SIGN_ENTITLEMENTS must then point to the Bun runtime entitlements (agent/scripts/macos-entitlements.plist
-# in a checkout). The release workflow imports the certificate and notarizes the resulting dmg separately.
+# in a checkout). CAST_SIGN_KEYCHAIN names the keychain that holds it, so codesign finds it even when HOME points
+# elsewhere (the release workflow runs this with a throwaway HOME). The workflow notarizes the dmg separately.
 set -euo pipefail
 
 say() { printf '\n==> %s\n' "$*"; }
@@ -127,10 +128,14 @@ info "CAST $VERSION"
 
 SIGN_IDENTITY=${CAST_SIGN_IDENTITY:-}
 ENTITLEMENTS=${CAST_SIGN_ENTITLEMENTS:-}
+SIGN_KEYCHAIN=${CAST_SIGN_KEYCHAIN:-}
 if [ -n "$SIGN_IDENTITY" ]; then
   [ -f "$ENTITLEMENTS" ] ||
     die "CAST_SIGN_ENTITLEMENTS must name the Bun runtime entitlements when CAST_SIGN_IDENTITY is set."
   plutil -lint "$ENTITLEMENTS" >/dev/null || die "CAST_SIGN_ENTITLEMENTS is not a valid plist."
+  if [ -n "$SIGN_KEYCHAIN" ] && [ ! -f "$SIGN_KEYCHAIN" ]; then
+    die "CAST_SIGN_KEYCHAIN names a keychain that does not exist: $SIGN_KEYCHAIN"
+  fi
 fi
 
 missing() {
@@ -272,14 +277,14 @@ fi
 xattr -cr "$APP" 2>/dev/null || info "Some extended attributes could not be removed; codesign will tell if that matters."
 for program in "$APP/Contents/Resources/cast-server" "$APP/Contents/Resources/cast-agent"; do
   if [ -n "$SIGN_IDENTITY" ]; then
-    codesign --force --timestamp --options runtime --entitlements "$ENTITLEMENTS" --sign "$SIGN_IDENTITY" "$program" ||
+    codesign --force --timestamp --options runtime --entitlements "$ENTITLEMENTS" ${SIGN_KEYCHAIN:+--keychain "$SIGN_KEYCHAIN"} --sign "$SIGN_IDENTITY" "$program" ||
       die "codesign could not sign $(basename "$program") with the Developer ID certificate."
   else
     codesign --force -s - "$program" || die "codesign could not sign $(basename "$program")."
   fi
 done
 if [ -n "$SIGN_IDENTITY" ]; then
-  codesign --force --timestamp --options runtime --sign "$SIGN_IDENTITY" "$APP" ||
+  codesign --force --timestamp --options runtime ${SIGN_KEYCHAIN:+--keychain "$SIGN_KEYCHAIN"} --sign "$SIGN_IDENTITY" "$APP" ||
     die "codesign could not sign CAST.app with the Developer ID certificate."
 else
   codesign --force -s - "$APP" || die "codesign could not sign CAST.app."

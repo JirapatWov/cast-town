@@ -293,6 +293,23 @@ describe('mac/build-dmg.sh on a fake Mac', () => {
     expect(r.leftovers).toEqual([]);
   });
 
+  test('Developer ID signing looks in CAST_SIGN_KEYCHAIN (the release build runs with a throwaway HOME)', () => {
+    const kit = makeKit();
+    const entitlements = join(kit, '..', 'bun-entitlements.plist');
+    copyFileSync(join(repo, 'agent', 'scripts', 'macos-entitlements.plist'), entitlements);
+    const keychain = join(kit, '..', 'ci signing.keychain-db');
+    writeFileSync(keychain, 'keychain');
+    const env = { CAST_SIGN_IDENTITY: 'Developer ID Application: CAST Test (TESTTEAM)', CAST_SIGN_ENTITLEMENTS: entitlements };
+    const r = runKit(kit, [], { ...env, CAST_SIGN_KEYCHAIN: keychain });
+    expect(r.code).toBe(0);
+    const signs = r.calls.filter((c) => c.startsWith('codesign --force'));
+    expect(signs).toHaveLength(3);
+    for (const s of signs) expect(s).toContain(`--keychain ${keychain} --sign`);
+    const missing = runKit(makeKit(), [], { ...env, CAST_SIGN_KEYCHAIN: join(kit, 'nope.keychain-db') });
+    expect(missing.code).not.toBe(0);
+    expect(missing.err).toContain('CAST_SIGN_KEYCHAIN names a keychain that does not exist');
+  });
+
   test('Developer ID without a readable entitlements file fails before compiling or packaging', () => {
     const kit = makeKit();
     for (const entitlements of ['', join(kit, 'missing.plist')]) {
