@@ -119,9 +119,18 @@ jobs:
           security list-keychains -d user -s "$keychain"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain"
           rm -f "$certificate"
+          # Sign with the imported certificate itself (its SHA-1), so a stray space or line break in the
+          # MACOS_SIGNING_IDENTITY secret can't make codesign miss it.
+          identity="$(security find-identity -v -p codesigning "$keychain" | awk '/Developer ID Application/ { print $2; exit }')"
+          if [ -z "$identity" ]; then
+            echo "::error title=Developer ID::The certificate in MACOS_CERTIFICATE_P12 has no usable Developer ID Application identity."
+            security find-identity -v -p codesigning "$keychain"
+            exit 1
+          fi
+          echo "::notice title=Developer ID::Signing with $(security find-identity -v -p codesigning "$keychain" | awk -F'"' '/Developer ID Application/ { print $2; exit }')"
           # The build runs with a throwaway HOME, where codesign wouldn't find this keychain on its own.
           printf 'CAST_SIGN_IDENTITY=%s\nCAST_SIGN_ENTITLEMENTS=%s\nCAST_SIGN_KEYCHAIN=%s\n' \
-            "$MACOS_SIGNING_IDENTITY" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" "$keychain" >> "$GITHUB_ENV"
+            "$identity" "$GITHUB_WORKSPACE/agent/scripts/macos-entitlements.plist" "$keychain" >> "$GITHUB_ENV"
 
       - name: Build, sign and self-check the app, then create the dmg
         run: |
@@ -130,15 +139,34 @@ jobs:
           export HOME="$sandbox/home" PI_CODING_AGENT_DIR="$sandbox/agent"
           export CAST_WORKSPACE="$sandbox/workspace" CAST_FS_ROOTS="$sandbox"
           export TMPDIR="$sandbox/tmp" CAST_PUSH=off
-          bash "$RUNNER_TEMP/cast-mac-kit/build-dmg.sh"
+          # The end of the build's output becomes the error annotation, readable on the run's summary page.
+          set +e
+          bash "$RUNNER_TEMP/cast-mac-kit/build-dmg.sh" 2>&1 | tee "$RUNNER_TEMP/build-dmg.log"
+          status=${PIPESTATUS[0]}
+          if [ "$status" != 0 ]; then
+            echo "::error title=build-dmg.sh failed (exit $status)::$(tail -n 40 "$RUNNER_TEMP/build-dmg.log" | sed -e 's/%/%25/g' -e 's/\r//g' | awk '{ printf "%s%%0A", $0 }')"
+          fi
+          exit "$status"
 
       - name: Notarize and staple (optional Apple credentials)
         if: env.MACOS_CERTIFICATE_P12 != '' && env.MACOS_CERTIFICATE_PASSWORD != '' && env.MACOS_SIGNING_IDENTITY != '' && env.APPLE_ID != '' && env.APPLE_TEAM_ID != '' && env.APPLE_APP_PASSWORD != ''
         run: |
           dmg="$RUNNER_TEMP/cast-mac-kit/CAST-$VERSION-arm64.dmg"
-          codesign --force --timestamp --keychain "$CAST_SIGN_KEYCHAIN" --sign "$MACOS_SIGNING_IDENTITY" "$dmg"
+          codesign --force --timestamp --keychain "$CAST_SIGN_KEYCHAIN" --sign "$CAST_SIGN_IDENTITY" "$dmg"
+          # A rejected or failed submission puts Apple's verdict and issue list on the run's summary page.
+          set +e
           xcrun notarytool submit "$dmg" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
-            --password "$APPLE_APP_PASSWORD" --wait
+            --password "$APPLE_APP_PASSWORD" --wait 2>&1 | tee "$RUNNER_TEMP/notary.log"
+          if ! grep -q 'status: Accepted' "$RUNNER_TEMP/notary.log"; then
+            id="$(awk '$1 == "id:" { print $2; exit }' "$RUNNER_TEMP/notary.log")"
+            if [ -n "$id" ]; then
+              xcrun notarytool log "$id" --apple-id "$APPLE_ID" --team-id "$APPLE_TEAM_ID" \
+                --password "$APPLE_APP_PASSWORD" >> "$RUNNER_TEMP/notary.log" 2>&1
+            fi
+            echo "::error title=Notarization was not accepted::$(tail -n 60 "$RUNNER_TEMP/notary.log" | sed -e 's/%/%25/g' -e 's/\r//g' | awk '{ printf "%s%%0A", $0 }')"
+            exit 1
+          fi
+          set -e
           xcrun stapler staple "$dmg"
           xcrun stapler validate "$dmg"
           hdiutil verify "$dmg"
