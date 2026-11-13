@@ -166,7 +166,7 @@ describe('the menu bar (/api/status attention) says what is asked', () => {
   const status = (approvals: ApprovalRequest[]) =>
     buildStatus({
       version: '0.1.0', cityName: 'Studio', url: 'http://127.0.0.1:4860/', uptimeSec: 1,
-      snapshot: { agents: [], approvals, plans: [], runs: [], providers: [] },
+      snapshot: { agents: [], approvals, plans: [], runs: [], providers: [], models: [] },
       projects: [{ id: 'house', name: 'Home' }], ompVersion: null, demo: false, errorSince: new Map(), now: 1,
     }).attention.map((a) => [a.kind, a.title]);
   const card = (frame: Record<string, unknown>) => {

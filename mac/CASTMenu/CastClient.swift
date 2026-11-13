@@ -124,6 +124,10 @@ struct CastStatus {
 
     /// People waiting on the user (approvals and questions): the number on the menu-bar badge.
     var waitingCount: Int { max(needsYou, approvalsWaiting) }
+
+    /// Nobody can work: the agent is fine and a check of the AI accounts worked, but none is connected (the page's
+    /// "Connect AI"). Not while the agent has a problem or a check runs or failed: those say so themselves.
+    var needsAccount: Bool { ompState == "ok" && (modelsState == "ok" || modelsState == "stale") && modelsConnected == 0 }
 }
 
 @MainActor

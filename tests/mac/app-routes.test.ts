@@ -40,7 +40,7 @@ const provider = (vendor: string, connected: boolean) => ({ vendor, label: vendo
 function input(snapshot: Partial<StatusInput['snapshot']> = {}, over: Partial<StatusInput> = {}): StatusInput {
   return {
     version: '0.1.0', cityName: 'Studio', url: 'http://127.0.0.1:4860/', uptimeSec: 12,
-    snapshot: { agents: [], approvals: [], plans: [], runs: [], providers: [], ...snapshot },
+    snapshot: { agents: [], approvals: [], plans: [], runs: [], providers: [], models: [], ...snapshot },
     projects: [{ id: 'todo', name: 'Todo API' }, { id: 'novel', name: 'Moonlight' }],
     health: { omp: 'ok', ompPath: 'omp', models: 'ok', checking: false },
     ompVersion: '18.13.2', demo: false, errorSince: new Map(), now: 1_000_000, ...over,
@@ -66,6 +66,13 @@ describe('GET /api/status: the contract', () => {
     const health = (models: 'checking' | 'ok' | 'stale' | 'failed') => ({ omp: 'ok' as const, ompPath: 'omp', models, checking: models === 'checking' });
     for (const m of ['checking', 'ok', 'stale', 'failed'] as const) expect(buildStatus(input({}, { health: health(m) })).models.state).toBe(m);
     expect(buildStatus(input({}, { health: undefined })).models.state).toBe('ok'); // no checks (the dev stub)
+  });
+
+  test('models.connected counts accounts as the page does: a custom provider\'s available models count too', () => {
+    const model = (vendor: string, available: boolean) => ({ id: `${vendor}/m`, vendor, available }) as unknown as AgentSnapshot['models'][number];
+    expect(buildStatus(input({ models: [model('local', false)] })).models.connected).toBe(0); // none: the menu says so
+    expect(buildStatus(input({ models: [model('local', true), model('ollama', true)] })).models.connected).toBe(2);
+    expect(buildStatus(input({ providers: [provider('anthropic', true)], models: [model('local', true)] })).models.connected).toBe(1);
   });
 
   test('working, waiting people, approvals, questions, plans, runs and connected providers are counted', () => {

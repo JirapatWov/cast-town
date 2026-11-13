@@ -19,7 +19,7 @@ import { houseTermTarget } from './terminal';
 import { terminalOffered } from './terminal-gate';
 import { pendingPlans } from './plans';
 import { TOWN_FILES_SHARE, threeD } from './view-mode';
-import { housesLoading } from './town-loading';
+import { housesLoading, townFull, townFullLabel, TOWN_FULL_HINT } from './town-loading';
 
 export function createFocusView(shell: Shell) {
   const { store } = shell;
@@ -143,13 +143,15 @@ export function createFocusView(shell: Shell) {
       return;
     }
     grid.removeAttribute('aria-busy');
+    // a full town: the same card says so and opens the dialog with the ways to make room
+    const full = townFull(s);
     cards.push(
       h(
         'button',
         { type: 'button', class: 'fv-card fv-add', onclick: () => shell.openPlacement() },
-        icon('folderPlus', 22),
-        h('span', null, 'Place project'),
-        h('span', { class: 'muted small' }, 'Turn any folder into a house'),
+        icon(full ? 'home' : 'folderPlus', 22),
+        h('span', null, full ? townFullLabel(full) : 'Place project'),
+        h('span', { class: 'muted small' }, full ? TOWN_FULL_HINT : 'Turn any folder into a house'),
       ),
     );
     // no AI account yet: nobody can work, so connecting one comes first

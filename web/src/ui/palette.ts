@@ -29,6 +29,7 @@ import { waitingCount } from './plans';
 import { setSingleKeys, singleKeysEnabled } from './shortcuts';
 import { threeD } from './view-mode';
 import { inboxScope } from './last-house';
+import { townFull, townFullLabel, TOWN_FULL_HINT } from './town-loading';
 
 type Group = 'Projects' | 'Jobs' | 'People' | 'Workflows' | 'Actions';
 const GROUP_ORDER: Group[] = ['Actions', 'Jobs', 'Projects', 'People', 'Workflows'];
@@ -91,10 +92,11 @@ function buildCommands(shell: Shell, hooks: PaletteHooks): Command[] {
     for (const c of houseCommands(shell, ctxProject, anchor)) cmds.push({ ...c, group: 'Actions', leading: ic(c.icon), boost: here.view === 'house' ? 2 : -2 });
   }
   const termHere = here.view === 'house' && ctxProject ? ctxProject : null;
+  const full = townFull(s); // a full town: Place project says so (its dialog has the ways to make room)
   const termCopy = termHere ? shell.jobs.active(termHere.id) : undefined; // a job with its own copy: its shell is there
   cmds.push(
     { id: 'a:term', group: 'Actions', title: 'Open terminal', subtitle: !terminalOffered() ? TERMINAL_OFF_TEXT : termHere ? (termCopy?.worktree ? `Plain shell in “${termCopy.name}”’s own copy` : `Plain shell in ${termHere.name}`) : 'Plain shell in the workspace', keywords: 'shell bash command line console cli mkdir', leading: ic('terminal'), shortcut: ['Ctrl', '`'], boost: termHere ? 20 : 6, run: () => shell.openTerminal(termHere ? houseTermTarget(shell, termHere.id) : TERM_TOWN) },
-    { id: 'a:place', group: 'Actions', title: 'Place project', subtitle: 'Turn a folder into a house', keywords: 'add new folder create build', leading: ic('folderPlus'), boost: 8, run: () => shell.openPlacement() },
+    { id: 'a:place', group: 'Actions', title: 'Place project', subtitle: full ? `${townFullLabel(full)} — ${TOWN_FULL_HINT.toLowerCase()}` : 'Turn a folder into a house', keywords: 'add new folder create build', leading: ic('folderPlus'), boost: 8, run: () => shell.openPlacement() },
     { id: 'a:agency', group: 'Actions', title: 'Models & providers', subtitle: 'Sign in to AI providers — the Talent Agency building', keywords: 'models providers keys api talent agency connect sign in', leading: ic('agency'), run: () => { shell.openProviders(); bus.emit('nav:flyto', { landmarkId: 'agency' }); } },
     { id: 'a:usage', group: 'Actions', title: 'Usage limits', subtitle: 'How much each signed-in account has used', keywords: 'quota limit used remaining accounts switch account sign out models providers', leading: ic('gauge'), run: () => shell.openProviders() },
     ...(threeD.state === 'unavailable'

@@ -3,6 +3,7 @@
 // left for hours) the socket may take seconds to connect and deliver it, and the page used to show "Place your first
 // project" meanwhile. One reading for every place that lists the houses — the Board, the 3D town's keyboard list and
 // banner, the Fly to and terminal menus, the Inbox, the placement dialog's free lots — and the welcome waits for it.
+// The same goes for "the town is full": only a known town can be, and every Place project entry says so.
 // Pure, for tests.
 import { APP_NAME } from '../../../shared/brand';
 import type { Lot } from '../../../shared/protocol';
@@ -31,6 +32,19 @@ export function freeLots(s: Pick<ClientState, 'synced' | 'city'>): Lot[] | null 
   const taken = new Set(s.city.projects.map((p) => p.lotId));
   return s.city.lots.filter((l) => !taken.has(l.id));
 }
+
+/** Every lot has a house (the town has exactly LOTS.length): how many, for "Town full (20/20)"; null while the town is
+ *  on its way (nothing is known then) or a lot is still free. */
+export function townFull(s: Pick<ClientState, 'synced' | 'city'>): { lots: number } | null {
+  const free = freeLots(s);
+  return free && !free.length && s.city.lots.length ? { lots: s.city.lots.length } : null;
+}
+
+/** The short form every Place project entry shows instead (the Board, the 3D town's bar, the palette). */
+export const townFullLabel = (full: { lots: number }) => `Town full (${full.lots}/${full.lots})`;
+/** The placement dialog's sentence, and the disabled button's reason. */
+export const townFullText = (full: { lots: number }) => `The town is full: all ${full.lots} lots have a house.`;
+export const TOWN_FULL_HINT = 'Remove a house or add a city to place another.';
 
 /** Run `fn` once the first snapshot is in (at once, if it is). Returns what cancels the wait. */
 export function whenSynced(store: Pick<Store, 'state' | 'subscribe'>, fn: () => void): () => void {

@@ -156,6 +156,39 @@
   display: grid;
   gap: 0.375rem;
 }
+/* Every lot has a house: the reason first, then the ways to make room */
+.rlt-ui .place-full {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.625rem;
+  color: var(--sun-text);
+  background: rgb(var(--sun-rgb) / 0.1);
+  border: 1px solid rgb(var(--sun-rgb) / 0.3);
+}
+.rlt-ui .place-full p {
+  margin: 0;
+}
+.rlt-ui .place-full-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+.rlt-ui .place-full-hint {
+  color: var(--text-2);
+  font-size: 0.78125rem;
+  line-height: 1.45;
+}
+.rlt-ui .place-full-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.rlt-ui .place-full-actions select {
+  flex: 1 1 10rem;
+  min-width: 0;
+}
 .rlt-ui .fb-here {
   display: flex;
   flex-wrap: wrap;

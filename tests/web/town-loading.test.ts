@@ -11,7 +11,7 @@ import type { ClientState } from '../../web/src/core/types';
 import { applyServerMsg, emptyState } from '../../web/src/net/reducer';
 import { ACCOUNTS_LOADING, shownProvidersStatus } from '../../web/src/ui/model-state';
 import { onboardingTargets } from '../../web/src/ui/suggestions';
-import { CONNECTING, freeLots, housesLoading, LOADING_HOUSES, NO_HOUSES, noHousesItem, whenSynced } from '../../web/src/ui/town-loading';
+import { CONNECTING, freeLots, housesLoading, LOADING_HOUSES, NO_HOUSES, noHousesItem, townFull, townFullLabel, townFullText, whenSynced } from '../../web/src/ui/town-loading';
 
 const project = (id: string, name: string, lotId = `lot-${id}`): Project => ({ id, name, path: `/w/${id}`, lotId, style: 'cottage' }) as unknown as Project;
 const lot = (id: string): Lot => ({ id, district: 'Main Ave', x: 0, z: 0, rotY: 0, width: 20, depth: 20 }) as unknown as Lot;
@@ -156,5 +156,20 @@ describe('placing a project: the free lots', () => {
     const s = emptyState();
     applyServerMsg(s, snapshot([project('a', 'a', 'lot-todo'), project('b', 'b', 'lot-b'), project('c', 'c', 'lot-c')]));
     expect(freeLots(s)).toEqual([]);
+  });
+  test('a full town says so, with how many lots it has; one free lot or a town still loading is not full', () => {
+    const s = emptyState();
+    expect(townFull(s)).toBeNull(); // before the first snapshot nothing is known: loading, not full
+    applyServerMsg(s, snapshot([project('a', 'a', 'lot-todo'), project('b', 'b', 'lot-b')]));
+    expect(townFull(s)).toBeNull();
+    applyServerMsg(s, snapshot([project('a', 'a', 'lot-todo'), project('b', 'b', 'lot-b'), project('c', 'c', 'lot-c')]));
+    const full = townFull(s);
+    expect(full).toEqual({ lots: 3 });
+    expect(townFullLabel(full!)).toBe('Town full (3/3)');
+    expect(townFullText(full!)).toBe('The town is full: all 3 lots have a house.');
+    // a house removed: room again
+    applyServerMsg(s, { t: 'city', city: { lots: LOTS, projects: [project('a', 'a', 'lot-todo'), project('c', 'c', 'lot-c')] } } as ServerMsg);
+    expect(townFull(s)).toBeNull();
+    expect(freeLots(s)?.map((l) => l.id)).toEqual(['lot-b']);
   });
 });

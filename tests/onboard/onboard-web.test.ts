@@ -3,7 +3,8 @@
 // next steps. Pure modules only (no DOM).
 import { describe, expect, test } from 'bun:test';
 import type { ModelInfo, ProviderStatus } from '../../shared/protocol';
-import { liveProviders, modelStatus, noneConnected } from '../../web/src/ui/model-state';
+import { liveProviders } from '../../shared/live-providers';
+import { modelStatus, noneConnected } from '../../web/src/ui/model-state';
 import { shortPath, tildePath } from '../../web/src/ui/display-path';
 import { chatSuggestions, onboardingTargets, workKindOf } from '../../web/src/ui/suggestions';
 import { connectFirst, modelFact, welcomeCards } from '../../web/src/ui/welcome-copy';

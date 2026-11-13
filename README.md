@@ -171,8 +171,9 @@ CAST are AI agents: nobody can work until an account is connected ([Connect an A
 Then click a **For sale** lot and pick a project folder, or create a new project from a template.
 
 To keep CAST running after you close the terminal, use whatever you normally use for services: a `systemd --user`
-unit, `tmux`, or `nohup bun run start > cast.log 2>&1 &`. Stop it with `Ctrl+C` or `kill <pid>`; agents and terminal
-shells stop with it.
+unit, `tmux`, or `nohup bun run start > cast.log 2>&1 &`. Stop it with `Ctrl+C` or `kill <pid>` (closing the terminal
+it runs in does the same); agents and terminal shells stop with it. Only `kill -9` gives CAST no chance to stop them
+(see [Troubleshooting](#troubleshooting)).
 
 ## Mac app
 
@@ -203,12 +204,12 @@ the dmg made on the Mac with the Command Line Tools (`xcode-select --install`; n
 ```bash
 # 1. the kit, in the cast folder (after bun install)
 scripts/mac/build-kit.sh dist/mac
-#    → dist/mac/cast-mac-kit-0.2.0.tar.gz
+#    → dist/mac/cast-mac-kit-0.2.1.tar.gz
 
 # 2. on the Mac
-tar xzf cast-mac-kit-0.2.0.tar.gz && cd cast-mac-kit
+tar xzf cast-mac-kit-0.2.1.tar.gz && cd cast-mac-kit
 shasum -a 256 -c SHA256SUMS      # optional: nothing was damaged on the way
-./build-dmg.sh                   # → CAST-0.2.0-arm64.dmg (CAST.app and a link to Applications)
+./build-dmg.sh                   # → CAST-0.2.1-arm64.dmg (CAST.app and a link to Applications)
 ./build-dmg.sh --run             # or: build CAST.app and start it, without a dmg
 ```
 
@@ -588,6 +589,10 @@ the browser, and leaves out addresses, logins, paths and project names.
 | "The agent (cast-agent) isn’t built, so nobody can work yet" or people can't start | Run `bun run build` in the CAST folder, or point `CAST_AGENT_BIN` at a cast-agent, then press **Check again** on the banner or restart CAST |
 | A banner says the cast-agent version is untested | It only happens when `CAST_AGENT_BIN` points at another build. Unset it to use the bundled agent, or keep going: most things still work |
 | `port 4860 is taken` / the server won't start | Another program (or another CAST) uses the port. Stop it or set `CAST_PORT` |
+| "CAST needs Bun 1.3.14 or newer, but this is Bun …" | Your Bun is older than CAST supports. Run `bun upgrade`, then start CAST again |
+| Agents kept working after CAST was stopped with `kill -9` | `kill -9` (SIGKILL) can't be caught, so CAST can't stop its agents: a busy one finishes what it was doing, then exits by itself. The next start of CAST stops any that are still running. Stop CAST with `Ctrl+C` or a plain `kill` instead |
+| **Town full (20/20)**: no lot to place a project on | A town has 20 lots. Remove a house from the town (its **⋯** menu → **Remove from town…**; the folder and its files stay), or add another machine running CAST as a city. The Place project dialog offers both |
+| A house is missing after editing `city.json` by hand | CAST never drops a project it can't place: more projects than lots (or an entry that isn't a project) are logged at start and kept in `city-overflow.json` in the data folder. To bring one back, free a lot, stop CAST, move the entry's `project` into `city.json`'s `projects` with a free `lotId`, and start CAST |
 | Nobody works, or the chat box is locked | No AI account is connected for that person's model. Connect one in Models & providers (the **Connect AI** button in the top bar), or pick a model whose account is connected |
 | The page says you need to pair, or "403" | Open the pairing link again. After the token was replaced, every device needs the new link |
 | "Reconnecting…" never ends behind a proxy | The proxy must pass WebSockets, and its public origin must be in `CAST_ALLOWED_ORIGINS` |

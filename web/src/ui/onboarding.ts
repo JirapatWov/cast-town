@@ -4,7 +4,7 @@
 // (deviceStorage): whoever opens CAST on a new browser should meet it, whichever city they open first.
 import { APP_NAME } from '../../../shared/brand';
 import { agentsState } from './agents-health';
-import { liveProviders } from './model-state';
+import { liveProviders } from '../../../shared/live-providers';
 import { deviceStorage, h, setChildren } from './dom';
 import { icon } from './icons';
 import { ONBOARDING_ART } from './illustrations';

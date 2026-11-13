@@ -1,19 +1,7 @@
 // Which AI accounts work, as people should read it, in one place. With none connected nobody can work, so the top bar,
 // the More menu and the welcome say so and lead to Models & providers. Pure: no DOM, no store — callers pass what
 // they know.
-import type { ModelInfo, ProviderStatus } from '../../../shared/protocol';
-
-/** What the town runs on, as far as the client knows. */
-export interface ModelState {
-  providers: ProviderStatus[];
-  models: ModelInfo[];
-}
-
-/** Providers (or vendors of a custom provider's models) that are signed in right now. */
-export function liveProviders(s: ModelState): number {
-  const cards = s.providers.filter((p) => p.connected).length;
-  return cards || new Set(s.models.filter((m) => m.available).map((m) => m.vendor)).size;
-}
+import { liveProviders, type ModelState } from '../../../shared/live-providers';
 
 /** No AI account is connected: nobody can work until one is. */
 export function noneConnected(s: ModelState): boolean {

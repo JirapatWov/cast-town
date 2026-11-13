@@ -1,10 +1,13 @@
 // #80 with the network dropped (not the server stopped): an idle WebSocket can look open for minutes, so a click
 // spun until its timeout and went out later. On the browser's `offline` event the socket asks whether the server can
 // still be reached and drops at once when it can't (a server on this machine stays reachable: that socket is kept).
+// And a socket that never opens (a phone back from sleep or behind a VPN coming up) is given up after OPEN_TIMEOUT_MS
+// and retried through the backoff, on a fake clock.
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { connectSocket } from '../../web/src/net/socket';
+import { connectSocket, OPEN_TIMEOUT_MS } from '../../web/src/net/socket';
 
 class FakeSocket {
+  static CONNECTING = 0;
   static OPEN = 1;
   static all: FakeSocket[] = [];
   readyState = 0;
@@ -90,5 +93,75 @@ describe('#80 the network goes away', () => {
     win.dispatchEvent(new Event('online'));
     expect(FakeSocket.all.length).toBe(2);
     sock.close();
+  });
+});
+
+/** setTimeout / clearTimeout on a clock that only moves when told to. */
+function fakeClock() {
+  const real = { setTimeout: globalThis.setTimeout, clearTimeout: globalThis.clearTimeout };
+  let now = 0;
+  let seq = 0;
+  const due = new Map<number, { at: number; fn: () => void }>();
+  Object.assign(globalThis, {
+    setTimeout: (fn: () => void, ms = 0) => (due.set(++seq, { at: now + ms, fn }), seq),
+    clearTimeout: (id?: number) => void (id !== undefined && due.delete(id)),
+  });
+  return {
+    advance(ms: number) {
+      const end = now + ms;
+      for (;;) {
+        const next = [...due.entries()].filter(([, t]) => t.at <= end).sort((a, b) => a[1].at - b[1].at)[0];
+        if (!next) break;
+        due.delete(next[0]);
+        now = next[1].at;
+        next[1].fn();
+      }
+      now = end;
+    },
+    restore: () => Object.assign(globalThis, real),
+  };
+}
+
+describe('a socket that never opens', () => {
+  test('it is closed after OPEN_TIMEOUT_MS and a new one is tried through the backoff', () => {
+    const clock = fakeClock();
+    try {
+      const events: string[] = [];
+      const sock = connectSocket('ws://x/ws', { onOpen: () => events.push('open'), onClose: () => events.push('close'), onMessage: () => {} });
+      const first = FakeSocket.all[0]!;
+      clock.advance(OPEN_TIMEOUT_MS - 1);
+      expect(first.closed).toBe(false); // still within its time
+      clock.advance(1);
+      expect(first.closed).toBe(true);
+      expect(events).toEqual(['close']); // the page says it is reconnecting
+      expect(FakeSocket.all.length).toBe(1); // the retry waits for the backoff (at most 0.6 s for the first one)
+      clock.advance(600);
+      expect(FakeSocket.all.length).toBe(2);
+      FakeSocket.all[1]!.open();
+      expect(events).toEqual(['close', 'open']);
+      first.onclose?.(); // the given-up socket closing late changes nothing
+      expect(events).toEqual(['close', 'open']);
+      expect(sock.open).toBe(true);
+      sock.close();
+    } finally {
+      clock.restore();
+    }
+  });
+
+  test('one that opens in time is kept: its timer never fires', () => {
+    const clock = fakeClock();
+    try {
+      const events: string[] = [];
+      const sock = connectSocket('ws://x/ws', { onOpen: () => events.push('open'), onClose: () => events.push('close'), onMessage: () => {} });
+      clock.advance(OPEN_TIMEOUT_MS - 100);
+      FakeSocket.all[0]!.open();
+      clock.advance(OPEN_TIMEOUT_MS * 3);
+      expect(events).toEqual(['open']);
+      expect(FakeSocket.all[0]!.closed).toBe(false);
+      expect(FakeSocket.all.length).toBe(1);
+      sock.close();
+    } finally {
+      clock.restore();
+    }
   });
 });

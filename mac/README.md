@@ -13,9 +13,9 @@ for you (an approval or a question), and is dimmed while CAST starts or when it 
 
 | Item | What it does |
 |---|---|
-| Status line | "Idle", "2 people working", "1 approval waiting — Open", "CAST stopped". Click it to open CAST |
+| Status line | "Idle", "2 people working", "1 approval waiting — Open", "Connect an AI account — Open CAST" (no account is connected, so nobody can work: the icon shows an orange **!** too), "CAST stopped". Click it to open CAST |
 | Waiting items | One line per approval or question that waits for you. Click one to open CAST at that house |
-| Notes | "No AI account connected — open CAST to connect one" (nobody can work until one is; shown once a check of the accounts worked, else "Checking AI accounts…" or "Couldn't check AI accounts"), or that the agent program (cast-agent) is missing. Click one to open CAST |
+| Notes | "Checking AI accounts…" or "Couldn't check AI accounts" while the account check runs or fails, "No AI account connected — open CAST to connect one" when the status line is busy saying something else, or that the agent program (cast-agent) is missing. Click one to open CAST |
 | **Open CAST** (⌘O) | Opens CAST in your default browser, signed in with a one-time link |
 | **Pair a phone…** | Opens Settings → Pair a phone in the browser |
 | **Open at login** | Starts CAST.app when you log in to your Mac |

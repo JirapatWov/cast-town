@@ -753,6 +753,25 @@ describe('mac/CASTMenu Swift sources', () => {
       '"Open at login"', '"Notify me"', '"Restart CAST"', '"Show logs"', '"About CAST"', '"Quit CAST"',
     ]) expect({ missing: allSwift.includes(s) ? '' : s }).toEqual({ missing: '' });
   });
+
+  test('no AI account connected shows in the status line and on the icon, not as "Idle"', () => {
+    // FINDING: with no account the menu bar said "Idle" with a plain icon (only a note inside the menu said why),
+    // while nobody could work. The contract's fields it goes by: models.connected and models.state (shared/app-status.ts).
+    expect(swift['CastClient.swift']).toContain('models["connected"]');
+    expect(swift['CastClient.swift']).toContain('models["state"]');
+    // none connected only once a check worked (ok / stale) and the agent is fine
+    expect(swift['CastClient.swift']).toContain('ompState == "ok" && (modelsState == "ok" || modelsState == "stale")');
+    const menu = swift['MenuBar.swift'];
+    const line = menu.slice(menu.indexOf('private func statusLine()'), menu.indexOf('private func plural('));
+    // after who waits on you, before "working" and "Idle"
+    const at = (s: string) => line.indexOf(s);
+    expect(at('if s.needsAccount { return Self.connectAccountLine }')).toBeGreaterThan(at('s.needsYou > 0'));
+    expect(at('if s.needsAccount')).toBeLessThan(at('s.working > 0'));
+    expect(at('if s.needsAccount')).toBeLessThan(at('return "Idle"'));
+    expect(menu).toContain('connectAccountLine = "Connect an AI account — Open CAST"');
+    // the icon: an orange "!" when nobody waits but no account is connected
+    expect(menu).toContain('let mark = badge > 0 ? " \\(badge)" : needsAccount ? " !" : ""');
+  });
 });
 
 describe('mac/README.md', () => {

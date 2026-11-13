@@ -143,9 +143,14 @@ final class MenuBarController: NSObject, NSMenuDelegate, UNUserNotificationCente
         guard let s = status else { return "Connecting to CAST…" }
         if s.approvalsWaiting > 0 { return plural(s.approvalsWaiting, "approval", "approvals") + " waiting — Open" }
         if s.needsYou > 0 { return (s.needsYou == 1 ? "1 person needs" : "\(s.needsYou) people need") + " you — Open" }
+        // "Idle" would read as all fine while nobody can work at all
+        if s.needsAccount { return Self.connectAccountLine }
         if s.working > 0 { return plural(s.working, "person", "people") + " working" }
         return "Idle"
     }
+
+    /// The status line with no AI account connected (clicking it opens CAST, where the top bar's Connect AI is).
+    private static let connectAccountLine = "Connect an AI account — Open CAST"
 
     private func plural(_ n: Int, _ one: String, _ many: String) -> String {
         n == 1 ? "1 \(one)" : "\(n) \(many)"
@@ -157,10 +162,12 @@ final class MenuBarController: NSObject, NSMenuDelegate, UNUserNotificationCente
         var symbol = "building.2"
         var dimmed = true
         var badge = 0
+        var needsAccount = false
         if server.phase == .running, problem == nil {
             dimmed = false
             if let s = status {
                 badge = s.waitingCount
+                needsAccount = s.needsAccount
                 if badge > 0 || s.working > 0 { symbol = "building.2.fill" }
             }
         }
@@ -168,8 +175,10 @@ final class MenuBarController: NSObject, NSMenuDelegate, UNUserNotificationCente
         let image = NSImage(systemSymbolName: symbol, accessibilityDescription: "CAST")?.withSymbolConfiguration(config)
         image?.isTemplate = true
         button.image = image
-        if badge > 0 {
-            button.attributedTitle = NSAttributedString(string: " \(badge)", attributes: [
+        // the badge counts who waits; with nobody waiting, an orange "!" says CAST needs an AI account to work
+        let mark = badge > 0 ? " \(badge)" : needsAccount ? " !" : ""
+        if !mark.isEmpty {
+            button.attributedTitle = NSAttributedString(string: mark, attributes: [
                 .font: NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .bold),
                 .foregroundColor: NSColor.systemOrange,
             ])
@@ -228,13 +237,14 @@ final class MenuBarController: NSObject, NSMenuDelegate, UNUserNotificationCente
         return item
     }
 
-    /// What the menu says about AI accounts once the agent (cast-agent) is fine: "none connected" only after a check worked.
+    /// What the menu says about AI accounts once the agent (cast-agent) is fine: "none connected" only after a check
+    /// worked, and only when the status line doesn't already say it.
     private func accountNote(_ s: CastStatus) -> String? {
         guard s.ompState == "ok" else { return nil }
         switch s.modelsState {
         case "checking": return "Checking AI accounts…"
         case "failed": return "Couldn't check AI accounts — Open CAST"
-        default: return s.modelsConnected == 0 ? "No AI account connected — open CAST to connect one" : nil
+        default: return s.needsAccount && statusLine() != Self.connectAccountLine ? "No AI account connected — open CAST to connect one" : nil
         }
     }
 

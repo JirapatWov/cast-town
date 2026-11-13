@@ -3,7 +3,8 @@
 // boot screen — so they never disagree ("agent not found · real providers connected", a green "0 live", …).
 import type { AgentInfo, ServerMsg } from '../../../shared/protocol';
 import { storage } from './dom';
-import { liveProviders, noneConnected, type ModelState } from './model-state';
+import { liveProviders, type ModelState } from '../../../shared/live-providers';
+import { noneConnected } from './model-state';
 import type { Shell } from './shell';
 
 type Hello = Extract<ServerMsg, { t: 'hello' }>;

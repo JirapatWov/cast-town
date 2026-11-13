@@ -11,7 +11,7 @@ import { CITY_ID } from '../net/base';
 import { copyText, h, type Child } from './dom';
 import { APP_VERSION, bugReportBody, diagnosticsText, keyLabels, keysText, ompState, projectLinks, shortcutGroups, type DiagnosticsInput } from './help-info';
 import { icon } from './icons';
-import { liveProviders } from './model-state';
+import { liveProviders } from '../../../shared/live-providers';
 import { openModal, type ModalHandle } from './modal';
 import type { Shell } from './shell';
 import { isMac } from './widgets';

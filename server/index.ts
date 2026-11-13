@@ -7,7 +7,10 @@
 // Cities (server/city-routes.ts): GET /api/version, /api/cities, and /city/<id>/… proxied to other machines' CAST.
 // The Mac menu-bar app (server/app-routes.ts): GET /api/status, POST /api/login-link.
 // CAST as an installed app (server/pwa.ts): /sw.js, the manifest and icons are public; Web Push (server/push).
-// SIGTERM/SIGINT: stop shells and omp, then exit — within 10 s, leaving no child behind (the Mac app's Quit).
+// SIGTERM/SIGINT/SIGHUP: stop shells and omp, then exit — within 10 s, leaving no child behind (the Mac app's Quit,
+// Ctrl+C, the terminal CAST was started in closing). Unhandled, SIGHUP killed the server on the spot, and a busy agent
+// whose CAST is gone finishes its turn on its own (it drains what it accepted once its stdin closes). SIGKILL can't be
+// handled: the next start stops whatever agent of this data folder is still running (process-pool.ts reapOrphans).
 import { join } from 'node:path';
 import { MAC_APP_FEATURE } from '../shared/app-status';
 import { APP_NAME } from '../shared/brand';
@@ -16,6 +19,7 @@ import { WS_PATH, type ServerMsg } from '../shared/protocol';
 import { TERM_DISABLED_MESSAGE, TERM_WS_PATH } from '../shared/terminal-protocol';
 import { createAppRoutes } from './app-routes';
 import { createAuth, type AllowDecision, type AuthDecision } from './auth';
+import { exitIfBunTooOld } from './bun-version';
 import { signalTrackedGroups } from './child-groups';
 import { createCities, homeCityName, loadOrCreateInstanceId } from './cities';
 import { createCityRoutes } from './city-routes';
@@ -45,6 +49,9 @@ import { createUploads } from './uploads';
 import { banner, ensureDataDirFree, pairingHint, prepareFolders, startupWarnings, terminalAccess, writeListenInfo } from './startup';
 import { errorMessage, log } from './util';
 import { MAX_FRAME_CHARS } from './validate';
+
+// before anything else runs: an older Bun stops here with what to do (package.json engines.bun)
+exitIfBunTooOld();
 
 async function loadAgentSystem(cfg: ServerConfig, deps: AgentSystemDeps): Promise<AgentSystem> {
   if (cfg.stubAgents) {
@@ -85,6 +92,7 @@ function onSignal(signal: NodeJS.Signals): void {
 }
 process.on('SIGINT', () => onSignal('SIGINT'));
 process.on('SIGTERM', () => onSignal('SIGTERM'));
+process.on('SIGHUP', () => onSignal('SIGHUP')); // the terminal CAST runs in was closed
 
 async function main(): Promise<void> {
   applyEnvAliases(process.env); // CAST_X → RLT_X for every module that reads the environment itself

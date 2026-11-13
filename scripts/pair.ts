@@ -8,6 +8,7 @@
 // Already have a paired device? Settings → Pair a phone makes a one-time link that expires instead.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { exitIfBunTooOld } from '../server/bun-version';
 import { applyEnvAliases, loadConfig, resolveDataDir } from '../server/config';
 import { readListenInfo } from '../server/startup';
 import { qrcodegen } from '../web/src/vendor/qrcodegen';
@@ -51,6 +52,7 @@ function isLoopbackUrl(u: string): boolean {
 }
 
 function main() {
+  exitIfBunTooOld();
   applyEnvAliases(process.env);
   const args = process.argv.slice(2);
   let base: string | undefined;

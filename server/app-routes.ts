@@ -11,6 +11,7 @@
 import { approvalLine, isQuestion } from '../shared/ask';
 import { MAX_ATTENTION, type AppOmpState, type AppStatus, type AttentionItem, type LoginLink } from '../shared/app-status';
 import { ompCoreVersion, OMP_TESTED_VERSION } from '../shared/omp-version';
+import { liveProviders } from '../shared/live-providers';
 import type { AgentsHealth, CityState } from '../shared/protocol';
 import { originAllowed } from './auth';
 import type { AgentSnapshot, AgentSystem } from './contracts';
@@ -84,7 +85,7 @@ export interface StatusInput {
   cityName: string;
   url: string;
   uptimeSec: number;
-  snapshot: Pick<AgentSnapshot, 'agents' | 'approvals' | 'plans' | 'runs' | 'providers'>;
+  snapshot: Pick<AgentSnapshot, 'agents' | 'approvals' | 'plans' | 'runs' | 'providers' | 'models'>;
   projects: { id: string; name: string }[];
   health?: AgentsHealth;
   ompVersion: string | null;
@@ -166,7 +167,7 @@ export function attentionOf(i: AttentionInput): { attention: AttentionItem[]; ne
 }
 
 export function buildStatus(i: StatusInput): AppStatus {
-  const { agents, runs, providers } = i.snapshot;
+  const { agents, runs, providers, models } = i.snapshot;
   const { attention, needsYou, approvalsWaiting } = attentionOf(i);
   const version = i.ompVersion ?? undefined;
   return {
@@ -184,7 +185,9 @@ export function buildStatus(i: StatusInput): AppStatus {
     runsActive: runs.filter((r) => r.status === 'running' || r.status === 'waiting_approval').length,
     houses: i.projects.length,
     omp: { state: appOmpState(i.health, i.ompVersion), ...(version ? { version } : {}) },
-    models: { connected: providers.filter((p) => p.connected).length, state: i.health?.models ?? 'ok', demo: i.demo },
+    // counted as the page counts them (a custom provider's models count too), so the menu bar and the page's
+    // "Connect AI" never disagree on whether anybody can work
+    models: { connected: liveProviders({ providers, models }), state: i.health?.models ?? 'ok', demo: i.demo },
     attention: attention.slice(0, MAX_ATTENTION),
   };
 }

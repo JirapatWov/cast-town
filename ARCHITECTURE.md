@@ -37,7 +37,7 @@ CAST.
 
 | Path | What |
 |---|---|
-| `shared/` | Code used by both sides: `protocol.ts` (the wire contract), `terminal-protocol.ts`, `city-layout.ts` (roads, lots, landmarks), `house-plan.ts` (floors, rooms, stairs), `omp-version.ts` (the tested agent version and build hint), `omp-login-providers.ts` (every sign-in the agent's `login` offers, generated), `brand.ts` |
+| `shared/` | Code used by both sides: `protocol.ts` (the wire contract), `terminal-protocol.ts`, `city-layout.ts` (roads, lots, landmarks), `house-plan.ts` (floors, rooms, stairs), `omp-version.ts` (the tested agent version and build hint), `omp-login-providers.ts` (every sign-in the agent's `login` offers, generated), `live-providers.ts` (how many AI accounts work: the page and `/api/status` count alike), `brand.ts` |
 | `server/` | The Bun server (no framework). `index.ts` wires everything |
 | `server/agents/` | The agent system: people, agent processes, chats, approvals, teams, models, and the scripted test model |
 | `web/` | The web app (Vite + TypeScript + three.js, no UI framework). `index.html`, `src/`, `public/` (icons, `assets/`) |
@@ -72,11 +72,12 @@ itself and hands the rest to the agent system.
 | Module | Owns |
 |---|---|
 | `config.ts` | Settings from the environment and `<data dir>/config.json` (README → Configuration) |
+| `bun-version.ts` | The oldest Bun CAST runs on (package.json `engines.bun`): the server and `bun run pair` stop on an older one with how to upgrade |
 | `auth.ts` | Pairing token, device sessions, Tailscale identity, origin checks, the 403 page (`pages.ts`) |
 | `devices.ts`, `device-sockets.ts` | Device sessions in `devices.json` (hashed secrets, one-time pairing codes, token rotation) and closing a revoked device's sockets |
 | `startup.ts` | First-start folders, the startup banner (never the token), risky-setup warnings, `listen.json` for `bun run pair` |
 | `data-routes.ts`, `data-wipe.ts` | Settings → Devices / Delete all data endpoints, and the wipe-and-restart itself |
-| `city-store.ts` | `city.json`: projects and the lots they stand on |
+| `city-store.ts` | `city.json`: projects and the lots they stand on. A project the town has no lot for at load (or an entry that isn't one) is logged and kept in `city-overflow.json`, never dropped |
 | `projects.ts` | Place, create, move and remove projects (one project per lot, one house per folder, folder confinement) |
 | `project-templates.ts` | Starter files for a new project (empty folder, Bun API, novel). The first start creates no projects |
 | `job-store.ts`, `jobs.ts` | `jobs.json` and the rules for jobs, rooms and floors |
@@ -216,7 +217,7 @@ takes over when it is ready unless the person picked the board meanwhile (`three
 
 | Folder | What |
 |---|---|
-| `net/` | `socket.ts` (reconnect with backoff), `store.ts` + `reducer.ts` (the client mirror of the server state), `requests.ts` (reqId → promise), `bus.ts` (UI ⇄ 3D events), `files.ts`, `uploads.ts`, `base.ts` (URLs per city) |
+| `net/` | `socket.ts` (reconnect with backoff; a socket not open within 6 s is given up and retried), `store.ts` + `reducer.ts` (the client mirror of the server state), `requests.ts` (reqId → promise), `bus.ts` (UI ⇄ 3D events), `files.ts`, `uploads.ts`, `base.ts` (URLs per city) |
 | `ui/` | Every DOM panel: `index.ts` creates them, `shell.ts` is what panels may ask of each other, `topbar.ts`, `sidepanel.ts`, the chat (`chat-tab.ts`, `composer.ts`, `transcript.ts`), jobs, workflows, approvals, palette, Help (`help.ts`, `help-info.ts`), Settings (`settings.ts`), terminal, file viewer, onboarding. Keyboard and screen-reader plumbing: `shortcuts.ts` (the one shortcut list, contract C5), `focus.ts` (focus never falls to `<body>`), `radios.ts` (option groups), `announce.ts` (live region), `a11y-prefs.ts`, `theme.ts` (System / Dark / Light: `<html data-theme>` swaps the colour tokens in `css/base.css`; `index.html` applies it before the first paint). Small pure copy and layout helpers sit beside their panels: `welcome-copy.ts` (the first-run cards), `wipe-text.ts` (Delete all data, worded for a city opened through a hub), `team-default.ts` (the Team heading, and its note for a job without a team), `path-line.ts` (a folder path cut from the start so the folder name stays). `dom.ts` has `h()`, storage helpers and other DOM utilities; `layers.ts` makes `Esc` close the top-most thing and `nav-history.ts` makes the browser's Back close it too (dialogs and the phone sheet first, then house → town); styles in `ui/css/` |
 | `engine/` | Renderer, post-processing (N8AO, depth of field, bloom, AgX, grade, SMAA), lighting, skies and time of day, interior light-probe GI, asset loading, quality presets |
 | `city/` | The town: ground, roads, lots, buildings (project houses grow a storey per floor), trees (an EZ-Tree port with 3 LODs and wind), grass, props, labels, camera rig, the drivable car; `decor-fade.ts` turns a decor building that hides a user's house see-through; `framing.ts` turns and steps the start view back until the user's houses fit a narrow (upright phone) screen |
@@ -264,6 +265,7 @@ text is English; user content is often Thai, so fonts must render it well.
 | Where | What |
 |---|---|
 | `<data dir>/city.json`, `jobs.json`, `workflows.json` | The town, jobs, saved teams: per house plus the shared library (`{version: 3, houses, library}`) (atomic writes, only ever extended) |
+| `<data dir>/city-overflow.json` | Projects a start couldn't place (more than the 20 lots) or read, as they were, so they can be put back by hand (README → Troubleshooting) |
 | `<data dir>/workflow-bases.json` | Each house workflow's base for merging a lead's save with the user's hand edits, and when a person's model or effort was set by hand |
 | `<data dir>/workflows.v1.json`, `workflow-bases.v1.json` | The files from before workflows belonged to houses, kept as they were when the first start moved each workflow to the houses that use it (or to the library) |
 | `<data dir>/workflows.v2.json` | The file from before CAST stopped shipping example teams, kept once (never overwritten) when the first start of that version gave each house that used one (its team, a job's team or a run) its own copy, with the same ids |

@@ -13,7 +13,7 @@ import { viewerFolder } from './changes-tab';
 import { openFolder } from './file-viewer';
 import { isNarrow } from './touch';
 import { kbd } from './widgets';
-import { noHousesItem } from './town-loading';
+import { noHousesItem, townFull, townFullLabel } from './town-loading';
 
 export function createActionBar(shell: Shell) {
   const { bus, store } = shell;
@@ -85,7 +85,8 @@ export function createActionBar(shell: Shell) {
       return lead?.name ?? kindInfo(job?.kind).lead;
     })() : '';
     const term = terminalOffered(); // off when the owner turned the terminal off on this server
-    if (!changed([view, project?.id, project?.name, leadName, store.state.city.projects.map((p) => [p.id, p.name]), term])) return;
+    const full = townFull(store.state);
+    if (!changed([view, project?.id, project?.name, leadName, store.state.city.projects.map((p) => [p.id, p.name]), term, full?.lots])) return;
     if (view === 'house' && project) {
       setChildren(el,
         // goal first: tell the lead what you want; they pick how (alone, helpers, a team)
@@ -107,7 +108,10 @@ export function createActionBar(shell: Shell) {
     } else {
       const fly = action('Fly to', 'pin', (ev) => openFlyTo(ev.currentTarget as HTMLElement), undefined, { menu: true });
       setChildren(el,
-        action('Place project', 'folderPlus', () => shell.openPlacement(), undefined, { primary: true, short: 'Place' }),
+        // a full town says so (it opens the dialog with the ways to make room) instead of promising a lot
+        full
+          ? action(townFullLabel(full), 'home', () => shell.openPlacement(), undefined, { short: 'Town full' })
+          : action('Place project', 'folderPlus', () => shell.openPlacement(), undefined, { primary: true, short: 'Place' }),
         action('Drive', 'car', () => bus.emit('nav:drive', {}), 'D'),
         fly,
         term ? action('Terminal', 'terminal', () => shell.openTerminal(TERM_TOWN), 'Ctrl `') : null,

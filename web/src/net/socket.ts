@@ -6,6 +6,11 @@
 // was back. So on `offline` the socket asks `reachable()` (a quick request to the server) and drops at once when the
 // server can't be reached — the page then says it is offline and requests fail right away. A server on this machine
 // stays reachable without a network: that socket is kept.
+//
+// A socket that never opens can hang far longer than a page should wait (a phone back from sleep, a VPN coming up:
+// the handshake goes nowhere, and the browser gives up only after many seconds). One still connecting after
+// OPEN_TIMEOUT_MS is closed and retried through the same backoff; meanwhile no tab switch or `online` could retry it,
+// as they only retry when no socket is in flight.
 
 export interface SocketHandlers {
   onOpen(): void;
@@ -24,11 +29,18 @@ export interface ReconnectingSocket {
 const BASE_DELAY_MS = 500;
 const MAX_DELAY_MS = 15_000;
 const FACTOR = 1.8;
+/** How long a socket may take to open before it is given up and retried. */
+export const OPEN_TIMEOUT_MS = 6_000;
 
 export function connectSocket(url: string, h: SocketHandlers): ReconnectingSocket {
   let ws: WebSocket | null = null;
   let attempt = 0;
   let timer: ReturnType<typeof setTimeout> | null = null;
+  let openTimer: ReturnType<typeof setTimeout> | undefined;
+  const stopOpenTimer = () => {
+    clearTimeout(openTimer);
+    openTimer = undefined;
+  };
   let stopped = false;
 
   const nextDelay = () => {
@@ -56,7 +68,13 @@ export function connectSocket(url: string, h: SocketHandlers): ReconnectingSocke
       return;
     }
     ws = sock;
+    stopOpenTimer();
+    openTimer = setTimeout(() => {
+      openTimer = undefined;
+      if (sock.readyState === WebSocket.CONNECTING) drop(sock);
+    }, OPEN_TIMEOUT_MS);
     sock.onopen = () => {
+      if (ws === sock) stopOpenTimer();
       attempt = 0;
       h.onOpen();
     };
@@ -65,6 +83,7 @@ export function connectSocket(url: string, h: SocketHandlers): ReconnectingSocke
     };
     sock.onclose = () => {
       if (ws !== sock) return;
+      stopOpenTimer();
       ws = null;
       h.onClose();
       schedule(nextDelay());
@@ -74,9 +93,10 @@ export function connectSocket(url: string, h: SocketHandlers): ReconnectingSocke
     };
   };
 
-  /** Give up on a socket that can't reach the server any more (the browser may not notice for minutes). */
+  /** Give up on a socket that can't reach the server (any more, or yet): the browser may not notice for minutes. */
   const drop = (sock: WebSocket) => {
     if (ws !== sock) return;
+    stopOpenTimer();
     sock.onopen = sock.onmessage = sock.onclose = sock.onerror = null;
     try {
       sock.close();
@@ -124,6 +144,7 @@ export function connectSocket(url: string, h: SocketHandlers): ReconnectingSocke
     close() {
       stopped = true;
       if (timer) clearTimeout(timer);
+      stopOpenTimer();
       window.removeEventListener('online', retryNow);
       window.removeEventListener('offline', onOffline);
       document.removeEventListener('visibilitychange', onVisible);

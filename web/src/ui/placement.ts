@@ -1,9 +1,12 @@
-// Place-project dialog: pick an existing folder (or create a new one), choose a building style and a lot.
+// Place-project dialog: pick an existing folder (or create a new one), choose a building style and a lot. A full town
+// (every lot has a house) says so at the top, with the two ways to make room: remove a house, or add a city.
 import { clipName, MAX_PROJECT_NAME } from '../../../shared/limits';
 import type { BuildingStyle, Project } from '../../../shared/protocol';
 import { needsAccount } from './agents-health';
 import { h, setChildren } from './dom';
 import { basename, lotLabel, SET_UP_GIT_TEXT, slugify } from './format';
+import { openAddCity } from './cities';
+import { removeHouse } from './house-menu';
 import { createFolderBrowser, startFolder, type FolderChoice } from './folder-browser';
 import { shortPath } from './display-path';
 import { pathLine } from './path-line';
@@ -12,7 +15,7 @@ import { buildingIllustration } from './illustrations';
 import { openModal, type ModalHandle } from './modal';
 import type { Shell } from './shell';
 import { optionNames, segmented } from './widgets';
-import { freeLots, LOADING_HOUSES } from './town-loading';
+import { freeLots, LOADING_HOUSES, townFull, townFullLabel, townFullText } from './town-loading';
 
 type Mode = 'pick' | 'create';
 type Template = 'empty' | 'node-api' | 'novel';
@@ -201,8 +204,35 @@ export function createPlacement(shell: Shell) {
         return;
       }
       if (!free.some((l) => l.id === lot)) lot = free[0]?.id ?? '';
-      setChildren(lotSelect, ...free.map((l) => h('option', { value: l.id, selected: l.id === lot }, lotLabel(l))));
+      const full = townFull(store.state);
+      if (full) setChildren(lotSelect, h('option', { value: '' }, townFullLabel(full)));
+      else setChildren(lotSelect, ...free.map((l) => h('option', { value: l.id, selected: l.id === lot }, lotLabel(l))));
       lotSelect.disabled = !free.length;
+    }
+
+    // Every lot taken: say so before anything else, with the ways out right here (not a greyed list and a button
+    // that never wakes up). Removing a house frees its lot, and the dialog carries on with it.
+    const fullNote = h('div', { class: 'place-full', id: 'place-full', role: 'status', hidden: true });
+    let fullShown = '';
+    function renderFull() {
+      const full = townFull(store.state);
+      const houses = full ? store.state.city.projects : [];
+      const key = JSON.stringify(houses.map((p) => [p.id, p.name]));
+      fullNote.hidden = !full;
+      if (!full || key === fullShown) return;
+      fullShown = key;
+      const pick = h('select', { class: 'input', 'aria-label': 'House to remove' }, ...houses.map((p) => h('option', { value: p.id }, p.name)));
+      setChildren(fullNote,
+        h('p', { class: 'place-full-title' }, icon('alert', 15), h('strong', null, townFullText(full))),
+        h('p', { class: 'place-full-hint' }, 'To place this project, remove a house from the town (its folder and files stay), or add another machine running CAST as a city.'),
+        h(
+          'div',
+          { class: 'place-full-actions' },
+          pick,
+          h('button', { type: 'button', class: 'btn btn-soft', onclick: () => void removeHouse(shell, pick.value) }, icon('trash', 15), 'Remove from town…'),
+          h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => openAddCity(shell) }, icon('plus', 15), 'Add a city…'),
+        ),
+      );
     }
     lotSelect.addEventListener('change', () => {
       lot = lotSelect.value;
@@ -219,6 +249,11 @@ export function createPlacement(shell: Shell) {
       setChildren(submit, icon(mode === 'pick' ? 'pin' : 'folderPlus', 15), mode === 'pick' ? 'Place project' : 'Create & place');
       const ready = !!lot && !!nameInput.value.trim() && (mode === 'create' || (!!picked && !picked.house));
       submit.disabled = !ready || submitting;
+      // the reason a full town's button stays off, for the tooltip and a screen reader
+      const full = townFull(store.state);
+      submit.title = full ? townFullText(full) : '';
+      if (full) submit.setAttribute('aria-describedby', fullNote.id);
+      else submit.removeAttribute('aria-describedby');
     }
 
     const modeToggle = segmented<Mode>(
@@ -247,15 +282,17 @@ export function createPlacement(shell: Shell) {
       renderFoot();
       const name = nameInput.value.trim();
       const setUp = mode === 'pick' && !!picked && !picked.isGit && initGit;
+      // the lot asked for: the city update that arrives with the ack moves `lot` on (to the next free one, or none)
+      const lotId = lot;
       try {
         const data =
           mode === 'pick'
-            ? await store.request<unknown>({ t: 'place_project', reqId: '', path: picked!.path, name, lotId: lot, style, ...(setUp ? { initGit: true } : {}) })
-            : await store.request<unknown>({ t: 'create_project', reqId: '', name, lotId: lot, style, template });
+            ? await store.request<unknown>({ t: 'place_project', reqId: '', path: picked!.path, name, lotId, style, ...(setUp ? { initGit: true } : {}) })
+            : await store.request<unknown>({ t: 'create_project', reqId: '', name, lotId, style, template });
         // the ack carries { project, gitError? } (older servers: the project itself)
         const reply = (data && typeof data === 'object' ? data : {}) as { project?: Project; gitError?: string; id?: string };
-        const placed = reply.project ?? (reply.id ? (data as Project) : undefined) ?? store.state.city.projects.find((p) => p.lotId === lot);
-        const where = store.state.city.lots.find((l) => l.id === lot)?.district ?? 'its lot';
+        const placed = reply.project ?? (reply.id ? (data as Project) : undefined) ?? store.state.city.projects.find((p) => p.lotId === lotId);
+        const where = store.state.city.lots.find((l) => l.id === lotId)?.district ?? 'its lot';
         if (reply.gitError) shell.toast('warn', `${name} moved in on ${where}, but git couldn’t be set up (${reply.gitError}). People there ask before every edit; try again from the Changes tab.`, { projectId: placed?.id });
         else if (placed && !placed.isGit) shell.toast('info', `${name} moved in on ${where}. It has no git, so people there ask before every edit — set up git in the Changes tab to change that.`, { projectId: placed.id });
         else shell.toast('success', `${name} moved in on ${where}`, { projectId: placed?.id });
@@ -278,6 +315,7 @@ export function createPlacement(shell: Shell) {
     renderTemplates();
     renderStyles();
     renderLots();
+    renderFull();
     renderFoot();
     renderPicked();
     updateCreateHint();
@@ -291,6 +329,7 @@ export function createPlacement(shell: Shell) {
     const offStore = store.subscribe((_s, msg) => {
       if (msg?.t !== 'snapshot' && msg?.t !== 'city' && msg?.t !== 'models') return;
       renderLots();
+      renderFull();
       renderFoot();
       renderAccount();
     });
@@ -298,6 +337,7 @@ export function createPlacement(shell: Shell) {
     const body = h(
       'div',
       { class: 'place' },
+      fullNote,
       accountNote,
       modeToggle,
       pickPane,
