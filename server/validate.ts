@@ -1,9 +1,10 @@
 // Shape validation for every ClientMsg. Returns a cleaned copy (unknown keys dropped) or a friendly error.
 // Hand-rolled tiny combinators: each validator returns the cleaned value or throws ValidationError.
+import { isAutoRuleId } from '../shared/auto-rules';
 import { MAX_FLOORS } from '../shared/house-plan';
 import { isLoginProvider } from '../shared/omp-logins';
-import { LOCAL_SERVER_KINDS, MAX_PROMPT_IMAGES, MAX_WORKFLOW_STEPS, RUNS_PER_ASK_CEILING, THINKING_LEVELS, type ClientMsg } from '../shared/protocol';
-import { UPLOAD_ID } from './uploads';
+import { LOCAL_SERVER_KINDS, MAX_PROMPT_FILES, MAX_PROMPT_IMAGES, MAX_WORKFLOW_STEPS, RUNS_PER_ASK_CEILING, THINKING_LEVELS, type ClientMsg } from '../shared/protocol';
+import { FILE_ID, safeFileName, UPLOAD_ID } from './uploads';
 
 class ValidationError extends Error {
   constructor(
@@ -30,6 +31,7 @@ const FIELD_WORDS: Record<string, string> = {
   task: 'The task',
   objective: 'The goal',
   images: 'The pictures',
+  files: 'An attached file',
   GEMINI_API_KEY: 'The API key',
   ANTHROPIC_API_KEY: 'The API key',
   OPENAI_API_KEY: 'The API key',
@@ -91,6 +93,10 @@ const slug: V<string> = (v, at) => {
 };
 const style = oneOf('house', 'office', 'cottage', 'studio');
 const approvalMode = oneOf('always-ask', 'write', 'auto', 'yolo');
+const autoRule: V<string> = (v, at) => {
+  const s = str(200, 1)(v, at);
+  return isAutoRuleId(s) ? s : fail(at, 'is not one of Auto’s rules');
+};
 // Project names: projects.ts trims and clips them to MAX_PROJECT_NAME (a picked folder's name can be any length); this
 // only keeps out the absurd.
 const projectName = (min = 0) => str(1000, min);
@@ -139,6 +145,13 @@ const relPath: V<string> = (v, at) => {
 const uploadId: V<string> = (v, at) => {
   const s = str(80, 1)(v, at);
   return UPLOAD_ID.test(s) ? s : fail(at, 'is not an uploaded image');
+};
+
+// A file the browser attached (POST FILE_UPLOAD_PATH): "<sha256>/<name>", the name as the server made it safe.
+const fileId: V<string> = (v, at) => {
+  const s = str(400, 1)(v, at);
+  const m = FILE_ID.exec(s);
+  return m && safeFileName(m[2]!) === m[2] ? s : fail(at, 'isn’t on the server — attach it again');
 };
 
 /** A small map with slug keys, e.g. answer_plan's step id → model. */
@@ -222,6 +235,7 @@ const SCHEMAS: { [K in ClientMsg['t']]: Shape } = {
       workflowId: optional(nullable(str(80, 1))),
       path: optional(str(4096, 1)), // point the house at another folder (the old one is not touched)
       maxRunsPerAsk: optional(nullable(int(1, RUNS_PER_ASK_CEILING))),
+      autoAllow: optional(arr(autoRule, 0, 100)), // projects.ts refuses the rules a house can never always allow
     }),
   },
   enter_project: { projectId: id },
@@ -263,8 +277,8 @@ const SCHEMAS: { [K in ClientMsg['t']]: Shape } = {
   switch_thread: { reqId, agentId: id, threadId: id },
   delete_thread: { reqId, agentId: id, threadId: id },
   search_threads: { reqId, agentId: id, query: str(200, 1) },
-  // text may be empty when images come along (the agent system says "Type a message first." otherwise)
-  prompt: { agentId: id, text: str(100_000), reqId: optional(reqId), images: optional(arr(uploadId, 1, MAX_PROMPT_IMAGES)), mode: optional(oneOf('queue', 'steer')) },
+  // text may be empty when images or files come along (the agent system says "Type a message first." otherwise)
+  prompt: { agentId: id, text: str(100_000), reqId: optional(reqId), images: optional(arr(uploadId, 1, MAX_PROMPT_IMAGES)), files: optional(arr(fileId, 1, MAX_PROMPT_FILES)), mode: optional(oneOf('queue', 'steer')) },
   abort: { agentId: id, reqId: optional(reqId) },
   queue_action: { reqId, agentId: id, key: str(200, 1), action: oneOf('remove', 'steer') },
   compact: { reqId, agentId: id },
@@ -276,6 +290,7 @@ const SCHEMAS: { [K in ClientMsg['t']]: Shape } = {
     approvalId: id,
     value: str(500),
     reqId: optional(reqId),
+    alwaysAllow: optional(bool),
     answers: optional(arr(obj({ id: str(200), selectedOptions: arr(str(2000), 0, 100), customInput: optional(str(20_000)) }), 1, 50)),
   },
   run_workflow: { reqId, projectId: id, jobId: optional(id), workflowId: id, task: str(20_000, 1) },

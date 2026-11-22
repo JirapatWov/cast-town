@@ -332,6 +332,9 @@ export interface Project {
   /** Team runs a lead may start for one message of the user in this house; absent → MAX_RUNS_PER_ASK. Set from the
    *  house menu (set_project, 1…RUNS_PER_ASK_CEILING). */
   maxRunsPerAsk?: number;
+  /** Auto mode's standing allows in this house (Claude Code's autoMode.allow): ids of rules (shared/auto-rules.ts)
+   *  that no longer stop a step here. Added from a card ("Always allow in <house>"), removed in the permission menu. */
+  autoAllow?: string[];
   createdAt: number;
 }
 
@@ -548,6 +551,7 @@ export interface QueuedMessage {
   key: string; // RLT's id for it (queue_action)
   text: string; // as sent (≤ 300 chars here)
   images: number; // how many images it carries
+  files?: number; // how many attached files it carries (absent: none)
   mode: 'steer' | 'queue'; // 'steer': read at its next step; 'queue': read when it would have finished
   by: 'user' | 'rlt'; // 'rlt': a team update RLT sent to the lead (can't be removed or moved)
 }
@@ -571,6 +575,32 @@ export interface ImageRef {
 export const UPLOAD_PATH = '/api/uploads';
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // per image, after the browser shrinks it
 export const MAX_PROMPT_IMAGES = 5; // omp sends at most 5 images per model request
+
+/** Any other file attached to a chat message (POST FILE_UPLOAD_PATH?name=<name>, raw body). Kept once per content and
+ *  name in the data folder (never the house folder): the person reads it from there with its tools (the message
+ *  lists each attachment's absolute path). Downloaded from GET FILE_UPLOAD_PATH/<id> (always as an attachment). */
+export interface FileRef {
+  id: string; // "<sha256>/<name>"
+  name: string; // the name it was sent with, made safe (no folders, no leading dot, bounded length)
+  size: number; // bytes
+  mimeType: string; // from the name's extension (display only); application/octet-stream when unknown
+}
+
+export const FILE_UPLOAD_PATH = '/api/uploads/files';
+export const MAX_FILE_UPLOAD_BYTES = 50 * 1024 * 1024; // per file, chat attachments and folder uploads alike
+export const MAX_PROMPT_FILES = 10;
+
+/** The URL path of an attached file (its name segment encoded). */
+export function fileUploadPath(id: string): string {
+  const at = id.indexOf('/');
+  return `${FILE_UPLOAD_PATH}/${id.slice(0, at)}/${encodeURIComponent(id.slice(at + 1))}`;
+}
+
+/** POST FOLDER_UPLOAD_PATH?projectId=&jobId=&dir=&name=[&replace=1] (raw body, ≤ MAX_FILE_UPLOAD_BYTES): one file into
+ *  a folder the viewer shows (the house folder, or the job's own copy). Signed in and same-origin, like chat uploads —
+ *  never under FILES_PATH, whose key a page in the viewer can read. Answers the new FileEntry; 409 when the name is
+ *  taken and replace isn't set (a folder or anything but a regular file is never replaced). */
+export const FOLDER_UPLOAD_PATH = '/api/folder-upload';
 
 // ───────────────────────── Files of a person's folder (the built-in viewer) ─────────────────────────
 // A person's folder is the house folder, or its job's own copy (Job.worktree.path) — the same rule as get_git.
@@ -607,7 +637,7 @@ export function fileUrl(base: string, path: string): string {
 export type TranscriptItem =
   /** steered: read while it was working. notSent: it never reached the person (their omp didn't start, or CAST
    *  restarted before they read it) — the chat marks it "Not sent" with Retry, and it counts as no message. */
-  | { kind: 'user'; id: string; text: string; ts: number; images?: ImageRef[]; steered?: boolean; notSent?: boolean }
+  | { kind: 'user'; id: string; text: string; ts: number; images?: ImageRef[]; files?: FileRef[]; steered?: boolean; notSent?: boolean }
   | { kind: 'assistant'; id: string; text: string; thinking?: string; streaming?: boolean; ts: number }
   | {
       kind: 'tool';
@@ -634,7 +664,7 @@ export type TranscriptItem =
    *  sends this message to the person again (work CAST's restart interrupted). stuck: the model keeps answering with
    *  nothing (or omp gave up retrying): the card offers "Switch model…" and "Send “continue”" (F5); count = failed
    *  attempts in a row, final = the turn is over. */
-  | { kind: 'system'; id: string; text: string; level: 'info' | 'warn' | 'error'; ts: number; link?: { threadId: string; label: string }; details?: string; resend?: { text: string; images?: ImageRef[] }; stuck?: { kind: 'empty' | 'failing'; model: string; count: number; final?: boolean } }
+  | { kind: 'system'; id: string; text: string; level: 'info' | 'warn' | 'error'; ts: number; link?: { threadId: string; label: string }; details?: string; resend?: { text: string; images?: ImageRef[]; files?: FileRef[] }; stuck?: { kind: 'empty' | 'failing'; model: string; count: number; final?: boolean } }
   | { kind: 'plan'; id: string; plan: TeamPlan; ts: number } // id = plan.id; upserted when it is answered
   /** A helper the person sent (omp task tool); upserted as it works. Open its whole chat with get_helper_transcript. */
   | {
@@ -719,6 +749,9 @@ export interface ApprovalRequest {
   ts: number;
   /** Auto mode didn't clear this step on its own — why (shown on the card). */
   autoReason?: string;
+  /** The id of the Auto rule that stopped it (shared/auto-rules.ts): the card offers "Always allow in <house>" for it
+   *  unless the rule is one a house can never always allow. */
+  autoRule?: string;
   /** A file-changing tool (edit, write, apply_patch): what it would change, worked out by CAST from the call's
    *  arguments and the file on disk — shown on the card before Approve. Absent when CAST couldn't tell. */
   change?: ApprovalChange;
@@ -1084,7 +1117,9 @@ export type ClientMsg =
   | { t: 'remove_project'; reqId: string; projectId: string; deleteHistory?: boolean }
   // path: point the house at another folder (refused while anyone works there or a job has its own copy; the old folder
   // is not touched). maxRunsPerAsk: the house's own loop guard (1…RUNS_PER_ASK_CEILING); null → back to the default.
-  | { t: 'set_project'; reqId: string; projectId: string; patch: Partial<Pick<Project, 'name' | 'style' | 'approvalMode' | 'workflowId' | 'path'>> & { maxRunsPerAsk?: number | null } }
+  // autoAllow: the house's whole list of Auto's standing allows (the permission menu removes one); rules a house can
+  // never always allow are refused.
+  | { t: 'set_project'; reqId: string; projectId: string; patch: Partial<Pick<Project, 'name' | 'style' | 'approvalMode' | 'workflowId' | 'path' | 'autoAllow'>> & { maxRunsPerAsk?: number | null } }
   | { t: 'enter_project'; projectId: string } // server upserts the house's residents (does not spawn omp until first prompt)
   // Jobs & floors (handled by the agent system). A new job's room must exist and be free; a house keeps ≥ 1 job.
   | { t: 'create_job'; reqId: string; projectId: string; name: string; kind: JobKind; room: RoomRef; leadModel?: string; leadThinking?: ThinkingLevel; workflowId?: string | null; brief?: string; workStyle?: WorkStyle; worktree?: boolean; advisorModel?: string } // ack.data = { job }; worktree: give it its own copy (git houses only)
@@ -1100,14 +1135,16 @@ export type ClientMsg =
   /** Delete one chat for good: its transcript and its omp session (with its helpers' sessions). Deleting the current
    *  chat starts a fresh one first. Not while the person works. ack.data = { thread: ChatThread } (the current one). */
   | { t: 'delete_thread'; reqId: string; agentId: string; threadId: string }
-  /** text may be empty when images are given. mode (only matters while the person is busy): 'queue' (default) → read
-   *  when it would have finished; 'steer' → read at its next step. With reqId: ack once omp has it (or the error). */
-  | { t: 'prompt'; agentId: string; text: string; reqId?: string; images?: string[]; mode?: 'queue' | 'steer' } // images: ImageRef ids, ≤ MAX_PROMPT_IMAGES
-  /** Stop. With reqId: ack.data = { restored: { text: string; images: ImageRef[] }[] } — the user's queued messages it
-   *  hadn't read, oldest first, for the composer. */
+  /** text may be empty when images or files are given. mode (only matters while the person is busy): 'queue' (default)
+   *  → read when it would have finished; 'steer' → read at its next step. With reqId: ack once omp has it (or the error).
+   *  images: ImageRef ids, ≤ MAX_PROMPT_IMAGES; files: FileRef ids, ≤ MAX_PROMPT_FILES (the model gets the text plus a
+   *  list of the files' paths; the chat keeps the text as typed and the FileRefs). */
+  | { t: 'prompt'; agentId: string; text: string; reqId?: string; images?: string[]; files?: string[]; mode?: 'queue' | 'steer' }
+  /** Stop. With reqId: ack.data = { restored: { text: string; images: ImageRef[]; files?: FileRef[] }[] } — the user's
+   *  queued messages it hadn't read, oldest first, for the composer. */
   | { t: 'abort'; agentId: string; reqId?: string }
-  /** A queued message (AgentInfo.queue key): 'remove' → ack.data = { text, images: ImageRef[] } (back to the composer);
-   *  'steer' → read it at the next step instead of at the end. */
+  /** A queued message (AgentInfo.queue key): 'remove' → ack.data = { text, images: ImageRef[], files?: FileRef[] } (back
+   *  to the composer); 'steer' → read it at the next step instead of at the end. */
   | { t: 'queue_action'; reqId: string; agentId: string; key: string; action: 'remove' | 'steer' }
   /** Shrink the chat's context now (omp compact); only while the person is idle. ack.data = { tokensBefore?: number; nothing?: true } */
   | { t: 'compact'; reqId: string; agentId: string }
@@ -1124,7 +1161,9 @@ export type ClientMsg =
   | { t: 'get_transcript'; agentId: string }
   /** value ∈ approval.options. An ask (approval.questions) is answered with `answers`, one per question; with reqId
    *  the server acks (ok, or why the answers don't fit — the card then stays). */
-  | { t: 'approve'; approvalId: string; value: string; answers?: AskAnswer[]; reqId?: string }
+  // alwaysAllow: "Always allow in <house>" — approve this step and keep the rule that stopped it as a standing allow of
+  // the house (only on a card with an allowable autoRule; `value` is then ignored)
+  | { t: 'approve'; approvalId: string; value: string; answers?: AskAnswer[]; reqId?: string; alwaysAllow?: boolean }
   | { t: 'run_workflow'; reqId: string; projectId: string; jobId?: string; workflowId: string; task: string } // jobId default 'main'
   | { t: 'abort_run'; runId: string }
   | { t: 'continue_run'; reqId: string; runId: string; fromStepId: string; note?: string; models?: Record<string, string> } // redo an ended run from a step: earlier steps keep their results, files stay (ack.data = { runId })

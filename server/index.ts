@@ -1,5 +1,6 @@
 // CAST — Bun bridge entry point.  `bun run server/index.ts`
-// HTTP: static web/dist (SPA) + GET /api/health + chat images (POST/GET /api/uploads, server/uploads.ts)
+// HTTP: static web/dist (SPA) + GET /api/health + chat images and attached files (POST/GET /api/uploads[/files],
+//       server/uploads.ts) + uploads into a house's folder (POST /api/folder-upload, server/folder-upload.ts)
 //       + the viewer's files (GET /api/files/<key>/…, server/files.ts: the key is the auth, so it comes before auth).
 // Every HTML page CAST serves may only be framed by CAST itself (pages.ts FRAME_GUARD_HEADERS).
 // WS /ws: hello → snapshot → ClientMsg dispatch.
@@ -32,6 +33,7 @@ import type { ServerWebSocket } from 'bun';
 import { setToolImageStore } from './agents/normalize';
 import { createDispatcher } from './dispatch';
 import { createFileViewer } from './files';
+import { createFolderUpload } from './folder-upload';
 import { createFsBrowser } from './fs-browse';
 import { createGitService } from './git';
 import { createHub, type WsData } from './hub';
@@ -136,6 +138,7 @@ async function main(): Promise<void> {
   const serveStatic = createStatic({ distDir: cfg.webDist, version: cfg.serverVersion, port: cfg.port, compiled: cfg.compiled });
   const terminals = createTerminalService({ city, jobs });
   const uploads = createUploads({ dataDir: cfg.dataDir });
+  const folderUpload = createFolderUpload({ files, city, jobs, broadcast: (m) => hub.broadcast(m), gitSummary: (p, j) => jobService.gitSummary(p, j) });
   const dataRoutes = createDataRoutes({ cfg, city, restart: (after) => void shutdown('Delete all CAST data', after) });
   let listenPort = cfg.port;
   const appRoutes = createAppRoutes({
@@ -185,10 +188,11 @@ async function main(): Promise<void> {
         const isTerm = url.pathname === TERM_WS_PATH;
         const isWs = url.pathname === WS_PATH || isTerm;
         const isUpload = uploads.matches(url);
+        const isFolderUpload = folderUpload.matches(url);
         // An upload stores something: like a WebSocket it must come from our own origin (no cross-site POSTs). A page
         // that rebinds its own domain to this machine passes that check, but its Tailscale login header doesn't count
         // (auth.ts tailnetHost), so it has no way in without the token.
-        const writes = isUpload && req.method !== 'GET' && req.method !== 'HEAD';
+        const writes = (isUpload || isFolderUpload) && req.method !== 'GET' && req.method !== 'HEAD';
         // GET /api/version answers everyone and says whether the caller is paired. It reuses this request's one auth
         // decision (checked without the query, so `?token=` there neither pairs nor counts as a failed attempt), and
         // any cookie that decision sets (a legacy cookie upgraded) rides on the answer.
@@ -232,6 +236,7 @@ async function main(): Promise<void> {
           return new Response('Expected a WebSocket upgrade\n', { status: 426 });
         }
         if (isUpload) return uploads.handle(req, url).then((r) => withCookies(r, decision));
+        if (isFolderUpload) return folderUpload.handle(req, url).then((r) => withCookies(r, decision));
         const own = auth.api(req, url, decision) ?? dataRoutes(req, url) ?? appRoutes(req, url) ?? push.routes(req, url, decision);
         if (own) return own.then((r) => withCookies(r, decision));
         if (url.pathname.startsWith('/api/')) return json({ error: 'Not found' }, 404);

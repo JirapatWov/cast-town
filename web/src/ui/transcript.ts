@@ -2,12 +2,12 @@
 // folder), paths in replies and tool cards open in the built-in viewer, and pictures show as thumbnails.
 import './css/viewer.css';
 import './css/health.css';
-import type { ImageRef, TranscriptItem } from '../../../shared/protocol';
+import type { FileRef as AttachedFile, ImageRef, TranscriptItem } from '../../../shared/protocol';
 import { folderId } from '../net/files';
-import { uploadUrl } from '../net/uploads';
+import { fileUploadUrl, uploadUrl } from '../net/uploads';
 import { chatIcon } from './chat-icons';
 import { h, setChildren } from './dom';
-import { baseName, fileKind, isImageKind, isVisualKind } from './file-kinds';
+import { baseName, fileKind, fmtBytes, isImageKind, isVisualKind, kindIcon } from './file-kinds';
 import type { FileLinks } from './file-links';
 import type { FileRef } from './file-paths';
 import { timeOfDay } from './format';
@@ -44,7 +44,7 @@ export interface ItemViewContext {
   files?: FileLinks;
   /** "Retry" on a message that wasn't sent, "Run again" on work a restart interrupted: send it to the person again
    *  (resolves once the server has it, or it failed — the chat says why then). */
-  resend?(msg: { text: string; images?: ImageRef[] }): Promise<void>;
+  resend?(msg: { text: string; images?: ImageRef[]; files?: AttachedFile[] }): Promise<void>;
   /** The empty-answer card's buttons (F5): open the person's model menu at the button; send "continue" (stopping the
    *  retries first while they still run). */
   stuck?: { switchModel(anchor: HTMLElement): void; nudge(): Promise<void> };
@@ -79,7 +79,7 @@ function stuckCard(el: HTMLElement, item: SystemItem & { stuck: NonNullable<Syst
 }
 
 /** A button that sends a message again: one click is enough until the answer is back. */
-function resendButton(label: string, title: string, cls: string, msg: { text: string; images?: ImageRef[] }, resend: NonNullable<ItemViewContext['resend']>): HTMLElement {
+function resendButton(label: string, title: string, cls: string, msg: { text: string; images?: ImageRef[]; files?: AttachedFile[] }, resend: NonNullable<ItemViewContext['resend']>): HTMLElement {
   const btn = h('button', { type: 'button', class: ['link-btn', cls], title }, label);
   btn.addEventListener('click', async () => {
     if (btn.disabled) return;
@@ -358,23 +358,36 @@ function assistantView(initial: AssistantItem, authorName: string, files?: FileL
   return { el, update };
 }
 
+/** An attached file in a bubble: a link that downloads it (the server always answers it as a download). */
+function fileLink(f: AttachedFile): HTMLElement {
+  return h(
+    'a',
+    { class: 'bubble-file', href: fileUploadUrl(f.id), download: f.name, title: `Download ${f.name} (${fmtBytes(f.size)})` },
+    h('span', { class: 'bubble-file-icon', 'aria-hidden': 'true' }, vIcon(kindIcon(fileKind(f.name)), 15)),
+    h('span', { class: 'bubble-file-text' }, h('span', { class: 'bubble-file-name' }, f.name), h('span', { class: 'bubble-file-meta num' }, fmtBytes(f.size))),
+    h('span', { class: 'bubble-file-dl', 'aria-hidden': 'true' }, vIcon('download', 14)),
+  );
+}
+
 function userView(initial: UserItem, ctx: ItemViewContext): ItemView {
   const text = h('div', { class: 'bubble' });
   const pics = h('div', { class: 'bubble-images' });
+  const files = h('div', { class: 'bubble-files', role: 'list', 'aria-label': 'Attached files' });
   const tag = h('div', { class: 'msg-tag', title: 'Sent while they were working — read at their next step' }, chatIcon('bolt', 11), 'Read mid-task');
   // never reached the person (their omp didn't start, CAST restarted first): the chat above or below says why
   const notSent = h('div', { class: 'msg-notsent', hidden: true });
-  const el = h('div', { class: 'msg msg-user' }, pics, text, tag, notSent);
+  const el = h('div', { class: 'msg msg-user' }, pics, files, text, tag, notSent);
   let shown = '';
+  let shownFiles = '';
   let notSentKey = '';
   const update = (next: TranscriptItem) => {
     if (next.kind !== 'user') return;
     text.textContent = next.text;
-    text.hidden = !next.text && !!next.images?.length;
+    text.hidden = !next.text && !!(next.images?.length || next.files?.length);
     tag.hidden = !next.steered || !!next.notSent;
     el.classList.toggle('is-notsent', !!next.notSent);
     notSent.hidden = !next.notSent;
-    const nsKey = next.notSent ? `${next.text}|${(next.images ?? []).map((r) => r.id).join(',')}` : '';
+    const nsKey = next.notSent ? `${next.text}|${(next.images ?? []).map((r) => r.id).join(',')}|${(next.files ?? []).map((f) => f.id).join(',')}` : '';
     if (nsKey !== notSentKey) {
       notSentKey = nsKey;
       setChildren(notSent,
@@ -383,10 +396,17 @@ function userView(initial: UserItem, ctx: ItemViewContext): ItemView {
               icon('alert', 12),
               h('span', null, 'Not sent'),
               ctx.resend ? h('span', { 'aria-hidden': 'true' }, '·') : null,
-              ctx.resend ? resendButton('Retry', 'Send this message again', 'msg-retry', { text: next.text, images: next.images }, ctx.resend) : null,
+              ctx.resend ? resendButton('Retry', 'Send this message again', 'msg-retry', { text: next.text, images: next.images, files: next.files }, ctx.resend) : null,
             ]
           : []),
       );
+    }
+    const attached = next.files ?? [];
+    const filesKey = attached.map((f) => f.id).join('\n');
+    if (filesKey !== shownFiles) {
+      shownFiles = filesKey;
+      files.hidden = !attached.length;
+      setChildren(files, ...attached.map((f) => h('div', { role: 'listitem' }, fileLink(f))));
     }
     const images = next.images ?? [];
     const key = images.map((r) => r.id).join(',');

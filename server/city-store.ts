@@ -4,6 +4,7 @@
 // silently: it is logged and its record kept in <dataDir>/city-overflow.json, from where it can be put back.
 import { existsSync, readFileSync, renameSync } from 'node:fs';
 import { join } from 'node:path';
+import { autoRuleAllowable } from '../shared/auto-rules';
 import { LOTS } from '../shared/city-layout';
 import { MAX_FLOORS } from '../shared/house-plan';
 import { RUNS_PER_ASK_CEILING, type BuildingStyle, type CityState, type Project } from '../shared/protocol';
@@ -55,6 +56,12 @@ function cleanRunsPerAsk(v: unknown): Pick<Project, 'maxRunsPerAsk'> {
   return typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= RUNS_PER_ASK_CEILING ? { maxRunsPerAsk: v } : {};
 }
 
+/** Auto's standing allows as saved: rule ids a house may always allow (an unknown or never-allowable id is dropped). */
+function cleanAutoAllow(v: unknown): Pick<Project, 'autoAllow'> {
+  const ids = Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string' && autoRuleAllowable(x)))] : [];
+  return ids.length ? { autoAllow: ids } : {};
+}
+
 /** Keep only well-formed projects; tolerate older files missing optional fields. Entries that aren't projects at all
  *  (no id, path or name) go to `rejected` as they were. */
 function sanitize(raw: unknown, rejected: unknown[]): Project[] {
@@ -77,6 +84,7 @@ function sanitize(raw: unknown, rejected: unknown[]): Project[] {
       approvalMode: APPROVAL_MODES.includes(p.approvalMode as Project['approvalMode']) ? p.approvalMode! : 'write',
       floors: cleanFloors(p.floors),
       ...cleanRunsPerAsk(p.maxRunsPerAsk),
+      ...cleanAutoAllow(p.autoAllow),
       createdAt: typeof p.createdAt === 'number' ? p.createdAt : Date.now(),
     });
   }

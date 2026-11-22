@@ -4,11 +4,11 @@
 import { appendFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import type { AccountOrder, AgentInfo, AgentsHealth, ApiKeyName, ChatAccount, ChatThread, ClientMsg, ImageRef, Job, LibraryWorkflow, LocalServer, OmpEnvKey, Project, ProviderAccount, TranscriptItem, UsageSnapshot, Vendor, Workflow, WorkflowRun, WorkflowStep } from '../../shared/protocol';
+import type { AccountOrder, AgentInfo, AgentsHealth, ApiKeyName, ChatAccount, ChatThread, ClientMsg, FileRef, ImageRef, Job, LibraryWorkflow, LocalServer, OmpEnvKey, Project, ProviderAccount, TranscriptItem, UsageSnapshot, Vendor, Workflow, WorkflowRun, WorkflowStep } from '../../shared/protocol';
 import type { AgentSnapshot, AgentSystem, AgentSystemDeps, ClientConn, DefaultLead, JobPatch } from '../contracts';
 import { agentIdFor, MAIN_JOB_ID } from '../data-layout';
 import { pruneUploads } from '../data-wipe';
-import { readUpload } from '../uploads';
+import { readFileRef, readUpload } from '../uploads';
 import { UserError } from '../util';
 import { jobDir } from '../worktrees';
 import { AccountOrderBook, accountPlan, chatAccountOf, type AccountPlan } from './account-order';
@@ -205,7 +205,7 @@ export class AgentSystemImpl implements AgentSystem {
       (projectId, agentId) => {
         const p = this.o.deps.city.project(projectId);
         const a = this.store.get(agentId); // helpers carry their parent's job
-        return p && { mode: p.approvalMode, dir: jobDir(p, a && jobs.get(projectId, a.jobId)) };
+        return p && { mode: p.approvalMode, dir: jobDir(p, a && jobs.get(projectId, a.jobId)), allow: p.autoAllow };
       },
     );
     this.subagents = new SubagentTracker({
@@ -495,8 +495,9 @@ export class AgentSystemImpl implements AgentSystem {
       case 'prompt': {
         const text = typeof msg.text === 'string' ? msg.text.trim() : '';
         const images = msg.images ?? [];
-        if (!text && !images.length) throw new EngineError('Type a message first.');
-        const sent = this.#prompt(String(msg.agentId), truncate(text, MAX_PROMPT), images, msg.mode === 'steer' ? 'steer' : 'queue');
+        const files = msg.files ?? [];
+        if (!text && !images.length && !files.length) throw new EngineError('Type a message first.');
+        const sent = this.#prompt(String(msg.agentId), truncate(text, MAX_PROMPT), images, files, msg.mode === 'steer' ? 'steer' : 'queue');
         // With a reqId the ack waits until omp has the message (the composer keeps the text on an error, and when a
         // Stop called the start off: calledOff).
         if (msg.reqId) {
@@ -509,7 +510,7 @@ export class AgentSystemImpl implements AgentSystem {
         const id = String(msg.agentId);
         // Stop on anyone of the group working now (or who worked last) stops the whole run.
         const run = this.engine.runAt(id);
-        let restored: { text: string; images: ImageRef[] }[] = [];
+        let restored: { text: string; images: ImageRef[]; files?: FileRef[] }[] = [];
         if (run) await this.engine.abort(run.id);
         else {
           this.plans.cancelFor(id, 'stopped'); // Stop while a plan card waits: the card goes too
@@ -610,9 +611,18 @@ export class AgentSystemImpl implements AgentSystem {
         return;
       }
       case 'approve': {
+        const id = String(msg.approvalId);
+        // "Always allow in <house>": the house keeps the rule (city.json), so later steps it alone stopped pass there;
         // answers that don't fit an ask's questions throw (UserError): the user is told, the card stays
-        if (!this.approvals.answer(String(msg.approvalId), String(msg.value), msg.answers)) {
-          conn.send({ t: 'approval_resolved', id: String(msg.approvalId) });
+        const answered = msg.alwaysAllow
+          ? this.approvals.alwaysAllow(id, (projectId, rule) => {
+              const p = this.o.deps.city.project(projectId);
+              if (p && !p.autoAllow?.includes(rule)) this.o.deps.city.updateProject(projectId, { autoAllow: [...(p.autoAllow ?? []), rule] });
+              log('approve', `${projectId}: Auto now always allows “${rule}” there`);
+            })
+          : this.approvals.answer(id, String(msg.value), msg.answers);
+        if (!answered) {
+          conn.send({ t: 'approval_resolved', id });
           throw new EngineError('That request is no longer waiting for you.');
         }
         if (msg.reqId) conn.send({ t: 'ack', reqId: msg.reqId, ok: true });
@@ -818,11 +828,13 @@ export class AgentSystemImpl implements AgentSystem {
 
   /** A message of the user to a person. The checks throw right away (EngineError); the promise settles once omp
    *  has the message — queued or steered while the person is busy (mode), read at once when idle. */
-  async #prompt(agentId: string, text: string, imageIds: string[], mode: 'queue' | 'steer'): Promise<{ calledOff?: boolean } | void> {
+  async #prompt(agentId: string, text: string, imageIds: string[], fileIds: string[], mode: 'queue' | 'steer'): Promise<{ calledOff?: boolean } | void> {
     const agent = this.store.get(agentId);
     if (!agent) throw new EngineError('Unknown person.');
     if (agent.kind === 'subagent') {
-      if (imageIds.length) throw new EngineError(`Helpers can’t see images — send them to ${this.store.get(agent.parentId ?? '')?.name ?? 'the person who sent them'} instead.`);
+      const parent = this.store.get(agent.parentId ?? '')?.name ?? 'the person who sent them';
+      if (imageIds.length) throw new EngineError(`Helpers can’t see images — send them to ${parent} instead.`);
+      if (fileIds.length) throw new EngineError(`Helpers can’t take attached files — send them to ${parent} instead.`);
       return this.#steerHelper(agent, text);
     }
     await this.#requireOmp();
@@ -848,6 +860,11 @@ export class AgentSystemImpl implements AgentSystem {
     const rt = this.#runtime(agentId);
     if (!rt) throw new EngineError('Unknown person.');
     const images = imageIds.length ? this.#images(agent, imageIds) : [];
+    const files = fileIds.map((id) => {
+      const f = readFileRef(this.o.deps.dataDir, id);
+      if (!f) throw new EngineError('An attached file is no longer on the server — attach it again.');
+      return f;
+    });
     // A message of the user to a lead (queued or steered too): its next team shows a plan card, and a card still
     // waiting goes away — now, not when omp reads it (a waiting card holds the lead's turn, so it would never be read).
     if (agent.kind === 'resident' && agent.roleId === ASSISTANT_ROLE) this.plans.userMessage(agentId);
@@ -857,6 +874,7 @@ export class AgentSystemImpl implements AgentSystem {
         by: 'user',
         chat: true,
         ...(images.length ? { images: images.map((i) => ({ mimeType: i.ref.mimeType, data: i.data })), imageRefs: images.map((i) => i.ref) } : {}),
+        ...(files.length ? { files } : {}),
       })
       .then((r) => {
         if (!r.calledOff) this.#flushWaiting(agentId); // omp works for them again: a team update that couldn't go goes now
@@ -919,11 +937,11 @@ export class AgentSystemImpl implements AgentSystem {
       const items = this.store.transcript(agentId);
       const sys = (text: string, extra: Partial<Extract<TranscriptItem, { kind: 'system' }>> = {}) =>
         this.store.upsertItem(agentId, { kind: 'system', id: `${agentId}:s:r${at.toString(36)}${Math.random().toString(36).slice(2, 6)}`, level: 'warn', text, ts: Date.now(), ...extra });
-      if (e.turn) sys(`Interrupted: CAST restarted before ${agent.name} finished this.`, { resend: { text: e.turn.text, ...(e.turn.images.length ? { images: e.turn.images } : {}) } });
+      if (e.turn) sys(`Interrupted: CAST restarted before ${agent.name} finished this.`, { resend: { text: e.turn.text, ...(e.turn.images.length ? { images: e.turn.images } : {}), ...(e.turn.files?.length ? { files: e.turn.files } : {}) } });
       for (const m of e.waiting) {
         const bubble = m.itemId ? items.find((i) => i.id === m.itemId) : undefined;
         if (bubble?.kind === 'user') this.store.upsertItem(agentId, { ...bubble, notSent: true });
-        else this.store.upsertItem(agentId, { kind: 'user', id: `${agentId}:u:r${at.toString(36)}${Math.random().toString(36).slice(2, 6)}`, text: m.text, ts: Date.now(), ...(m.images.length ? { images: m.images } : {}), notSent: true });
+        else this.store.upsertItem(agentId, { kind: 'user', id: `${agentId}:u:r${at.toString(36)}${Math.random().toString(36).slice(2, 6)}`, text: m.text, ts: Date.now(), ...(m.images.length ? { images: m.images } : {}), ...(m.files?.length ? { files: m.files } : {}), notSent: true });
       }
       if (e.waiting.length) sys(`CAST restarted before ${agent.name} read ${e.waiting.length === 1 ? 'your message, so it wasn’t sent' : `${e.waiting.length} of your messages, so they weren’t sent`} — Retry when you’re ready.`);
       this.store.patch(agentId, { interrupted: at, status: 'offline', activity: 'error', detail: 'Interrupted by a restart', tool: undefined }, true);

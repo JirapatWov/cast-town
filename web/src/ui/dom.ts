@@ -81,6 +81,24 @@ export function isTypingTarget(t: EventTarget | null): boolean {
   return false;
 }
 
+/** The files of a drop, and how many folders came with them (a folder can't be uploaded: it is counted, not sent). A
+ *  dropped folder shows up in dataTransfer.files as an empty "file"; only its entry says what it really is. */
+export function droppedFiles(dt: DataTransfer): { files: File[]; folders: number } {
+  const items = [...dt.items].filter((i) => i.kind === 'file');
+  if (!items.length) return { files: [...dt.files], folders: 0 };
+  const files: File[] = [];
+  let folders = 0;
+  for (const item of items) {
+    if (item.webkitGetAsEntry?.()?.isDirectory) {
+      folders++;
+      continue;
+    }
+    const f = item.getAsFile();
+    if (f) files.push(f);
+  }
+  return { files, folders };
+}
+
 /** Change detector: returns true only when the signature differs from the previous call. Lets
  *  components skip re-rendering (and restarting CSS animations) when nothing visible changed. */
 export function memo(): (sig: unknown) => boolean {

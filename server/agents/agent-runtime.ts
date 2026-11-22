@@ -11,7 +11,8 @@
 import { closeSync, openSync, readSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { isQuestion } from '../../shared/ask';
-import type { Activity, AgentInfo, ContextUsage, GoalInfo, ImageRef, QueuedMessage, TranscriptItem } from '../../shared/protocol';
+import type { Activity, AgentInfo, ContextUsage, FileRef, GoalInfo, ImageRef, QueuedMessage, TranscriptItem } from '../../shared/protocol';
+import { attachmentNote, stripAttachmentNote } from '../uploads';
 import { UserError } from '../util';
 import type { AccountPlan } from './account-order';
 import type { AgentStore } from './agent-store';
@@ -51,6 +52,9 @@ export interface PromptOptions {
   /** Images for omp (base64), and the same images as uploads (`imageRefs`, what the chat shows — never base64). */
   images?: { mimeType: string; data: string }[];
   imageRefs?: ImageRef[];
+  /** Files the user attached (agent-system resolved them): the model gets the text plus where each one is
+   *  (attachmentNote); the chat keeps the text and the refs. */
+  files?: { ref: FileRef; path: string }[];
   /** Only matters while the person works: 'queue' (default) → read when it would have finished; 'steer' → at its next step. */
   mode?: 'queue' | 'steer';
   by?: 'user' | 'rlt';
@@ -65,14 +69,18 @@ export interface PromptOptions {
 export interface Draft {
   text: string;
   images: ImageRef[];
+  files?: FileRef[];
 }
 
 /** A message RLT sent that omp hasn't handed to the model yet. */
 interface Sent {
   key: string; // QueuedMessage.key
   promptId: string;
-  text: string;
+  text: string; // as the user typed it (the chat bubble, drafts)
+  /** What omp got: the text plus the attachment note when files came along. omp's queues and echoes carry this. */
+  wire: string;
   images: ImageRef[];
+  files: FileRef[];
   mode: 'steer' | 'queue';
   by: 'user' | 'rlt';
   shown?: string;
@@ -250,7 +258,9 @@ export class AgentRuntime {
       key: `q-${uid()}`,
       promptId: id,
       text,
+      wire: opts.files?.length ? attachmentNote(text, opts.files) : text,
       images: opts.imageRefs ?? [],
+      files: opts.files?.map((f) => f.ref) ?? [],
       mode: opts.mode === 'steer' ? 'steer' : 'queue',
       by: opts.by ?? (opts.shown ? 'rlt' : 'user'),
       shown: opts.shown,
@@ -345,7 +355,7 @@ export class AgentRuntime {
           // The user's message starts a turn: the folder as it is now, so the turn's changes can be undone.
           if (sent.chat) await this.d.turns?.begin(this.agentId);
         }
-        return proc.prompt(text, extra, images ? IMAGE_ACK_MS : undefined);
+        return proc.prompt(sent.wire, extra, images ? IMAGE_ACK_MS : undefined);
       });
       void result.then((f) => {
         // agentInvoked:false (a builtin slash command) never produces a real prompt_result frame.
@@ -393,7 +403,7 @@ export class AgentRuntime {
     const proc = this.d.pool.get(this.agentId);
     if (!s || !proc) return false;
     for (const queue of s.mode === 'steer' ? ['steering', 'followUp'] : ['followUp', 'steering']) {
-      const r = await proc.call<{ removed?: boolean }>({ type: 'remove_queued_message', message: s.text, queue }, 10_000).catch(() => null);
+      const r = await proc.call<{ removed?: boolean }>({ type: 'remove_queued_message', message: s.wire, queue }, 10_000).catch(() => null);
       if (!r?.removed) continue;
       this.#withdrawn.add(s.promptId);
       this.#unsend(s);
@@ -417,7 +427,7 @@ export class AgentRuntime {
       });
     if (action === 'steer') {
       if (s.mode === 'steer') return;
-      const r = await call<{ promoted?: boolean }>({ type: 'promote_queued_message', message: s.text });
+      const r = await call<{ promoted?: boolean }>({ type: 'promote_queued_message', message: s.wire });
       if (!r?.promoted) throw new UserError('Too late — they already read it.');
       s.mode = 'steer';
       this.#publishQueue();
@@ -425,12 +435,12 @@ export class AgentRuntime {
     }
     // omp matches the text in one of its two queues: try the one RLT believes first.
     for (const queue of s.mode === 'steer' ? ['steering', 'followUp'] : ['followUp', 'steering']) {
-      const r = await call<{ removed?: boolean }>({ type: 'remove_queued_message', message: s.text, queue });
+      const r = await call<{ removed?: boolean }>({ type: 'remove_queued_message', message: s.wire, queue });
       if (!r?.removed) continue;
       this.#withdrawn.add(s.promptId);
       this.#unsend(s);
       this.#dropWaiter(s.promptId, { status: 'aborted', text: '', error: 'taken back' });
-      return { text: s.text, images: s.images };
+      return this.#draft(s);
     }
     throw new UserError('Too late — they already read it.');
   }
@@ -492,7 +502,7 @@ export class AgentRuntime {
     for (const s of waiting) {
       this.#unsend(s);
       if (s.itemId) this.d.store.removeItem(this.agentId, s.itemId); // never reached them: back to the composer
-      if (s.by === 'user') drafts.push({ text: s.text, images: s.images });
+      if (s.by === 'user') drafts.push(this.#draft(s));
     }
     if (waiting.length) this.#noteStopped();
     if (!this.#working && !this.#compacting) {
@@ -515,15 +525,21 @@ export class AgentRuntime {
     return { status: 'aborted', text: '', error: 'stopped' };
   }
 
-  /** The message is sent again: its earlier copies that never went ("Not sent" bubbles of the same text and images)
-   *  go, and a "Run again" for it (work a restart interrupted) has done its job. */
+  /** A message taken back for the composer: the text as typed, with its uploads. */
+  #draft(s: Sent): Draft {
+    return { text: s.text, images: s.images, ...(s.files.length ? { files: s.files } : {}) };
+  }
+
+  /** The message is sent again: its earlier copies that never went ("Not sent" bubbles of the same text, images and
+   *  files) go, and a "Run again" for it (work a restart interrupted) has done its job. */
   #dropNotSent(s: Sent) {
-    const key = s.images.map((i) => i.id).join(',');
-    const same = (text: string, images: ImageRef[] | undefined) => text === s.text && (images ?? []).map((i) => i.id).join(',') === key;
+    const key = [...s.images.map((i) => i.id), '|', ...s.files.map((f) => f.id)].join(',');
+    const same = (text: string, images: ImageRef[] | undefined, files: FileRef[] | undefined) =>
+      text === s.text && [...(images ?? []).map((i) => i.id), '|', ...(files ?? []).map((f) => f.id)].join(',') === key;
     const items = this.d.store.transcript(this.agentId);
     for (const it of items.slice(-40)) {
-      if (it.kind === 'user' && it.notSent && same(it.text, it.images)) this.d.store.removeItem(this.agentId, it.id);
-      else if (it.kind === 'system' && it.resend && same(it.resend.text, it.resend.images)) {
+      if (it.kind === 'user' && it.notSent && same(it.text, it.images, it.files)) this.d.store.removeItem(this.agentId, it.id);
+      else if (it.kind === 'system' && it.resend && same(it.resend.text, it.resend.images, it.resend.files)) {
         const { resend: _, ...rest } = it;
         this.d.store.upsertItem(this.agentId, rest);
       }
@@ -548,16 +564,16 @@ export class AgentRuntime {
     const unknown: Draft[] = [];
     for (const b of back) {
       const text = typeof b.text === 'string' ? b.text : '';
-      const i = left.findIndex((s) => s.text === text);
+      const i = left.findIndex((s) => s.wire === text);
       if (i >= 0) found.push(left.splice(i, 1)[0]!);
-      else if (text.trim()) unknown.push({ text, images: [] });
+      else if (text.trim()) unknown.push({ text: stripAttachmentNote(text), images: [] });
     }
     // omp's queues are empty now: what is left is a message it is reading (its user message_start still to come).
     this.#sent = this.#sent.filter((s) => s.echoed && !found.includes(s));
     for (const s of found) if (s.echoed && s.itemId) this.d.store.removeItem(this.agentId, s.itemId);
     this.#publishQueue();
     found.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    return [...found.filter((s) => s.by === 'user').map((s) => ({ text: s.text, images: s.images })), ...unknown];
+    return [...found.filter((s) => s.by === 'user').map((s) => this.#draft(s)), ...unknown];
   }
 
   /** Shrink the chat's context now (omp compact; its own queue blocks meanwhile, so nothing else is asked). Only
@@ -1200,7 +1216,7 @@ export class AgentRuntime {
     let changed = false;
     for (const s of this.#sent) {
       if (s.echoed) continue;
-      const mode = e.steering.includes(s.text) ? 'steer' : e.followUp.includes(s.text) ? 'queue' : s.mode;
+      const mode = e.steering.includes(s.wire) ? 'steer' : e.followUp.includes(s.wire) ? 'queue' : s.mode;
       if (mode !== s.mode) {
         s.mode = mode;
         changed = true;
@@ -1212,19 +1228,19 @@ export class AgentRuntime {
   /** omp handed a user message to the model: its chip becomes a bubble (one sent while idle already is one). */
   #delivered(e: Extract<AgentEvent, { kind: 'user_message' }>) {
     const text = e.text.trim();
-    let i = this.#sent.findIndex((s) => s.text.trim() === text);
+    let i = this.#sent.findIndex((s) => s.wire.trim() === text);
     // omp may have expanded the text (a prompt template): the oldest message sent while idle, else the oldest
     // queued one of its kind.
     if (i < 0) i = this.#sent.findIndex((s) => s.echoed);
     if (i < 0) i = this.#sent.findIndex((s) => (s.mode === 'steer') === e.steering);
     const s = i >= 0 ? this.#sent.splice(i, 1)[0] : undefined;
     // The message this turn works on now (a restart before it ends says so in the chat).
-    this.#turn = s?.chat ? { text: s.text, images: s.images, ...(s.itemId ? { itemId: s.itemId } : {}) } : undefined;
+    this.#turn = s?.chat ? { text: s.text, images: s.images, ...(s.files.length ? { files: s.files } : {}), ...(s.itemId ? { itemId: s.itemId } : {}) } : undefined;
     this.#journal();
     if (s?.echoed) return;
     if (s?.shown) this.#system('info', s.shown);
     else if (s) this.d.store.upsertItem(this.agentId, this.#bubble(s, e.steering));
-    else if (text) this.d.store.upsertItem(this.agentId, { kind: 'user', id: `${this.agentId}:u:${uid()}`, text: e.text, ts: Date.now(), ...(e.steering ? { steered: true } : {}) });
+    else if (text) this.d.store.upsertItem(this.agentId, { kind: 'user', id: `${this.agentId}:u:${uid()}`, text: stripAttachmentNote(e.text), ts: Date.now(), ...(e.steering ? { steered: true } : {}) });
     if (s) this.#publishQueue();
   }
 
@@ -1235,6 +1251,7 @@ export class AgentRuntime {
       text: s.text,
       ts: Date.now(),
       ...(s.images.length ? { images: s.images } : {}),
+      ...(s.files.length ? { files: s.files } : {}),
       ...(steered ? { steered: true } : {}),
     };
   }
@@ -1251,7 +1268,7 @@ export class AgentRuntime {
    *  the chat messages they haven't read yet. */
   #journal() {
     if (!this.d.journal) return;
-    const waiting = this.#sent.filter((s) => s.chat).map((s) => ({ text: s.text, images: s.images, ...(s.itemId && s.echoed ? { itemId: s.itemId } : {}) }));
+    const waiting = this.#sent.filter((s) => s.chat).map((s) => ({ text: s.text, images: s.images, ...(s.files.length ? { files: s.files } : {}), ...(s.itemId && s.echoed ? { itemId: s.itemId } : {}) }));
     const turn = this.#working ? this.#turn : undefined;
     this.d.journal(this.agentId, turn || waiting.length ? { ...(this.info?.threadId ? { threadId: this.info.threadId } : {}), at: Date.now(), ...(turn ? { turn } : {}), waiting } : null);
   }
@@ -1259,7 +1276,7 @@ export class AgentRuntime {
   #publishQueue() {
     const queue: QueuedMessage[] = this.#sent
       .filter((s) => !s.echoed)
-      .map((s) => ({ key: s.key, text: truncate(s.shown ?? s.text, MAX_CHIP), images: s.images.length, mode: s.mode, by: s.by }));
+      .map((s) => ({ key: s.key, text: truncate(s.shown ?? s.text, MAX_CHIP), images: s.images.length, ...(s.files.length ? { files: s.files.length } : {}), mode: s.mode, by: s.by }));
     this.d.store.patch(this.agentId, { queue: queue.length ? queue : undefined }, true);
     this.#journal();
   }

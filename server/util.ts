@@ -1,5 +1,7 @@
 // Small shared helpers for the server core.
+import { createHash } from 'node:crypto';
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { open, unlink } from 'node:fs/promises';
 import { dirname, sep } from 'node:path';
 
 /** An error whose message is safe and friendly enough to show in the UI (ack.error / toast). */
@@ -44,6 +46,51 @@ export async function readTextCapped(req: Request, max: number): Promise<string 
     parts.push(value);
   }
   return Buffer.concat(parts).toString('utf8');
+}
+
+/** A request body over its cap (receiveToFile). */
+export class BodyTooLarge extends Error {}
+
+/** Stream a request body into a NEW file `tmp` (O_EXCL: never an existing file, never through a symlink there), at most
+ *  `max` bytes, hashing it on the way (nothing is held in memory). The file gets exactly `mode` (umask aside). On any
+ *  failure the partial file is removed and the error rethrown (BodyTooLarge when over the cap). */
+export async function receiveToFile(req: Request, max: number, tmp: string, mode: number): Promise<{ size: number; sha256: string }> {
+  const declared = Number(req.headers.get('content-length') ?? NaN);
+  if (Number.isFinite(declared) && declared > max) throw new BodyTooLarge();
+  const fh = await open(tmp, 'wx', mode);
+  const hash = createHash('sha256');
+  let size = 0;
+  try {
+    if (req.body) {
+      const reader = req.body.getReader();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > max) {
+          void reader.cancel().catch(() => {});
+          throw new BodyTooLarge();
+        }
+        hash.update(value);
+        let at = 0;
+        while (at < value.byteLength) at += (await fh.write(value, at, value.byteLength - at)).bytesWritten;
+      }
+    }
+    await fh.chmod(mode);
+    await fh.close();
+  } catch (err) {
+    await fh.close().catch(() => {});
+    await unlink(tmp).catch(() => {});
+    throw err;
+  }
+  return { size, sha256: hash.digest('hex') };
+}
+
+/** Content-Disposition with the file's own name: an ASCII fallback plus the exact name as RFC 5987 UTF-8. */
+export function contentDisposition(kind: 'attachment' | 'inline', name: string): string {
+  const ascii = name.replace(/[^\x20-\x7e]|["\\]/g, '_');
+  const exact = encodeURIComponent(name).replace(/['()*]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+  return `${kind}; filename="${ascii}"; filename*=UTF-8''${exact}`;
 }
 
 /** True when `child` is `parent` itself or lies inside it (both must be absolute and normalized). */

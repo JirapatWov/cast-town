@@ -6,7 +6,7 @@ import { h } from './dom';
 import { icon } from './icons';
 import { openMenu } from './menu';
 import { openModal } from './modal';
-import { autoAsksAbout } from '../../../shared/auto-rules';
+import { autoAsksAbout, autoRuleLabel } from '../../../shared/auto-rules';
 import type { Shell } from './shell';
 
 interface ModeInfo {
@@ -24,7 +24,7 @@ export const MODES: ModeInfo[] = [
     id: 'auto',
     label: 'Auto',
     icon: 'wand',
-    hint: 'Asks only about steps its rules flag as risky — sudo, deleting folders, git push, files outside the project, servers open to every network. Best effort, not a sandbox: what the rules don’t recognise runs without asking.',
+    hint: 'Asks only about steps its rules flag as risky — sudo, deleting folders, force-pushing or throwing away git work, files outside the project, sending data to the internet. Edits and commands inside the project, a plain git push and requests to this machine run. Best effort, not a sandbox: what the rules don’t recognise runs without asking.',
   },
   { id: 'yolo', label: 'Bypass', icon: 'alert', hint: 'Never asks — any command, any file, the network. Only for folders you could lose.' },
 ];
@@ -98,13 +98,31 @@ export function openAutoRules(shell: Shell): void {
         { class: 'auto-rules-list is-quiet' },
         h('li', null, 'reading any file the server’s user can read'),
         h('li', null, 'editing files inside the project folder (except secrets files and git internals)'),
-        h('li', null, 'commands the rules don’t match, such as running tests or a build, or downloading a web page'),
-        h('li', null, 'starting helpers — their own steps are checked one by one'),
+        h('li', null, 'commands the rules don’t match: tests, builds, installing the project’s dependencies, chmod inside the project'),
+        h('li', null, 'git commit, rebase, restoring single files, and a plain git push to one of the project’s remotes'),
+        h('li', null, 'requests to this machine (localhost) and downloading web pages'),
+        h('li', null, 'looking at the system: systemctl status, service … status, tailscale status, crontab -l, mount'),
+        h('li', null, 'code that runs, deletes or sends the same things — checked like the command line'),
+        h('li', null, 'the agent’s own notes, memory, skills and helpers — helpers’ own steps are checked one by one'),
       ),
-      h('p', { class: 'muted small' }, 'A command too long to check, or a tool Auto doesn’t know, always comes to you.'),
+      h(
+        'p',
+        { class: 'muted small' },
+        'A command too long to check, a command code puts together while running, or a tool Auto has no rule for always comes to you. On a card Auto stopped, “Always allow in <house>” lets that rule through in that house from then on (the permission menu lists and removes them) — never for credentials, secrets files, downloaded scripts, deleting outside the project or raw device writes.',
+      ),
     ),
     footer: [h('button', { type: 'button', class: 'btn btn-primary', onclick: () => modal.close() }, 'Got it')],
   });
+}
+
+/** Take a rule off the house's standing allows: Auto asks about it again there. */
+async function removeStandingAllow(shell: Shell, project: Project, rule: string): Promise<void> {
+  try {
+    await shell.store.request({ t: 'set_project', reqId: '', projectId: project.id, patch: { autoAllow: (project.autoAllow ?? []).filter((r) => r !== rule) } });
+    shell.toast('info', `Auto asks again in ${project.name} before a step that ${autoRuleLabel(rule)}.`, { projectId: project.id });
+  } catch (err) {
+    shell.toast('error', err instanceof RequestError ? err.message : `Could not remove it: ${(err as Error).message}`);
+  }
 }
 
 /** The chip under the chat input: current mode, click for the menu. */
@@ -118,29 +136,46 @@ export function permissionChip(shell: Shell, project: Project): HTMLElement {
       title: `${m.label}: ${m.hint} (Alt+M in the message box to change)`,
       'aria-label': `Permission mode: ${m.label}. Change`,
       'aria-haspopup': 'menu',
-      onclick: () =>
-        openMenu(
-          shell.root,
-          shell.layers,
-          chip,
-          [
-            {
-              title: `What people in ${project.name} may do without asking — every job in this house`,
-              items: MODES.map((x) => ({
-                label: x.label,
-                icon: x.icon,
-                hint: x.hint,
-                checked: x.id === project.approvalMode,
-                onSelect: () => void setPermissionMode(shell, project, x.id),
-              })),
-            },
-          ],
-          { id: 'permission-mode', placement: 'above', align: 'start', minWidth: 320, className: 'perm-menu', footer: permFooter(shell, project) },
-        ),
+      // the house as it is now: its standing allows change without the chip being drawn again
+      onclick: () => openPermissionMenu(shell, shell.store.project(project.id) ?? project, chip),
     },
     icon(m.icon, 13),
     h('span', null, m.label),
     icon('chevronUp', 11),
   );
   return chip;
+}
+
+function openPermissionMenu(shell: Shell, project: Project, anchor: HTMLElement): void {
+  openMenu(
+    shell.root,
+    shell.layers,
+    anchor,
+    [
+      {
+        title: `What people in ${project.name} may do without asking — every job in this house`,
+        items: MODES.map((x) => ({
+          label: x.label,
+          icon: x.icon,
+          hint: x.hint,
+          checked: x.id === project.approvalMode,
+          onSelect: () => void setPermissionMode(shell, project, x.id),
+        })),
+      },
+      ...(project.autoAllow?.length
+        ? [
+            {
+              title: `Auto always allows in ${project.name} — choose one to remove it`,
+              items: project.autoAllow.map((rule) => ({
+                label: autoRuleLabel(rule),
+                icon: 'x',
+                hint: 'Remove: Auto asks about this again',
+                onSelect: () => void removeStandingAllow(shell, project, rule),
+              })),
+            },
+          ]
+        : []),
+    ],
+    { id: 'permission-mode', placement: 'above', align: 'start', minWidth: 320, className: 'perm-menu', footer: permFooter(shell, project) },
+  );
 }

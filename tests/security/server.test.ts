@@ -153,6 +153,9 @@ describe('cross-site requests', () => {
     ['PATCH', '/api/cities/some-city', '{"name":"x"}', 'application/json'],
     ['DELETE', '/api/cities/some-city', '', 'text/plain'],
     ['POST', '/api/uploads', 'GIF89a', 'image/gif'],
+    ['POST', '/api/uploads/files?name=a.txt', 'hello', 'text/plain'],
+    ['POST', '/api/folder-upload?projectId=p&dir=&name=a.txt', 'hello', 'text/plain'],
+    ['POST', '/city/some-city/api/folder-upload?projectId=p&dir=&name=a.txt', 'hello', 'text/plain'],
     ['POST', '/city/some-city/api/devices/rotate-token', '{}', 'text/plain'],
   ];
   const origins = ['https://evil.example', 'null', 'http://localhost:1'];
@@ -202,6 +205,34 @@ describe('viewer file keys', () => {
     expect(rot.status).toBe(200);
     expect((await fetch(readme)).status).toBe(404);
   }, 30_000);
+});
+
+describe('uploads, signed in from the page itself', () => {
+  test('a chat attachment goes in and comes back only as a download, only signed in', async () => {
+    const res = await fetch(`${base}/api/uploads/files?name=${encodeURIComponent('notes 1.txt')}`, { method: 'POST', headers: { cookie, origin: base }, body: 'hi there' });
+    expect(res.status).toBe(200);
+    const ref = (await res.json()) as { id: string; name: string };
+    expect(ref.name).toBe('notes 1.txt');
+    const path = `/api/uploads/files/${ref.id.split('/')[0]}/${encodeURIComponent(ref.name)}`;
+    const back = await fetch(`${base}${path}`, { headers: { cookie } });
+    expect(back.status).toBe(200);
+    expect(back.headers.get('content-disposition')).toStartWith('attachment;');
+    expect(await back.text()).toBe('hi there');
+    expect((await fetch(`${base}${path}`)).status).toBe(403);
+    expect(existsSync(join(dataDir, 'uploads', 'files', ref.id))).toBe(true);
+  });
+
+  test('a file uploaded from the Files viewer lands in the house folder', async () => {
+    const city = JSON.parse(readFileSync(join(dataDir, 'city.json'), 'utf8')) as { projects: { id: string; path: string }[] };
+    const house = city.projects.find((p) => p.id === projectId)!.path;
+    const url = `${base}/api/folder-upload?projectId=${encodeURIComponent(projectId)}&dir=&name=hello.txt`;
+    const res = await fetch(url, { method: 'POST', headers: { cookie, origin: base }, body: 'hello' });
+    expect(res.status).toBe(200);
+    expect(readFileSync(join(house, 'hello.txt'), 'utf8')).toBe('hello');
+    expect((await fetch(url, { method: 'POST', headers: { cookie, origin: base }, body: 'again' })).status).toBe(409);
+    expect((await fetch(url, { method: 'POST', body: 'no session' })).status).toBe(403);
+    expect(readFileSync(join(house, 'hello.txt'), 'utf8')).toBe('hello');
+  });
 });
 
 describe('keyed city files (answered before sign-in)', () => {

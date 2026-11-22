@@ -1,20 +1,18 @@
 // Deleting what CAST keeps about you: one house's history (removing a house with "also delete its chats"), stray chat
 // pictures nothing refers to any more, and "Delete all CAST data" (Settings → Your data).
-//
-// What CAST writes, and where (README "Your data" lists the same):
 //   <dataDir>/            town (city.json, jobs.json, workflows.json), chats (transcripts/), omp sessions (sessions/),
-//                         chat pictures (uploads/), jobs' own copies of files (worktrees/), pairing token, devices.json,
-//                         other cities you added (cities.json), the Web Push key and the devices that turned
-//                         notifications on (push.json), and a leftover omp-demo-agent/ (only the scripted test model,
-//                         CAST_MOCK_LLM, writes it)
+//                         chat pictures and attached files (uploads/), jobs' own copies of files (worktrees/), pairing
+//                         token, devices.json, other cities you added (cities.json), the Web Push key and the devices
+//                         that turned notifications on (push.json), and a leftover omp-demo-agent/ (only the scripted
+//                         test model, CAST_MOCK_LLM, writes it)
 //   <house>/.rlt/         run notes of team workflows (git-excluded)
 //   <house repo> refs/rlt/ checkpoints of runs (for Undo) and the base of jobs' own copies
 // Never touched here: the files of your projects, your git branches, and omp's own accounts folder (~/.omp/agent —
 // sign out of AI accounts in Models & providers).
-import { existsSync, readdirSync, readFileSync, rmSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync, type Dirent } from 'node:fs';
 import { join } from 'node:path';
 import { exec } from './exec';
-import { uploadsDir, UPLOAD_ID } from './uploads';
+import { fileUploadsDir, FILE_ID, uploadsDir, UPLOAD_ID } from './uploads';
 import { errorMessage, log } from './util';
 
 /** Typed into the confirmation box of "Delete all CAST data"; the server checks it too. */
@@ -24,8 +22,8 @@ export const WIPE_CONFIRM_TEXT = 'delete everything';
  *  would only hide it). */
 const KEEP_NAMES = new Set(['config.json', 'server.pid']);
 const KEEP_PATTERN = /\.log$/;
-
-/** A chat picture younger than this is kept even when no chat names it: it may sit in an unsent draft. */
+/** A chat picture or attached file younger than this is kept even when no chat names it: it may sit in an unsent
+ *  draft. */
 export const UPLOAD_GRACE_MS = 6 * 60 * 60 * 1000;
 
 export interface WipeResult {
@@ -98,13 +96,15 @@ export function removeHouseHistory(dataDir: string, projectId: string): string[]
   return removed;
 }
 
-/** Every upload id named in the chats still on disk. */
+/** Every upload named in the chats still on disk: picture ids ("<sha256>.<ext>") and attached files' ids
+ *  ("<sha256>/<name>", as the JSON string holds it). */
 function referencedUploads(dataDir: string): Set<string> {
   const seen = new Set<string>();
   const re = /[0-9a-f]{64}\.(?:png|jpg|gif|webp)/g;
+  const fileRe = /"([0-9a-f]{64}\/(?:[^"\\]|\\.)+)"/g;
   const walk = (dir: string, depth: number) => {
     if (depth > 8) return;
-    let entries: import('node:fs').Dirent[];
+    let entries: Dirent[];
     try {
       entries = readdirSync(dir, { withFileTypes: true });
     } catch {
@@ -115,7 +115,15 @@ function referencedUploads(dataDir: string): Set<string> {
       if (e.isDirectory()) walk(p, depth + 1);
       else if (e.isFile() && e.name.endsWith('.json')) {
         try {
-          for (const m of readFileSync(p, 'utf8').matchAll(re)) seen.add(m[0]);
+          const text = readFileSync(p, 'utf8');
+          for (const m of text.matchAll(re)) seen.add(m[0]);
+          for (const m of text.matchAll(fileRe)) {
+            try {
+              seen.add(JSON.parse(`"${m[1]}"`) as string);
+            } catch {
+              /* not a JSON string after all */
+            }
+          }
         } catch {
           /* unreadable: its pictures simply stay referenced-unknown → kept below only if young */
         }
@@ -126,8 +134,21 @@ function referencedUploads(dataDir: string): Set<string> {
   return seen;
 }
 
-/** Delete chat pictures no chat refers to any more (after a chat or a house's history was deleted). Pictures younger
- *  than UPLOAD_GRACE_MS stay: they may be attached to a message not sent yet. Returns how many were deleted. */
+/** Remove `file` when it is older than the grace period; true when it went. */
+function removeIfOld(file: string, now: number): boolean {
+  try {
+    if (now - statSync(file).mtimeMs < UPLOAD_GRACE_MS) return false;
+    rmSync(file, { force: true });
+    return true;
+  } catch {
+    return false; // gone already
+  }
+}
+
+/** Delete chat pictures and attached files no chat refers to any more (after a chat or a house's history was deleted).
+ *  Those younger than UPLOAD_GRACE_MS stay: they may be attached to a message not sent yet. A file's <sha256> folder
+ *  goes with its last file; a temp file an interrupted upload left goes after the same grace. Returns how many files
+ *  were deleted. */
 export function pruneUploads(dataDir: string, now = Date.now()): number {
   const dir = uploadsDir(dataDir);
   let names: string[];
@@ -140,13 +161,43 @@ export function pruneUploads(dataDir: string, now = Date.now()): number {
   let n = 0;
   for (const name of names) {
     if (!UPLOAD_ID.test(name) || used.has(name)) continue;
-    const file = join(dir, name);
+    if (removeIfOld(join(dir, name), now)) n++;
+  }
+  const filesDir = fileUploadsDir(dataDir);
+  let hashes: string[] = [];
+  try {
+    hashes = readdirSync(filesDir);
+  } catch {
+    return n;
+  }
+  for (const hash of hashes) {
+    const hashDir = join(filesDir, hash);
+    if (hash.startsWith('.tmp-')) {
+      if (removeIfOld(hashDir, now)) n++;
+      continue;
+    }
+    if (!/^[0-9a-f]{64}$/.test(hash)) continue;
+    let files: string[];
     try {
-      if (now - statSync(file).mtimeMs < UPLOAD_GRACE_MS) continue;
-      rmSync(file, { force: true });
-      n++;
+      files = readdirSync(hashDir);
     } catch {
-      /* gone already */
+      continue;
+    }
+    let left = files.length;
+    for (const name of files) {
+      const id = `${hash}/${name}`;
+      if (!FILE_ID.test(id) || used.has(id)) continue;
+      if (removeIfOld(join(hashDir, name), now)) {
+        n++;
+        left--;
+      }
+    }
+    if (left === 0) {
+      try {
+        rmdirSync(hashDir);
+      } catch {
+        /* not empty after all (a new upload just now) */
+      }
     }
   }
   return n;

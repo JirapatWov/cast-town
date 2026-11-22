@@ -7,12 +7,13 @@
 // state as it is and ignores what stopping the processes reports afterwards (that is the restart, not the user).
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { ImageRef } from '../../shared/protocol';
+import type { FileRef, ImageRef } from '../../shared/protocol';
 import { errorText, log } from './util';
 
 export interface JournalMessage {
   text: string;
   images: ImageRef[];
+  files?: FileRef[];
   /** Its bubble in the chat, when it has one (a message queued while the person worked has only a chip). */
   itemId?: string;
 }
@@ -93,8 +94,11 @@ function message(m: unknown): JournalMessage | null {
   const r = m as Partial<JournalMessage> | null;
   if (!r || typeof r.text !== 'string') return null;
   const images = Array.isArray(r.images) ? r.images.filter((i): i is ImageRef => !!i && typeof i.id === 'string' && typeof i.mimeType === 'string') : [];
-  if (!r.text.trim() && !images.length) return null;
-  return { text: r.text, images, ...(typeof r.itemId === 'string' ? { itemId: r.itemId } : {}) };
+  const files = Array.isArray(r.files)
+    ? r.files.filter((f): f is FileRef => !!f && typeof f.id === 'string' && typeof f.name === 'string' && typeof f.size === 'number' && typeof f.mimeType === 'string')
+    : [];
+  if (!r.text.trim() && !images.length && !files.length) return null;
+  return { text: r.text, images, ...(files.length ? { files } : {}), ...(typeof r.itemId === 'string' ? { itemId: r.itemId } : {}) };
 }
 
 /** Tolerate a hand-edited or older file: drop what doesn't look right. */

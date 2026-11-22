@@ -26,14 +26,18 @@
 // whose realpath leaves the folder, CAST's own data dir (except the job's own copy, which lives there) and any other
 // folder that looks like one (city.json + token: a backup), omp's agent dir, secret-looking names (token, *.pem,
 // id_rsa, …), and anything that isn't a regular file or folder.
-import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { closeSync, existsSync, lstatSync, openSync, readdirSync, readFileSync, readSync, realpathSync, statSync, type Dirent, type Stats } from 'node:fs';
+//
+// Uploads into a folder (upload(), routed by folder-upload.ts — signed in and same-origin, never under FILES_PATH)
+// refuse exactly what the viewer refuses to show, write through a hidden temp file in the same folder (O_EXCL, then
+// link/rename: never through a symlink at the name, never a half-written file), and replace only a regular file.
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { closeSync, existsSync, linkSync, lstatSync, openSync, readdirSync, readFileSync, readSync, realpathSync, renameSync, rmSync, statSync, type Dirent, type Stats } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, extname, join, relative, sep } from 'node:path';
-import { FILES_KEY_TTL_MS, FILES_PATH, MAX_FIND_FILES, MAX_LIST_FILES, type FileEntry, type FilesKey } from '../shared/protocol';
+import { FILES_KEY_TTL_MS, FILES_PATH, MAX_FILE_UPLOAD_BYTES, MAX_FIND_FILES, MAX_LIST_FILES, type FileEntry, type FilesKey } from '../shared/protocol';
 import type { CityStore, JobStore } from './contracts';
 import { exec } from './exec';
-import { isInside, log, UserError } from './util';
+import { BodyTooLarge, contentDisposition, isInside, log, receiveToFile, UserError } from './util';
 
 /** Hosts a page may load scripts, styles, fonts, images, media and data (fetch) from: public CDNs and read-only data
  *  hosts whose request logs only their operators see. Extend with RLT_VIEWER_HOSTS (comma or space separated, e.g.
@@ -437,7 +441,31 @@ export interface FileViewer {
   list(projectId: string, jobId: string | undefined, dir: string): FilesListing;
   /** find_files: every visible file's path (git: tracked + untracked not ignored; else a capped walk). */
   find(projectId: string, jobId: string | undefined, query?: string): Promise<FilesFound>;
+  /** One file (the request's body) into folder `dir` of this house or job copy, named `name`. Throws UploadRefused
+   *  (an HTTP status, a sentence, and for 409 what is in the way). */
+  upload(req: Request, projectId: string, jobId: string | undefined, dir: string, name: string, replace: boolean): Promise<FolderUpload>;
 }
+
+export interface FolderUpload {
+  entry: FileEntry;
+  dir: string; // the folder it went to, '/'-separated and relative ('' = the root)
+  replaced: boolean;
+}
+
+/** Why an upload into a folder was refused. code (409 only): 'exists' — a file of that name is there (replace=1 replaces
+ *  it); 'folder' / 'special' — a folder or something that isn't a plain file is there (never replaced). */
+export class UploadRefused extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+    readonly code?: 'exists' | 'folder' | 'special',
+  ) {
+    super(message);
+  }
+}
+
+/** Control characters and the invisible direction marks a name could use to fake its extension. */
+const UNSAFE_NAME_CHARS = /[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/g;
 
 /** A person's folder, resolved. */
 interface Folder {
@@ -558,11 +586,6 @@ function shimmedPage(real: string, size: number, withBody: boolean): { length?: 
     },
   });
   return { body }; // streamed: no content-length (the file may still be growing)
-}
-
-function contentDisposition(kind: 'attachment' | 'inline', name: string): string {
-  const ascii = name.replace(/[^\x20-\x7e]|["\\]/g, '_');
-  return `${kind}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(name)}`;
 }
 
 export function createFileViewer(o: FileViewerOptions): FileViewer {
@@ -962,11 +985,99 @@ export function createFileViewer(o: FileViewerOptions): FileViewer {
     return truncated ? { paths, truncated } : { paths };
   }
 
+  // ───────── uploads into a folder ─────────
+
+  async function upload(req: Request, projectId: string, jobId: string | undefined, dir: string, rawName: string, replace: boolean): Promise<FolderUpload> {
+    let f: Folder;
+    try {
+      f = folderFor(projectId, jobId);
+    } catch (err) {
+      throw new UploadRefused(404, (err as Error).message);
+    }
+    const segs = dir.split('/').filter((s) => s !== '');
+    if (segs.some((s) => s === '.' || s === '..' || s.includes('\0') || s.includes('\\'))) throw new UploadRefused(400, 'That is not a folder of this house.');
+    if (segs.some((s) => s.startsWith('.'))) throw new UploadRefused(403, 'Hidden folders (a name starting with “.”) can’t take uploads.');
+    const name = rawName.replace(UNSAFE_NAME_CHARS, '').normalize('NFC').trim();
+    if (!name || name === '.' || name === '..' || /[/\\\0]/.test(name)) throw new UploadRefused(400, 'Give the file a plain name (no folders in it).');
+    if (name.startsWith('.')) throw new UploadRefused(403, `“${name}” would be a hidden file (a name starting with “.”) — CAST doesn’t upload those.`);
+    if (SECRET_NAME.test(name)) throw new UploadRefused(403, `“${name}” looks like a key or a token — CAST doesn’t upload those.`);
+    if (Buffer.byteLength(name, 'utf8') > 255) throw new UploadRefused(400, 'That file name is too long.');
+    const real = realpathOrNull(join(f.root, ...segs));
+    if (!real) throw new UploadRefused(404, 'That folder is gone.');
+    if (!allowed(f, real)) throw new UploadRefused(403, 'CAST can’t upload into that folder.');
+    if (!statOrNull(real)?.isDirectory()) throw new UploadRefused(400, 'That is not a folder.');
+    const target = join(real, name);
+    /** What is at the name now: null (nothing), or why it can't be written over. */
+    const inTheWay = (): UploadRefused | 'file' | null => {
+      let st: Stats;
+      try {
+        st = lstatSync(target);
+      } catch {
+        return null;
+      }
+      if (st.isDirectory()) return new UploadRefused(409, `There’s a folder called “${name}” here — rename the file and try again.`, 'folder');
+      if (!st.isFile()) return new UploadRefused(409, `“${name}” here isn’t a plain file (a link or a device) — CAST won’t replace it.`, 'special');
+      return 'file';
+    };
+    const before = inTheWay();
+    if (before instanceof UploadRefused) throw before;
+    if (before === 'file' && !replace) throw new UploadRefused(409, `“${name}” is already in this folder.`, 'exists');
+
+    // Hidden while it arrives (never listed), in the same folder so the move is a rename on one file system.
+    const tmp = join(real, `.cast-upload-${randomBytes(6).toString('hex')}`);
+    try {
+      await receiveToFile(req, MAX_FILE_UPLOAD_BYTES, tmp, 0o644);
+    } catch (err) {
+      if (err instanceof BodyTooLarge) throw new UploadRefused(413, `That file is too large (at most ${Math.round(MAX_FILE_UPLOAD_BYTES / 1048576)} MB).`);
+      const code = (err as NodeJS.ErrnoException)?.code;
+      if (code === 'EACCES' || code === 'EPERM' || code === 'EROFS') throw new UploadRefused(403, 'CAST may not write to that folder (permission denied).');
+      if (code === 'ENOSPC') throw new UploadRefused(507, 'The disk is full.');
+      if (req.signal?.aborted) throw new UploadRefused(400, 'The upload was interrupted — try again.');
+      log('files', `upload into ${real} failed:`, err);
+      throw new UploadRefused(500, 'CAST couldn’t save the file — try again.');
+    }
+    const drop = () => rmSync(tmp, { force: true });
+    // Settle it again now that the bytes are here (something may have appeared at the name meanwhile).
+    const now = inTheWay();
+    if (now instanceof UploadRefused || (now === 'file' && !replace)) {
+      drop();
+      throw now instanceof UploadRefused ? now : new UploadRefused(409, `“${name}” is already in this folder.`, 'exists');
+    }
+    try {
+      if (replace) renameSync(tmp, target); // rename replaces the name itself: a symlink put there meanwhile is not followed
+      else {
+        // link fails if anything took the name since (never writes over it); file systems without hard links rename
+        try {
+          linkSync(tmp, target);
+          drop();
+        } catch (err) {
+          const code = (err as NodeJS.ErrnoException)?.code;
+          if (code === 'EEXIST') throw new UploadRefused(409, `“${name}” is already in this folder.`, 'exists');
+          if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EOPNOTSUPP' && code !== 'EMLINK') throw err;
+          if (inTheWay() !== null) throw new UploadRefused(409, `“${name}” is already in this folder.`, 'exists');
+          renameSync(tmp, target);
+        }
+      }
+    } catch (err) {
+      drop();
+      if (err instanceof UploadRefused) throw err;
+      log('files', `upload into ${real} failed:`, err);
+      throw new UploadRefused(500, 'CAST couldn’t save the file — try again.');
+    }
+    const st = statOrNull(target);
+    return {
+      entry: { name, isDir: false, size: st?.size ?? 0, mtime: Math.floor(st?.mtimeMs ?? Date.now()) },
+      dir: segs.join('/'),
+      replaced: before === 'file',
+    };
+  }
+
   return {
     matches: (url) => url.pathname === FILES_PATH || url.pathname.startsWith(`${FILES_PATH}/`),
     handle,
     mintKey,
     list,
     find,
+    upload,
   };
 }

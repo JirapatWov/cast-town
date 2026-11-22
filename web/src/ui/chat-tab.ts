@@ -1,13 +1,14 @@
 // Chat tab: people strip, agent header (cost, how full the context is), the lead's goal bar, live transcript and
-// composer for one person. Images dropped anywhere on the tab go into the composer.
-import type { AgentInfo, ImageRef, ServerMsg, TranscriptItem, WorkflowRun } from '../../../shared/protocol';
+// composer for one person. Files dropped anywhere on the tab go into the composer (pictures as images, the rest as
+// attached files).
+import type { AgentInfo, FileRef, ImageRef, ServerMsg, TranscriptItem, WorkflowRun } from '../../../shared/protocol';
 import { RequestError } from '../net/requests';
 import { approvalCard } from './approvals';
 import { openImage } from './attachments';
 import { agentsState, blockOpts } from './agents-health';
 import { chatIcon } from './chat-icons';
 import { createComposer, type ComposerDraft, type ComposerSend } from './composer';
-import { copyText, h, memo, setChildren } from './dom';
+import { copyText, droppedFiles, h, memo, setChildren } from './dom';
 import { accountChip, accountChipKey, watchAccountChips } from './account-chip';
 import { effortChip, openEffortMenu } from './effort-chip';
 import { OFF_DUTY_HINT, agentBlocked, agentStatusText, agentTone, anyConnected, fmtTokens, fmtUsd, isAgentBusy, timeAgo } from './format';
@@ -44,6 +45,7 @@ interface Unsure {
   agentId: string;
   text: string;
   images: ImageRef[];
+  files: FileRef[];
   items: Set<string>; // the person's user bubbles when it was sent
   chips: Set<string>; // and their queue chips
   until: number;
@@ -87,6 +89,7 @@ export function createChatTab(shell: Shell) {
         agentId: id,
         text: msg.text,
         images: msg.images,
+        files: msg.files ?? [],
         items: new Set((store.state.transcripts[id] ?? []).filter((it) => it.kind === 'user').map((it) => it.id)),
         chips: new Set((store.state.agents[id]?.queue ?? []).map((q) => q.key)),
         until: 0,
@@ -99,6 +102,7 @@ export function createChatTab(shell: Shell) {
           agentId: id,
           text: msg.text,
           ...(msg.images.length ? { images: msg.images.map((r) => r.id) } : {}),
+          ...(msg.files?.length ? { files: msg.files.map((f) => f.id) } : {}),
           ...(msg.mode ? { mode: msg.mode } : {}),
         });
         // Stop came while their omp was starting: it never went, so the box keeps it (Stop's own answer brings the
@@ -190,11 +194,15 @@ export function createChatTab(shell: Shell) {
   }
   /** Its bubble or chip showed up since it was sent (the server shows it as soon as it has it). */
   function arrived(u: Unsure): boolean {
-    const imgs = u.images.map((r) => r.id).join();
-    const bubble = (store.state.transcripts[u.agentId] ?? []).some(
-      (it) => it.kind === 'user' && !u.items.has(it.id) && sameText(it.text, u.text) && (it.images ?? []).map((r) => r.id).join() === imgs,
+    const ids = (images: ImageRef[] | undefined, files: FileRef[] | undefined) => [...(images ?? []).map((r) => r.id), '|', ...(files ?? []).map((f) => f.id)].join();
+    const want = ids(u.images, u.files);
+    const bubble = (store.state.transcripts[u.agentId] ?? []).some((it) => it.kind === 'user' && !u.items.has(it.id) && sameText(it.text, u.text) && ids(it.images, it.files) === want);
+    return (
+      bubble ||
+      (store.state.agents[u.agentId]?.queue ?? []).some(
+        (q) => q.by === 'user' && !u.chips.has(q.key) && q.images === u.images.length && (q.files ?? 0) === u.files.length && sameText(q.text, u.text),
+      )
     );
-    return bubble || (store.state.agents[u.agentId]?.queue ?? []).some((q) => q.by === 'user' && !u.chips.has(q.key) && q.images === u.images.length && sameText(q.text, u.text));
   }
   // Watched whichever tab shows: the answer comes with the reconnect.
   store.subscribe((_s, msg) => {
@@ -210,7 +218,7 @@ export function createChatTab(shell: Shell) {
     const name = store.state.agents[u.agentId]?.name ?? 'them';
     if (arrived(u)) {
       unsure = null;
-      const out = composer.forget({ text: u.text, images: u.images }, u.agentId);
+      const out = composer.forget({ text: u.text, images: u.images, ...(u.files.length ? { files: u.files } : {}) }, u.agentId);
       shell.toast('info', out ? `Your message did reach ${name} — it’s out of the box again.` : `Your message did reach ${name}.`, { agentId: u.agentId });
     } else if (msg.t === 'transcript_reset' && store.state.connected) {
       // their chat as the server has it now (reloaded once the connection came back): it never got there
@@ -227,7 +235,9 @@ export function createChatTab(shell: Shell) {
   // Messages taken back (Stop, a queue chip's ×) belong in the draft of the person they were sent to. The answer may
   // come after the chat moved on to someone else: then they go into that person's draft (the box when they're back).
   function giveBack(id: string, raw: Partial<ComposerDraft>[]) {
-    const drafts = raw.map((d) => ({ text: d.text ?? '', images: d.images ?? [] })).filter((d) => d.text.trim() || d.images.length);
+    const drafts = raw
+      .map((d) => ({ text: d.text ?? '', images: d.images ?? [], ...(d.files?.length ? { files: d.files } : {}) }))
+      .filter((d) => d.text.trim() || d.images.length || d.files?.length);
     if (!drafts.length) return;
     if (id === agentId) {
       for (const d of drafts) composer.restore(d);
@@ -258,7 +268,7 @@ export function createChatTab(shell: Shell) {
     }
   });
 
-  // Images dropped anywhere on the chat go into the composer.
+  // Files dropped anywhere on the chat go into the composer (a folder can't be attached: it says so).
   let dragDepth = 0;
   const hasFiles = (ev: DragEvent) => !!ev.dataTransfer?.types.includes('Files');
   const endDrag = () => {
@@ -270,8 +280,8 @@ export function createChatTab(shell: Shell) {
     ev.preventDefault();
     if (dragDepth++ === 0) {
       const a = agent();
-      const why = a ? (closedWhy(a) ?? imagesBlocked(a)) : undefined;
-      setChildren(dropNote, why ? icon('alert', 20) : chatIcon('image', 20), h('span', null, why ?? 'Drop images to attach them'));
+      const why = a ? (closedWhy(a) ?? (a.kind === 'subagent' ? 'Helpers take text only' : undefined)) : undefined;
+      setChildren(dropNote, why ? icon('alert', 20) : chatIcon('paperclip', 20), h('span', null, why ?? 'Drop files to attach them'));
       el.classList.toggle('is-blocked', !!why);
       el.classList.add('is-drop');
     }
@@ -289,7 +299,10 @@ export function createChatTab(shell: Shell) {
     if (!hasFiles(ev) || !agentId) return;
     ev.preventDefault();
     endDrag();
-    if (ev.dataTransfer?.files.length) composer.addFiles(ev.dataTransfer.files);
+    if (!ev.dataTransfer) return;
+    const { files, folders } = droppedFiles(ev.dataTransfer);
+    if (folders) shell.toast('info', `Folders can’t be attached — drop the files inside ${folders === 1 ? 'it' : 'them'} instead.`, { agentId });
+    if (files.length) composer.addFiles(files);
   });
 
   // Whether the chat follows its end. Measured while it shows; another tab (or a closed panel) hides it, where nothing
@@ -516,6 +529,7 @@ export function createChatTab(shell: Shell) {
       offline: !store.state.connected,
       canSteer: a.kind !== 'subagent', // helpers only take a nudge (steer_subagent): no queue to manage
       noImages,
+      noFiles: a.kind === 'subagent' ? 'Helpers take text only' : undefined,
       queue: a.queue,
       // the lead's turn waits for the card; a new message answers it instead (the server cancels the plan)
       note: plan ? h('span', null, 'Run or cancel the plan above — or write what you want instead.') : undefined,
@@ -684,9 +698,16 @@ export function createChatTab(shell: Shell) {
   }
 
   /** Retry / Run again: the same message once more. A failure the server explains in the chat isn't toasted again. */
-  async function resend(id: string, m: { text: string; images?: ImageRef[] }): Promise<void> {
+  async function resend(id: string, m: { text: string; images?: ImageRef[]; files?: FileRef[] }): Promise<void> {
     try {
-      await store.request({ t: 'prompt', reqId: '', agentId: id, text: m.text, ...(m.images?.length ? { images: m.images.map((r) => r.id) } : {}) });
+      await store.request({
+        t: 'prompt',
+        reqId: '',
+        agentId: id,
+        text: m.text,
+        ...(m.images?.length ? { images: m.images.map((r) => r.id) } : {}),
+        ...(m.files?.length ? { files: m.files.map((f) => f.id) } : {}),
+      });
     } catch (err) {
       const message = (err as Error).message;
       const last = (store.state.transcripts[id] ?? []).at(-1);

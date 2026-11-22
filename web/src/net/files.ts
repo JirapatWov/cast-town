@@ -1,9 +1,11 @@
 // Files of a person's folder, for the built-in viewer: one capability key per folder (files_key), the folder's
 // listing (list_files) and every file's path (find_files). The key is the auth of GET FILES_PATH/<key>/<path…>, so
-// <img>, <iframe> and "Open in new tab" can load a file and its relative CSS/JS/images.
-import { fileUrl, type FileEntry, type FilesKey } from '../../../shared/protocol';
+// <img>, <iframe> and "Open in new tab" can load a file and its relative CSS/JS/images. Uploads into a folder go to
+// FOLDER_UPLOAD_PATH instead (signed in, same origin: never through a key a page could read).
+import { FOLDER_UPLOAD_PATH, fileUrl, type FileEntry, type FilesKey } from '../../../shared/protocol';
 import type { Store } from '../core/types';
 import { apiUrl } from './base';
+import { postWithProgress } from './uploads';
 
 /** Which folder: a house's folder, or a job's own copy of it (jobId: a job with Job.worktree). */
 export interface FolderRef {
@@ -119,4 +121,20 @@ export function findFiles(store: Store, f: FolderRef, force = false): Promise<Fo
 /** A file was written: the next find_files of its folder asks the server again. */
 export function forgetFound(f: FolderRef) {
   found.delete(folderId(f));
+}
+
+/** The server's answer to an upload into a folder. */
+export interface Uploaded extends FileEntry {
+  dir: string;
+  replaced: boolean;
+}
+
+/** Upload one file into folder `dir` (relative, '' = the top) of `f`. Rejects with UploadError: 409 with code 'exists'
+ *  when the name is taken (send again with replace), 'folder' / 'special' when it can never be replaced. */
+export function uploadToFolder(f: FolderRef, dir: string, file: File, replace: boolean, onProgress?: (fraction: number) => void, signal?: AbortSignal): Promise<Uploaded> {
+  const q = new URLSearchParams({ projectId: f.projectId, dir, name: file.name });
+  if (f.jobId) q.set('jobId', f.jobId);
+  if (replace) q.set('replace', '1');
+  forgetFound(f);
+  return postWithProgress<Uploaded>(apiUrl(`${FOLDER_UPLOAD_PATH}?${q}`), file, 'application/octet-stream', onProgress, signal);
 }

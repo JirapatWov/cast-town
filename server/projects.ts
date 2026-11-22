@@ -2,6 +2,7 @@
 // Owns the rules (folder confinement, one project per lot, one building per folder) and keeps the agent system informed.
 import { existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
+import { autoRuleAllowable, autoRuleLabel } from '../shared/auto-rules';
 import { clipName, MAX_PROJECT_NAME } from '../shared/limits';
 import type { BuildingStyle, Project } from '../shared/protocol';
 import type { CoreCityStore } from './city-store';
@@ -16,7 +17,7 @@ import { templateFiles, writeFiles, type TemplateId } from './project-templates'
 import { errorMessage, log, slugify, uniqueName, UserError } from './util';
 
 /** maxRunsPerAsk: null takes the house back to the default limit. */
-export type ProjectPatch = Partial<Pick<Project, 'name' | 'style' | 'approvalMode' | 'workflowId' | 'path'>> & { maxRunsPerAsk?: number | null };
+export type ProjectPatch = Partial<Pick<Project, 'name' | 'style' | 'approvalMode' | 'workflowId' | 'path' | 'autoAllow'>> & { maxRunsPerAsk?: number | null };
 
 export interface ProjectService {
   /** initGit: set up git in a folder that has none first. A failure there doesn't stop the placing: the house is then
@@ -244,6 +245,11 @@ export function createProjectService(d: ProjectDeps): ProjectService {
       if (patch.workflowId !== undefined) clean.workflowId = patch.workflowId;
       // (undefined, not null: city.json leaves the key out and the house follows the default again)
       if (patch.maxRunsPerAsk !== undefined) clean.maxRunsPerAsk = patch.maxRunsPerAsk ?? undefined;
+      if (patch.autoAllow !== undefined) {
+        const never = patch.autoAllow.find((r) => !autoRuleAllowable(r));
+        if (never !== undefined) throw new UserError(`Auto can’t always allow “${autoRuleLabel(never)}” — it asks about that every time.`);
+        clean.autoAllow = patch.autoAllow.length ? [...new Set(patch.autoAllow)] : undefined;
+      }
       if (!Object.keys(clean).length) return requireProject(projectId); // only the folder changed (relocate did it)
       const project = city.updateProject(projectId, clean);
       // The house team is the Main job's team: keep both in step for clients that still set it here.

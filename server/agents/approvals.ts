@@ -3,6 +3,7 @@
 // (like Claude Code) — only the person moving out or omp withdrawing the dialog clears one. In Auto mode tool
 // approvals go through auto-review first and only the ones it doesn't clear become cards.
 import { checkAskAnswers } from '../../shared/ask';
+import { autoRuleAllowable } from '../../shared/auto-rules';
 import type { ApprovalMode, ApprovalOrigin, ApprovalRequest, AskAnswer, AskQuestion } from '../../shared/protocol';
 import type { Hub } from '../contracts';
 import { UserError } from '../util';
@@ -26,8 +27,9 @@ interface Pending {
   onAuto?: () => void;
 }
 
-/** The project's approval mode and the folder this person works in (their job's own copy, or the house), for Auto mode. */
-export type ApprovalPolicy = (projectId: string, agentId: string) => { mode: ApprovalMode; dir: string } | undefined;
+/** The project's approval mode, the folder this person works in (their job's own copy, or the house), and the rules
+ *  the house always allows (Project.autoAllow), for Auto mode. */
+export type ApprovalPolicy = (projectId: string, agentId: string) => { mode: ApprovalMode; dir: string; allow?: readonly string[] } | undefined;
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
@@ -168,19 +170,35 @@ export class ApprovalBook {
     return true;
   }
 
-  /** The project's mode changed: answer what the new mode clears on its own (Auto: reviewed, Bypass: everything). */
+  /** The project's mode or standing allows changed: answer what it now clears on its own (Auto: reviewed, Bypass:
+   *  everything); a card that still waits gets Auto's current reason (or none, outside Auto). */
   reconsider(projectId: string): void {
     for (const p of [...this.#pending.values()]) {
       if (p.req.projectId !== projectId) continue;
+      const before = p.req;
       if (this.#autoAnswer(p)) {
         this.#pending.delete(p.req.id);
         this.hub.broadcast({ t: 'approval_resolved', id: p.req.id });
         this.events.resolved(p.req, null);
-      } else if (p.req.autoReason !== undefined && this.policy(projectId, p.req.agentId)?.mode !== 'auto') {
-        p.req = { ...p.req, autoReason: undefined };
-        this.hub.broadcast({ t: 'approval', approval: p.req });
+        continue;
       }
+      if (p.req.autoReason !== undefined && this.policy(projectId, p.req.agentId)?.mode !== 'auto') p.req = { ...p.req, autoReason: undefined, autoRule: undefined };
+      if (p.req.autoReason !== before.autoReason || p.req.autoRule !== before.autoRule) this.hub.broadcast({ t: 'approval', approval: p.req });
     }
+  }
+
+  /** "Always allow in <house>" on a card Auto stopped: the house keeps the rule that stopped it (`remember`), this
+   *  step is approved, and the house's other cards that only this rule held clear too. */
+  alwaysAllow(id: string, remember: (projectId: string, rule: string) => void): boolean {
+    const p = this.#pending.get(id);
+    if (!p) return false;
+    const rule = p.req.autoRule;
+    const approve = p.req.options.find((o) => /^approve( once)?$/i.test(o));
+    if (!rule || !autoRuleAllowable(rule) || !approve) throw new UserError('This kind of step can’t be always allowed — answer it on its own.');
+    remember(p.req.projectId, rule);
+    this.#finish(id, approve);
+    this.reconsider(p.req.projectId);
+    return true;
   }
 
   /** What an edit / write would change, on the card before Approve (finding #12). Never fails the card. */
@@ -205,9 +223,9 @@ export class ApprovalBook {
     const policy = this.policy(p.req.projectId, p.req.agentId);
     if (!own && (!policy || (policy.mode !== 'auto' && policy.mode !== 'yolo'))) return false;
     if (!own && policy?.mode === 'auto') {
-      const verdict = autoReview(p.req.tool, p.req.detail, p.toolCall.args, { projectDir: policy.dir });
+      const verdict = autoReview(p.req.tool, p.req.detail, p.toolCall.args, { projectDir: policy.dir, allow: policy.allow });
       if (!verdict.allow) {
-        p.req = { ...p.req, autoReason: verdict.reason };
+        p.req = { ...p.req, autoReason: verdict.reason, autoRule: verdict.rule };
         log('approve', `${p.req.agentId}: auto mode asks the user about ${p.req.tool} — ${verdict.reason}`);
         return false;
       }

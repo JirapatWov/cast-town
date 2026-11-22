@@ -16,7 +16,7 @@
 //  • Request bodies (uploads) and responses stream; nothing is buffered, so the city's own size limits apply.
 import type { ServerWebSocket } from 'bun';
 import { CITY_PREFIX, CITY_ID_RE } from '../shared/cities';
-import { FILES_PATH, UPLOAD_PATH } from '../shared/protocol';
+import { FILES_PATH, FOLDER_UPLOAD_PATH, UPLOAD_PATH } from '../shared/protocol';
 import { pickCookie, type Cities, type CityRecord } from './cities';
 import { escapeHtml, guardFraming, renderPage } from './pages';
 import { log } from './util';
@@ -39,6 +39,9 @@ export const CITY_CONTENT_SANDBOX = 'sandbox allow-scripts allow-popups allow-fo
 export const MAX_HOPS = 4;
 const HOP_HEADER = 'x-cast-hops';
 const HEADERS_TIMEOUT_MS = 20_000;
+/** An upload (up to MAX_FILE_UPLOAD_BYTES) gets its answer only once the city has read all of it: over a slow link
+ *  that takes minutes, not seconds. */
+const UPLOAD_HEADERS_TIMEOUT_MS = 10 * 60_000;
 const WS_CONNECT_TIMEOUT_MS = 10_000;
 /** Above this many bytes queued towards either side, the bridge is closed (the app reconnects and resyncs). */
 const MAX_WS_BUFFER = 64 * 1024 * 1024;
@@ -287,8 +290,9 @@ export function createCityProxy(opts: CityProxyOptions): CityProxy {
     const ctl = new AbortController();
     const onAbort = () => ctl.abort();
     req.signal?.addEventListener('abort', onAbort, { once: true });
-    const timer = setTimeout(() => ctl.abort(), headersMs);
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && req.body !== null;
+    const upload = hasBody && (path.rest.startsWith(UPLOAD_PATH) || path.rest.startsWith(FOLDER_UPLOAD_PATH));
+    const timer = setTimeout(() => ctl.abort(), upload ? Math.max(headersMs, UPLOAD_HEADERS_TIMEOUT_MS) : headersMs);
     let res: Response;
     try {
       res = await doFetch(cityTarget(city.url, path.rest, url.search), {

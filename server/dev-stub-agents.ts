@@ -10,7 +10,7 @@ import type {
 } from '../shared/protocol';
 import type { AgentSnapshot, AgentSystem, AgentSystemDeps, ClientConn } from './contracts';
 import { agentIdFor, MAIN_JOB_ID } from './data-layout';
-import { UPLOAD_ID } from './uploads';
+import { readFileRef, UPLOAD_ID } from './uploads';
 import { searchItems, snippetAt } from './agents/thread-search';
 
 const MODELS: ModelInfo[] = [
@@ -276,7 +276,7 @@ export async function createAgentSystem(deps: AgentSystemDeps): Promise<AgentSys
     }
   }
 
-  async function prompt(agentId: string, text: string, conn: ClientConn, imageIds: string[] = []): Promise<void> {
+  async function prompt(agentId: string, text: string, conn: ClientConn, imageIds: string[] = [], fileIds: string[] = []): Promise<void> {
     const agent = agents.get(agentId);
     if (!agent) {
       conn.send({ t: 'toast', level: 'error', text: 'That person is not home' });
@@ -288,7 +288,11 @@ export async function createAgentSystem(deps: AgentSystemDeps): Promise<AgentSys
       const ext = UPLOAD_ID.exec(id)?.[1];
       return ext ? [{ id, mimeType: ext === 'jpg' ? 'image/jpeg' : `image/${ext}` }] : [];
     });
-    pushItem(agentId, { kind: 'user', id: uid(`${agentId}:u`), text, ts: n, ...(images.length ? { images } : {}) });
+    const files = fileIds.flatMap((id) => {
+      const f = readFileRef(deps.dataDir, id);
+      return f ? [f.ref] : [];
+    });
+    pushItem(agentId, { kind: 'user', id: uid(`${agentId}:u`), text, ts: n, ...(images.length ? { images } : {}), ...(files.length ? { files } : {}) });
     act(agentId, 'listening', 'Listening…');
     const team = /\b(team|helpers?|parallel)\b/i.test(text) && agent.kind !== 'subagent';
     later(1200, () => act(agentId, team ? 'delegating' : 'thinking', team ? 'Sending two helpers' : 'Thinking…'));
@@ -405,11 +409,11 @@ export async function createAgentSystem(deps: AgentSystemDeps): Promise<AgentSys
           return;
         }
         case 'prompt':
-          if (!msg.text.trim() && !msg.images?.length) {
+          if (!msg.text.trim() && !msg.images?.length && !msg.files?.length) {
             if (msg.reqId) nack(msg.reqId, 'Type a message first.');
             return;
           }
-          await prompt(msg.agentId, msg.text, conn, msg.images);
+          await prompt(msg.agentId, msg.text, conn, msg.images, msg.files);
           if (msg.reqId) ack(msg.reqId);
           return;
         case 'abort': {

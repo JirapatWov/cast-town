@@ -204,12 +204,12 @@ the dmg made on the Mac with the Command Line Tools (`xcode-select --install`; n
 ```bash
 # 1. the kit, in the cast folder (after bun install)
 scripts/mac/build-kit.sh dist/mac
-#    → dist/mac/cast-mac-kit-0.2.1.tar.gz
+#    → dist/mac/cast-mac-kit-0.2.2.tar.gz
 
 # 2. on the Mac
-tar xzf cast-mac-kit-0.2.1.tar.gz && cd cast-mac-kit
+tar xzf cast-mac-kit-0.2.2.tar.gz && cd cast-mac-kit
 shasum -a 256 -c SHA256SUMS      # optional: nothing was damaged on the way
-./build-dmg.sh                   # → CAST-0.2.1-arm64.dmg (CAST.app and a link to Applications)
+./build-dmg.sh                   # → CAST-0.2.2-arm64.dmg (CAST.app and a link to Applications)
 ./build-dmg.sh --run             # or: build CAST.app and start it, without a dmg
 ```
 
@@ -294,9 +294,19 @@ phone, in the **⋯** menu) opens Help: the town's words, every keyboard shortcu
 block for bug reports. Press `?` for it anywhere.
 
 **Chatting.** Click a person to chat with them. Entering a house opens the chat with its lead (the Assistant,
-Developer, Writer or Researcher, depending on the job). You can attach images, stop a reply, and start a **new chat**
+Developer, Writer or Researcher, depending on the job). You can attach files, stop a reply, and start a **new chat**
 or reopen an older one from the bar above the chat. Every chat survives a server restart, and the model remembers a
 chat you reopen.
+
+**Attaching files.** The paperclip, a paste or a drop on the chat attaches any file: up to 10 files of at most 50 MB
+each per message, plus up to 5 pictures. Pictures (PNG, JPEG, GIF, WebP) are shrunk and go to the model as images, as
+before; every other file (a PDF, a spreadsheet, a zip, a notebook…) is uploaded with a progress bar and shows as a chip
+with its name and size. The person gets your text plus a short list of where each attached file is on the CAST
+machine and reads them with its own tools (text, PDFs, office documents, notebooks, archives and SQLite); reading
+needs no approval in any permission mode. The chat shows your message as you typed it with the files as chips; a chip
+downloads the file again. Attached files are kept in the data folder (`uploads/files/`), never in your project, and
+go away with the chats that name them (see [Where CAST keeps things](#where-cast-keeps-things)). A model that can't see images gets pictures as
+files instead; helpers take text only.
 
 **Permission modes** (the chip under the message box; `Alt+M` in the message box cycles the first three):
 
@@ -304,7 +314,7 @@ chat you reopen.
 |---|---|
 | **Ask first** | Asks before every edit and command |
 | **Accept edits** (default) | Edits files freely, asks before commands, running code and helpers |
-| **Auto** | CAST checks each step with rules and asks only about risky ones: sudo, deleting folders, `git push`, files outside the project, servers open to every network. A best-effort pattern check, not a sandbox: what the rules don't recognise runs without asking. **What Auto checks** in the menu lists the rules, and the steps Auto let through are marked **Auto-approved** in the chat |
+| **Auto** | CAST checks each step with rules and asks only about risky ones: sudo, deleting folders, force-pushing or throwing away git work (`reset --hard`, `clean -f`, restoring the whole tree), pushing to a deploy branch or a release tag, files outside the project, sending data to the internet, servers open to every network, system changes, tools it has no rule for (MCP tools, controlling the screen). Edits and commands inside the project, installing the project's dependencies, a plain `git push` to the project's remotes, requests to this machine (`localhost`), read-only system checks (`systemctl status`) and the agent's own notes and helpers run without asking; code run with `eval` is checked like the commands it runs. A best-effort pattern check, not a sandbox: what the rules don't recognise runs without asking. **What Auto checks** in the menu lists the rules, and the steps Auto let through are marked **Auto-approved** in the chat. On a card Auto stopped, **Always allow in &lt;house&gt;** lets that rule through in that house from then on (the permission menu lists them, choose one to remove it) — never for credentials, secrets files, downloaded scripts, deleting outside the project or raw device writes |
 | **Bypass** | Never asks. Only for folders you could lose. Only from the menu, with a confirmation |
 
 When a person waits for you, they raise a hand, the house gets an amber beacon, and an approval card shows up
@@ -353,7 +363,14 @@ off on touch devices) with the list of every shortcut, screen reader support for
 phone, the terminal and your data (below).
 
 **Changes and files.** The **Changes** tab and the TV show the project's `git diff`. **Browse files** opens the file
-viewer, which also shows `.html` files as live pages (sandboxed; see SECURITY.md).
+viewer, which also shows `.html` files as live pages (sandboxed; see SECURITY.md). **Upload** at the top of its file
+list (or a drop of files anywhere on the viewer) puts files into the folder on show: the house folder, or the job's
+own copy when it has one. Several at a time, at most 50 MB each, with progress for each; a name that is already there
+asks **Replace**, **Skip** or **Replace all** (a folder or a link of that name is never replaced). The list marks the
+new files, the Changes tab of a git house shows them, and the Inbox notes "N files uploaded to <house>/<folder>".
+Uploads follow the viewer's rules: never into hidden folders (`.git`, …), CAST's data folder or a folder a link leads
+out to, and never secret-looking names (`.env`, `id_rsa`, `*.pem`, …). Folders can't be uploaded (drop the files
+inside them).
 
 **Terminal.** `` Ctrl+` `` (or **Terminal** in the bottom bar, or click a computer on a desk) opens a real login shell
 on this machine, docked at the bottom, as the user CAST runs as. The first time, the browser asks you to confirm and
@@ -537,7 +554,9 @@ and `CAST_OMP_FRAME_LOG=<file>` (every agent message as JSON lines). See [CONTRI
   workflows belonged to houses, `workflows.v2.json` from before the old example teams became the own workflows of the
   houses that used them), `token`, `devices.json`, `cities.json`, `push.json` (the Web Push key and the devices that
   turned notifications on), `config.json` (with any API keys you pasted), agent sessions (`sessions/`), chat
-  history (`transcripts/`), chat images (`uploads/`) and the jobs' own copies of files (`worktrees/`). If you used CAST
+  history (`transcripts/`), chat images and attached files (`uploads/`, files under `uploads/files/<sha256>/<name>`;
+  those no chat names any more are deleted with their chat, after 6 hours) and the jobs' own copies of files
+  (`worktrees/`). If you used CAST
   before it had a data folder and a `data/` folder with a `city.json` exists inside the CAST folder, CAST keeps using
   that one and says so at start.
 - **Inside your projects:** a `.rlt/` folder for team-run notes (hidden from git through the project's

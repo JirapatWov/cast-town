@@ -152,6 +152,7 @@ describe('small rules', () => {
   test('city content paths', () => {
     expect(isCityContent('/api/files/k/x')).toBe(true);
     expect(isCityContent('/api/uploads/x.png')).toBe(true);
+    expect(isCityContent('/api/uploads/files/abc/report.pdf')).toBe(true);
     expect(isCityContent('/api/filesx')).toBe(false);
     expect(isCityContent('/')).toBe(false);
   });
@@ -223,5 +224,43 @@ describe('service workers', () => {
     expect(res.status).toBe(200);
     expect(calls).toEqual(['http://10.0.0.2:4860/sw.js']);
     expect(res.headers.get('service-worker-allowed')).toBeNull();
+  });
+});
+
+describe('uploads through a hub', () => {
+  // Chat attachments and Files-viewer uploads to another machine: the body and the query (the file's name) reach the
+  // city, and a download keeps its attachment headers and stays sandboxed.
+  const city = { id: 'beta', name: 'Beta', url: 'http://10.0.0.2:4860', cookie: 'rlt_session=c', addedAt: 0 } as unknown as CityRecord;
+  const seen: { url: string; method: string; body: string }[] = [];
+  const p = createCityProxy({
+    cities: { get: (id: string) => (id === 'beta' ? city : undefined), note() {}, adoptCookie() {} } as unknown as Cities,
+    fetch: async (input, init) => {
+      seen.push({ url: String(input), method: init?.method ?? 'GET', body: init?.body ? await new Response(init.body as BodyInit).text() : '' });
+      if (init?.method === 'POST') return new Response('{"name":"a b.pdf"}', { headers: { 'content-type': 'application/json' } });
+      return new Response('bytes', { headers: { 'content-type': 'application/octet-stream', 'content-disposition': "attachment; filename=\"a b.pdf\"; filename*=UTF-8''a%20b.pdf" } });
+    },
+  });
+  const req = (path: string, init: RequestInit = {}) => {
+    const r = new Request(`http://hub:4860${path}`, init);
+    const url = new URL(r.url);
+    return [r, url, parseCityPath(url.pathname)!] as const;
+  };
+
+  test('POST of an attached file and of a folder upload: forwarded with body and query', async () => {
+    seen.length = 0;
+    const a = await p.http(...req('/city/beta/api/uploads/files?name=a%20b.pdf', { method: 'POST', body: 'PDF' }));
+    expect(a.status).toBe(200);
+    const b = await p.http(...req('/city/beta/api/folder-upload?projectId=p1&dir=docs&name=x.csv', { method: 'POST', body: 'a,b' }));
+    expect(b.status).toBe(200);
+    expect(seen).toEqual([
+      { url: 'http://10.0.0.2:4860/api/uploads/files?name=a+b.pdf', method: 'POST', body: 'PDF' }, // the query is re-encoded (a space as +)
+      { url: 'http://10.0.0.2:4860/api/folder-upload?projectId=p1&dir=docs&name=x.csv', method: 'POST', body: 'a,b' },
+    ]);
+  });
+
+  test('a download keeps its name and is sandboxed', async () => {
+    const res = await p.http(...req('/city/beta/api/uploads/files/abc/a%20b.pdf'));
+    expect(res.headers.get('content-disposition')).toContain("filename*=UTF-8''a%20b.pdf");
+    expect(hasSandbox(res.headers.get('content-security-policy'))).toBe(true);
   });
 });

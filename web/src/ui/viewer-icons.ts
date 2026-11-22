@@ -4,6 +4,7 @@ import { icon as baseIcon } from './icons';
 
 const P: Record<string, string> = {
   download: '<path d="M12 4.5v11M7 11l5 5 5-5"/><path d="M4.5 19.5h15"/>',
+  upload: '<path d="M12 15.5v-11M7 9l5-5 5 5"/><path d="M4.5 19.5h15"/>',
   code: '<path d="M8.5 7.5L4 12l4.5 4.5M15.5 7.5L20 12l-4.5 4.5"/>',
   doc: '<path d="M6 3.5h8l4.5 4.5v12a.5.5 0 01-.5.5H6a.5.5 0 01-.5-.5V4a.5.5 0 01.5-.5z"/><path d="M13.5 3.5V8.5h5M8.5 12.5h7M8.5 16h7"/>',
   image: '<rect x="3.5" y="5" width="17" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M20.5 15.5l-5-4.8-8.7 8.3"/>',

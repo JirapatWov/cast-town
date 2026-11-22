@@ -134,7 +134,7 @@ describe("Auto's rule list is what it checks (#61)", () => {
     expect(new Set(list).size).toBe(list.length);
   });
   test('the rules still apply: sudo and deleting a folder ask, a plain test run does not', () => {
-    expect(autoReview('bash', undefined, { command: 'sudo apt install x' }, ctx)).toEqual({ allow: false, reason: 'runs a command as another user (sudo)' });
+    expect(autoReview('bash', undefined, { command: 'sudo apt install x' }, ctx)).toEqual({ allow: false, reason: 'runs a command as another user (sudo)', rule: 'sudo' });
     expect(autoReview('bash', undefined, { command: 'rm -rf src' }, ctx).allow).toBe(false);
     expect(autoReview('bash', undefined, { command: 'bun test' }, ctx)).toEqual({ allow: true });
   });

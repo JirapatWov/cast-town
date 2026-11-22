@@ -7,11 +7,13 @@
 // (server/files.ts PAGE_SHIM); the shell's messages — "open this link", "blocked <host>" — become the ask bar and the
 // blocked note above the page.
 // It also shows chat images (uploads), which replaced the old lightbox.
+// Files can be uploaded into the folder on show (Upload in the files column, or a drop on the viewer): one at a time
+// through FOLDER_UPLOAD_PATH with progress; a name that is taken asks Replace / Skip / Replace all.
 import './css/viewer.css';
-import { fileUrl, type FileEntry, type FilesKey, type ImageRef } from '../../../shared/protocol';
-import { filesKey, findFiles, forgetFound, listFiles, sameFolder, type FolderRef } from '../net/files';
-import { uploadUrl } from '../net/uploads';
-import { copyText, deviceStorage, escapeHtml, h, setChildren, storage } from './dom';
+import { fileUrl, MAX_FILE_UPLOAD_BYTES, type FileEntry, type FilesKey, type ImageRef } from '../../../shared/protocol';
+import { filesKey, findFiles, forgetFound, listFiles, sameFolder, uploadToFolder, type FolderRef } from '../net/files';
+import { UploadError, uploadUrl } from '../net/uploads';
+import { copyText, deviceStorage, droppedFiles, escapeHtml, h, setChildren, storage } from './dom';
 import { markFocus, restoreFocus, type FocusMark } from './focus';
 import { baseName, dirName, extOf, fileKind, fmtBytes, hljsLanguage, kindIcon, kindLabel, openTarget, pageMessage, pdfFrameOk, type FileKind, type OpenTarget } from './file-kinds';
 import { matchPaths, personRoots, resolvePath, type FileRef, type RootChoice } from './file-paths';
@@ -244,6 +246,8 @@ function createViewer(shell: Shell): Viewer {
 
   const upBtn = h('button', { type: 'button', class: 'icon-btn vw-up', 'aria-label': 'Up one folder', title: 'Up one folder', onclick: () => goUp() }, vIcon('up', 15));
   const dirLabel = h('span', { class: 'vw-dir' });
+  const uploadPicker = h('input', { type: 'file', multiple: true, hidden: true, tabindex: '-1' });
+  const uploadBtn = h('button', { type: 'button', class: 'btn btn-soft btn-sm vw-upload', onclick: () => uploadPicker.click() }, vIcon('upload', 14), h('span', null, 'Upload'));
   const findInput = h('input', {
     class: 'input vw-find',
     type: 'search',
@@ -254,21 +258,25 @@ function createViewer(shell: Shell): Viewer {
   });
   const list = h('ul', { class: 'vw-list', 'aria-label': 'Files' });
   const navNote = h('p', { class: 'vw-nav-note', hidden: true });
+  const tray = h('div', { class: 'vw-upl', hidden: true, role: 'region', 'aria-label': 'Uploads', 'aria-live': 'polite' });
   const nav = h(
     'nav',
     { class: 'vw-nav', 'aria-label': 'Files of this folder' },
-    h('div', { class: 'vw-nav-head' }, upBtn, dirLabel),
+    h('div', { class: 'vw-nav-head' }, upBtn, dirLabel, uploadBtn, uploadPicker),
     h('div', { class: 'vw-find-wrap' }, vIcon('search', 14), findInput),
     list,
+    tray,
     navNote,
   );
   const body = h('div', { class: 'vw-body', tabindex: '0' });
   const scrim = h('div', { class: 'vw-scrim', onclick: () => setDrawer(false) });
+  const dropNote = h('div', { class: 'vw-drop', 'aria-hidden': 'true' });
+  const main = h('div', { class: 'vw-main' }, nav, body, scrim, dropNote);
   const panel = h(
     'div',
     { class: 'vw-panel glass-strong', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'vw-title' },
     head,
-    h('div', { class: 'vw-main' }, nav, body, scrim),
+    main,
   );
   const el = h('div', { class: 'vw-overlay', hidden: true }, panel);
   el.addEventListener('pointerdown', (ev) => {
@@ -475,6 +483,7 @@ function createViewer(shell: Shell): Viewer {
     const s = fileSrc();
     if (!s) return;
     upBtn.disabled = !s.dir;
+    syncUploadBtn();
     dirLabel.textContent = s.dir ? `${s.dir}/` : folderLabel(s.folder);
     dirLabel.title = fullPath(s.dir);
     navNote.hidden = true;
@@ -489,7 +498,7 @@ function createViewer(shell: Shell): Viewer {
     }
     const rows = listing.entries.map((e) => {
       const path = s.dir ? `${s.dir}/${e.name}` : e.name;
-      return entryRow(path, e.isDir, e.name, e.isDir ? '' : fmtBytes(e.size));
+      return entryRow(path, e.isDir, e.name, e.isDir ? '' : fmtBytes(e.size), fresh.has(path) && !e.isDir ? 'is-new' : undefined);
     });
     setChildren(list, ...(rows.length ? rows : [h('li', { class: 'vw-nav-msg' }, 'Nothing here yet.')]));
     if (listing.truncated) {
@@ -772,8 +781,11 @@ function createViewer(shell: Shell): Viewer {
       stateBox(
         'folder',
         s.dir ? `${baseName(s.dir)}/` : folderLabel(s.folder),
-        phone ? 'Pick a file to see it here.' : 'Pick a file on the left to see it here. Pictures, web pages, PDFs, Markdown, code, tables, audio and video open right in CAST.',
+        phone
+          ? 'Pick a file to see it here, or upload files into this folder.'
+          : 'Pick a file on the left to see it here — or drop files here to upload them. Pictures, web pages, PDFs, Markdown, code, tables, audio and video open right in CAST.',
         phone ? h('button', { type: 'button', class: 'btn btn-soft btn-sm', onclick: () => setDrawer(true) }, vIcon('sidebar', 14), 'Show files') : null,
+        h('button', { type: 'button', class: 'btn btn-soft btn-sm', disabled: !!uploadBlocked(), title: uploadBlocked() || undefined, onclick: () => uploadPicker.click() }, vIcon('upload', 14), 'Upload files'),
       ),
     );
     body.classList.add('is-center');
@@ -1156,6 +1168,268 @@ function createViewer(shell: Shell): Viewer {
     } else if ((msg.t === 'city' || msg.t === 'jobs' || msg.t === 'snapshot') && src?.type === 'file') {
       renderHead(); // a renamed house or job
     }
+  });
+  store.subscribe(() => {
+    if (shown) syncUploadBtn(); // connected or not
+  });
+
+  // ── Uploads into the folder on show ──
+  interface Upload {
+    key: number;
+    file: File;
+    folder: FolderRef;
+    dir: string;
+    /** The name it was saved under (the server's answer); the picked file's name until then. */
+    name: string;
+    status: 'waiting' | 'sending' | 'asking' | 'done' | 'skipped' | 'error';
+    progress: number;
+    error?: string;
+    replaced?: boolean;
+    /** While asking: the answer to "Replace <name>?". */
+    answer?: (a: 'replace' | 'skip' | 'all') => void;
+  }
+  let uploads: Upload[] = [];
+  let uploadSeq = 0;
+  let pumping = false;
+  let replaceAll = false; // "Replace all" said for this batch
+  /** Paths uploaded just now: marked in the list for a moment. */
+  const fresh = new Set<string>();
+  let freshTimer: ReturnType<typeof setTimeout> | null = null;
+  const active = (u: Upload) => u.status === 'waiting' || u.status === 'sending' || u.status === 'asking';
+
+  /** Why nothing can be uploaded here now ('' → it can). */
+  function uploadBlocked(): string {
+    if (src?.type !== 'file') return 'This shows a chat picture, not a folder';
+    if (!store.state.connected) return 'Not connected to the CAST server';
+    if (listErr && !listing) return 'This folder can’t be read';
+    return '';
+  }
+
+  function syncUploadBtn() {
+    const s = fileSrc();
+    const why = uploadBlocked();
+    uploadBtn.disabled = !!why;
+    const label = why ? `Upload — ${why}` : `Upload files to ${s?.dir ? `${s.dir}/` : s ? folderLabel(s.folder) : 'this folder'} (or drop them here)`;
+    uploadBtn.title = label;
+    uploadBtn.setAttribute('aria-label', label);
+  }
+
+  function startUploads(files: File[], folders = 0) {
+    const s = fileSrc();
+    if (folders) shell.toast('info', `Folders can’t be uploaded — open ${folders === 1 ? 'it' : 'them'} and drop the files inside instead.`);
+    if (!files.length) return;
+    const why = uploadBlocked();
+    if (!s || why) return void shell.toast('warn', `Can’t upload here: ${why || 'no folder is open'}.`);
+    const tooBig = files.filter((f) => f.size > MAX_FILE_UPLOAD_BYTES);
+    if (tooBig.length) {
+      shell.toast('warn', `${tooBig.length === 1 ? `“${tooBig[0]!.name}” is` : `${tooBig.length} files are`} too big to upload (at most ${MAX_FILE_UPLOAD_BYTES / 1048576} MB each).`);
+    }
+    const ok = files.filter((f) => f.size <= MAX_FILE_UPLOAD_BYTES);
+    if (!ok.length) return;
+    // a new batch: the finished rows of the last one go
+    if (!uploads.some(active)) {
+      uploads = [];
+      replaceAll = false;
+    }
+    for (const file of ok) uploads.push({ key: ++uploadSeq, file, folder: s.folder, dir: s.dir, name: file.name, status: 'waiting', progress: 0 });
+    if (isPhone()) setDrawer(true);
+    else if (navHidden) toggleNav();
+    renderTray();
+    void pump();
+  }
+
+  /** One upload at a time, in the order they were picked. */
+  async function pump() {
+    if (pumping) return;
+    pumping = true;
+    try {
+      for (let u = uploads.find((x) => x.status === 'waiting'); u; u = uploads.find((x) => x.status === 'waiting')) await sendUpload(u, replaceAll);
+    } finally {
+      pumping = false;
+    }
+  }
+
+  async function sendUpload(u: Upload, replace: boolean): Promise<void> {
+    u.status = 'sending';
+    u.progress = 0;
+    renderTray();
+    try {
+      const got = await uploadToFolder(u.folder, u.dir, u.file, replace, (p) => {
+        u.progress = p;
+        showUploadProgress(u);
+      });
+      u.status = 'done';
+      u.name = got.name;
+      u.dir = got.dir ?? u.dir;
+      u.replaced = got.replaced;
+      landed(u);
+    } catch (err) {
+      if (err instanceof UploadError && err.status === 409 && err.code === 'exists' && !replace) {
+        const answer = replaceAll ? 'replace' : await askReplace(u);
+        if (answer === 'skip') u.status = 'skipped';
+        else {
+          if (answer === 'all') replaceAll = true;
+          return sendUpload(u, true);
+        }
+      } else {
+        u.status = 'error';
+        u.error = (err as Error).message;
+      }
+    }
+    renderTray();
+  }
+
+  function askReplace(u: Upload): Promise<'replace' | 'skip' | 'all'> {
+    return new Promise((resolve) => {
+      u.status = 'asking';
+      u.answer = (a) => {
+        u.answer = undefined;
+        resolve(a);
+      };
+      renderTray();
+      requestAnimationFrame(() => tray.querySelector<HTMLElement>('.vw-upl-ask .btn-primary')?.focus({ preventScroll: true }));
+    });
+  }
+
+  /** A file arrived: the list of its folder (when on show) shows it, marked for a moment. */
+  function landed(u: Upload) {
+    forgetFound(u.folder);
+    allPaths = null;
+    const path = u.dir ? `${u.dir}/${u.name}` : u.name;
+    fresh.add(path);
+    clearTimeout(freshTimer ?? undefined);
+    freshTimer = setTimeout(() => {
+      freshTimer = null;
+      fresh.clear();
+      if (shown) renderNav();
+    }, 6000);
+    const s = fileSrc();
+    if (s && sameFolder(s.folder, u.folder) && s.dir === u.dir) {
+      if (s.path === path) reload(); // the file on show was replaced
+      else void loadListing(s.dir, true);
+    }
+  }
+
+  function showUploadProgress(u: Upload) {
+    const row = tray.querySelector<HTMLElement>(`.vw-upl-row[data-key="${u.key}"]`);
+    if (!row) return;
+    const pct = Math.round(u.progress * 100);
+    row.querySelector<HTMLElement>('.vw-upl-bar')?.style.setProperty('--p', `${pct}%`);
+    const meta = row.querySelector('.vw-upl-meta');
+    if (meta) meta.textContent = `${pct}%`;
+  }
+
+  function uploadRow(u: Upload): HTMLElement {
+    const where = u.dir ? `${u.dir}/` : 'this folder';
+    if (u.status === 'asking') {
+      const more = uploads.some((x) => x !== u && x.status === 'waiting');
+      return h(
+        'li',
+        { class: 'vw-upl-row is-asking', 'data-key': String(u.key) },
+        h(
+          'div',
+          { class: 'vw-upl-ask', role: 'group', 'aria-label': `Replace ${u.name}?` },
+          h('p', null, h('strong', null, `Replace “${u.name}”?`), ` A file with this name is already in ${where}.`),
+          h(
+            'div',
+            { class: 'vw-upl-btns' },
+            h('button', { type: 'button', class: 'btn btn-primary btn-sm', onclick: () => u.answer?.('replace') }, 'Replace'),
+            h('button', { type: 'button', class: 'btn btn-ghost btn-sm', onclick: () => u.answer?.('skip') }, 'Skip'),
+            more ? h('button', { type: 'button', class: 'btn btn-soft btn-sm', onclick: () => u.answer?.('all') }, 'Replace all') : null,
+          ),
+        ),
+      );
+    }
+    const pct = Math.round(u.progress * 100);
+    const meta =
+      u.status === 'sending' ? `${pct}%` : u.status === 'done' ? (u.replaced ? 'Replaced' : fmtBytes(u.file.size)) : u.status === 'skipped' ? 'Skipped' : u.status === 'error' ? 'Failed' : 'Waiting';
+    const mark =
+      u.status === 'sending'
+        ? h('span', { class: 'spinner spinner-sm' })
+        : u.status === 'done'
+          ? icon('check', 13)
+          : u.status === 'error'
+            ? icon('alert', 13)
+            : u.status === 'skipped'
+              ? icon('minus', 13)
+              : icon('clock', 13);
+    return h(
+      'li',
+      { class: ['vw-upl-row', `is-${u.status}`], 'data-key': String(u.key), title: u.error ? `${u.name}: ${u.error}` : `${u.name} → ${where}` },
+      h('span', { class: 'vw-upl-mark', 'aria-hidden': 'true' }, mark),
+      h('span', { class: 'vw-upl-name' }, u.name),
+      h('span', { class: 'vw-upl-meta num' }, meta),
+      u.status === 'error' && u.error ? h('span', { class: 'vw-upl-why' }, u.error) : null,
+      u.status === 'sending' ? h('span', { class: 'vw-upl-bar', style: `--p:${pct}%` }) : null,
+    );
+  }
+
+  function renderTray() {
+    tray.hidden = !uploads.length;
+    if (!uploads.length) return setChildren(tray);
+    const busy = uploads.some(active);
+    const done = uploads.filter((u) => u.status === 'done').length;
+    const failed = uploads.filter((u) => u.status === 'error').length;
+    const skipped = uploads.filter((u) => u.status === 'skipped').length;
+    const title = busy
+      ? `Uploading ${Math.min(done + failed + skipped + 1, uploads.length)} of ${uploads.length}…`
+      : `${done} uploaded${skipped ? `, ${skipped} skipped` : ''}${failed ? `, ${failed} failed` : ''}`;
+    setChildren(tray,
+      h(
+        'div',
+        { class: 'vw-upl-head' },
+        h('span', null, title),
+        busy
+          ? null
+          : iconBtn('x', 'Clear the upload list', () => {
+              uploads = [];
+              renderTray();
+            }, { class: 'icon-btn vw-upl-clear' }),
+      ),
+      h('ul', { class: 'vw-upl-list' }, ...uploads.map(uploadRow)),
+    );
+  }
+
+  uploadPicker.addEventListener('change', () => {
+    const files = [...(uploadPicker.files ?? [])];
+    uploadPicker.value = '';
+    startUploads(files);
+  });
+
+  // Files dropped anywhere on the files column or the file view go into the folder on the left.
+  let dragDepth = 0;
+  const hasFiles = (ev: DragEvent) => !!ev.dataTransfer?.types.includes('Files');
+  const endDrag = () => {
+    dragDepth = 0;
+    main.classList.remove('is-drop');
+  };
+  main.addEventListener('dragenter', (ev) => {
+    if (!hasFiles(ev)) return;
+    ev.preventDefault();
+    if (dragDepth++ === 0) {
+      const s = fileSrc();
+      const why = uploadBlocked();
+      setChildren(dropNote, vIcon(why ? 'alert' : 'upload', 20), h('span', null, why || `Drop to upload to ${s?.dir ? `${s.dir}/` : s ? folderLabel(s.folder) : 'this folder'}`));
+      main.classList.toggle('is-blocked', !!why);
+      main.classList.add('is-drop');
+    }
+  });
+  main.addEventListener('dragover', (ev) => {
+    if (!hasFiles(ev)) return;
+    ev.preventDefault();
+    if (ev.dataTransfer) ev.dataTransfer.dropEffect = uploadBlocked() ? 'none' : 'copy';
+  });
+  main.addEventListener('dragleave', (ev) => {
+    if (!hasFiles(ev)) return;
+    if (--dragDepth <= 0) endDrag();
+  });
+  main.addEventListener('drop', (ev) => {
+    if (!hasFiles(ev)) return;
+    ev.preventDefault();
+    endDrag();
+    if (!ev.dataTransfer) return;
+    const { files, folders } = droppedFiles(ev.dataTransfer);
+    startUploads(files, folders);
   });
 
   // ── Keys ──

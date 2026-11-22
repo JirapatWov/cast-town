@@ -24,8 +24,9 @@ CAST.
   page sends commands, each with a `reqId` that gets exactly one `ack`. The contract is
   [`shared/protocol.ts`](shared/protocol.ts).
 - **Terminals** use one WebSocket per tab at `/term` ([`shared/terminal-protocol.ts`](shared/terminal-protocol.ts)).
-- **Files and images** go over plain HTTP: `/api/files/<key>/…` for the file viewer (the key is the capability) and
-  `/api/uploads` for chat images.
+- **Files and images** go over plain HTTP: `/api/files/<key>/…` for the file viewer (the key is the capability),
+  `/api/uploads` for chat images, `/api/uploads/files` for any other file attached to a chat message, and
+  `/api/folder-upload` for files uploaded into a house's folder from the viewer.
 - **Each person is an agent process** (`cast-agent --mode rpc-ui`), started on their first message, in the project
   folder (or their job's own copy), stopped after 10 idle minutes; at most 10 run at once. The agent is cast-agent in
   `agent/`, CAST's fork of omp (see [agent/FORK.md](agent/FORK.md)).
@@ -59,8 +60,12 @@ CAST.
 3. Everything else goes through `auth.check` (`server/auth.ts`): a paired device session, the pairing link
    (`?token=` → redirect with a session cookie), or a Tailscale login when that is configured. WebSocket upgrades and
    uploads must also come from the page's own origin.
-4. `/term` and `/ws` upgrade to WebSockets; `/api/uploads` stores or serves images; other `/api/*` is 404; the rest is
-   the built web app (`server/static.ts`: SPA fallback, gzip, long cache for hashed files).
+4. `/term` and `/ws` upgrade to WebSockets; `/api/uploads` stores or serves chat images and, under
+   `/api/uploads/files`, attached files (always served back as a download: `attachment` with the original name,
+   `application/octet-stream`, `nosniff`, `default-src 'none'; sandbox`); `/api/folder-upload` writes one file into a
+   folder the viewer shows (`server/folder-upload.ts`); other `/api/*` is 404; the rest is the built web app
+   (`server/static.ts`: SPA fallback, gzip, long cache for hashed files). Both upload routes are POSTs that pass the
+   Origin check, and never live under `/api/files/<key>` (a page in the viewer can read its own key).
 
 On `/ws` open the server sends `hello` (versions, agent status, and `demoMode`: true only with the scripted test model)
 and `snapshot`; `server/hub.ts` keeps the connected pages and fans broadcasts out. Incoming messages are validated
@@ -84,8 +89,9 @@ itself and hands the rest to the agent system.
 | `worktrees.ts` | A job's own copy of the files: a git worktree under `<data dir>/worktrees/<project>/<job>` |
 | `git.ts`, `exec.ts` | Git summary and diff for the TV and Changes tab, checkpoints and reverts, job branches; a deleted own-copy job keeps its base as `refs/rlt/leftover/<branch>` so Changes can bring the branch in exactly; **Undo changes** in the house folder keeps what it removes under `refs/rlt/discarded/<ms>` (the last 20) for **Bring back** |
 | `fs-browse.ts` | The folder picker (only below the allowed roots, realpath-checked) |
-| `files.ts` | The file viewer: listings, file serving, the sandbox and CSP for `.html` pages |
-| `uploads.ts` | Chat and tool images, content-addressed under `<data dir>/uploads/` |
+| `files.ts` | The file viewer: listings, file serving, the sandbox and CSP for `.html` pages, and uploads into a folder (refused exactly where the viewer refuses to show; written through a hidden temp file in the same folder, linked or renamed into place, mode 0644; a folder or a link is never replaced) |
+| `folder-upload.ts` | `POST /api/folder-upload?projectId=&jobId=&dir=&name=[&replace=1]` (≤ 50 MB): calls `files.ts`, refreshes the folder's git summary (Changes tab) and writes one activity entry per burst ("3 files uploaded to notes/docs") |
+| `uploads.ts` | Chat and tool images, content-addressed under `<data dir>/uploads/`; files attached to chat messages under `<data dir>/uploads/files/<sha256>/<safe name>` (≤ 50 MB, 10 per message), and the note that lists their paths for the model (`attachmentNote`: the chat keeps the typed text and `FileRef`s, omp gets the text plus the note) |
 | `terminal.ts` | Plain login shells in a PTY per place (not the agent), kept across reconnects with 1 MB of scrollback |
 | `data-layout.ts` | Where each person's sessions and transcripts live under the data folder |
 | `contracts.ts` | The seam between the core and the agent system |
@@ -125,6 +131,8 @@ API: `shared/cities.ts`.
   `X-Forwarded-*`, Origin, Referer, the hub's `?token=`; on the way out: every Set-Cookie (a session upgrade is adopted by
   the hub instead), HSTS/Clear-Site-Data/NEL/Service-Worker-Allowed; Location stays under `/city/<id>/`; files/uploads
   always end up CSP-sandboxed. Writes and WebSocket upgrades pass the hub's Origin check (the city can't see the Origin).
+  A city has 20 s to answer a request, an upload (`/api/uploads…`, `/api/folder-upload`) 10 minutes: it answers only
+  once it has read the whole body.
   An unreachable city answers page loads with an "is offline" page and everything else with 502 JSON.
 - **Client**: the city's own server serves its own web app through the proxy (Vite `base: './'`), so each city runs the
   app of its version. Every request to *this* city's server goes through `apiUrl`/`wsUrl` (`web/src/net/base.ts`);
@@ -145,7 +153,7 @@ starts the scripted test model) and builds `AgentSystemImpl` (`agent-system.ts`)
 | `turn-changes.ts` | **Undo this turn's changes**: the house folder is snapshotted before and after a chat turn (`refs/rlt/turns/`, the newest 50 turns); a turn that changed files gets a card, undone only while none changed again since and nobody else worked there |
 | `omp-process.ts`, `process-pool.ts` | Spawning the agent in its own process group, the RPC handshake, idle stop and the cap on live processes |
 | `normalize.ts`, `tool-display.ts` | Agent frames → activities, transcript items and tool cards |
-| `approvals.ts`, `auto-review.ts` | Approval cards, and the rules of **Auto** mode (what counts as risky) |
+| `approvals.ts`, `auto-review.ts` | Approval cards, and the rules of **Auto** mode (what counts as risky; rule ids and reasons in `shared/auto-rules.ts`). A card Auto stopped carries the rule's id; "Always allow in &lt;house&gt;" stores it in the house's `autoAllow` (city.json) and re-checks the house's waiting cards |
 | `thread-store.ts`, `session-import.ts` | Chats per person (`threads.json` + one transcript per chat); old agent sessions imported as chats |
 | `subagents.ts`, `helper-agents.ts` | The agent's task-tool helpers as people walking in; helper agent definitions per connected model |
 | `lead-tools.ts`, `plan-gate.ts` | The lead's team tools (design and start teams from chat) and the plan card that waits for **Run** |
@@ -272,7 +280,7 @@ text is English; user content is often Thai, so fonts must render it well.
 | `<data dir>/token`, `devices.json`, `cities.json`, `config.json` | Pairing token, device sessions, added cities, settings (mode 0600) |
 | `<data dir>/sessions/`, `transcripts/` | Agent session files and CAST's chat history, per project / job / person |
 | `<data dir>/push.json` | The Web Push key pair and each device's push subscription (mode 0600) |
-| `<data dir>/uploads/`, `worktrees/`, `omp-pids.json` | Images, jobs' own copies, live agent processes (to clean up after a crash) |
+| `<data dir>/uploads/`, `worktrees/`, `omp-pids.json` | Chat images (`<sha256>.<ext>`) and attached files (`files/<sha256>/<name>`; unreferenced ones are pruned with their chat after 6 h), jobs' own copies, live agent processes (to clean up after a crash) |
 | `<project>/.rlt/runs/<runId>/` | Team-run notes and hand-offs (git-excluded) |
 | `refs/rlt/checkpoints/*`, `refs/rlt/jobs/*`, branches `rlt/*` | Checkpoints for **Revert files**, job copy bases and branches |
 | `refs/rlt/discarded/*`, `refs/rlt/turns/*` | What **Undo changes** removed (for **Bring back**, the last 20); chat turns' before/after snapshots |

@@ -2,20 +2,24 @@
 // there is no Shift+Return there; see touch.ts enterSends), Alt+M switches the permission mode, Alt+P / Alt+T open the
 // model / effort chip's menu (Tab and Shift+Tab stay plain focus moves), Stop aborts while the person is busy. While
 // busy, Enter queues the message for when the turn ends and Send now (Ctrl/Cmd+Enter) has it read at the next step;
-// what waits shows as chips above the box (× takes one back, Send now moves it up). Images come in by the paperclip,
-// paste or drop: shrunk and uploaded right away, sent with the message by id.
+// what waits shows as chips above the box (× takes one back, Send now moves it up). Attachments come in by the
+// paperclip, paste or drop: pictures (PNG, JPEG, GIF, WebP) are shrunk and go to the model as images; any other file
+// uploads with a progress bar and goes as a file the person reads with its tools (a chip with its name and size).
+// Both upload right away and are sent with the message by id; Send waits until they are up.
 // Every person has their own draft (drafts.ts, kept in this city's browser storage): switching people, jobs or houses
 // swaps the box's contents, so text typed for one person can never be sent to another. Send empties the box at once;
 // the message goes out in the background, one at a time per person (send-queue.ts), and shows as a "Sending…" chip
 // until the server has it. If it fails it goes back into that person's draft — never into whoever's box is open.
-import { MAX_PROMPT_IMAGES, type ImageRef, type QueuedMessage } from '../../../shared/protocol';
-import { uploadImage, uploadUrl } from '../net/uploads';
+import { MAX_FILE_UPLOAD_BYTES, MAX_PROMPT_FILES, MAX_PROMPT_IMAGES, type FileRef, type ImageRef, type QueuedMessage } from '../../../shared/protocol';
+import { uploadFile, uploadImage, uploadUrl } from '../net/uploads';
 import { isImageFile, shrinkImage } from './attachments';
 import { chatIcon } from './chat-icons';
 import { autosize, deviceStorage, h, setChildren, storage } from './dom';
 import { appendDraft, createDraftBook, isEmptyDraft, removeFromDraft } from './drafts';
+import { fileKind, fmtBytes, kindIcon } from './file-kinds';
 import { focusOutOf } from './focus';
 import { icon } from './icons';
+import { vIcon } from './viewer-icons';
 import { createSendQueue, type Outgoing } from './send-queue';
 import { ENTER_SENDS_KEY, enterSends, isTouchUI } from './touch';
 import { modKey } from './widgets';
@@ -43,8 +47,11 @@ export interface ComposerTarget {
   note?: string | Node;
   /** Busy messages can be queued or sent now (everyone but helpers, which only take a nudge at their next step). */
   canSteer?: boolean;
-  /** Why this person can't take images (a text-only model, a helper); absent → they can. */
+  /** Why this person can't take images (a text-only model, a helper); absent → they can. Pictures attached for them go
+   *  as files instead (the person can still read them with its tools). */
   noImages?: string;
+  /** Why this person can't take attached files (a helper); absent → they can. */
+  noFiles?: string;
   /** Messages waiting for the busy person, oldest first (AgentInfo.queue). */
   queue?: QueuedMessage[];
 }
@@ -53,6 +60,8 @@ export interface ComposerTarget {
 export interface ComposerDraft {
   text: string;
   images: ImageRef[];
+  /** Attached files (absent: none). */
+  files?: FileRef[];
 }
 
 export interface ComposerSend extends ComposerDraft {
@@ -91,7 +100,8 @@ export interface Composer {
   setTarget(target: ComposerTarget | null): void;
   focus(): void;
   setText(text: string): void;
-  /** Images picked, pasted or dropped: shrunk, uploaded and shown as thumbnails until sent. */
+  /** Files picked, pasted or dropped: pictures shrunk and shown as thumbnails, anything else as a chip with progress;
+   *  uploaded right away and kept until sent. */
   addFiles(files: Iterable<File>): void;
   /** Put a taken-back message in a person's draft again (`id`, default: the box on show), under what is there. */
   restore(draft: ComposerDraft, id?: string): void;
@@ -106,8 +116,15 @@ export interface Composer {
 
 interface Attachment {
   key: number;
+  /** 'image': goes to the model as a picture (ref); 'file': any other file (file), read by the person's tools. */
+  kind: 'image' | 'file';
   status: 'working' | 'ready' | 'error';
   ref?: ImageRef;
+  file?: FileRef;
+  /** Files: the name and size shown on the chip (before the server answers too), and how far the upload is (0–1). */
+  name: string;
+  size: number;
+  progress: number;
   preview: string;
   objectUrl?: string;
   error?: string;
@@ -142,8 +159,8 @@ export function createComposer(handlers: ComposerHandlers): Composer {
   const steer = h('button', { type: 'button', class: 'composer-steer', hidden: true, disabled: true }, chatIcon('bolt', 14), h('span', null, 'Send now'));
   const stop = h('button', { type: 'button', class: 'composer-stop', hidden: true, 'aria-label': 'Stop' }, icon('stop', 14), h('span', null, 'Stop'));
   const stopHelpers = h('button', { type: 'button', class: 'composer-stop-helpers', hidden: true }, icon('stop', 11), h('span', null, 'Stop helpers'));
-  const attach = h('button', { type: 'button', class: 'composer-attach', 'aria-label': 'Attach images' }, chatIcon('paperclip', 17));
-  const picker = h('input', { type: 'file', accept: 'image/png,image/jpeg,image/gif,image/webp', multiple: true, hidden: true, tabindex: '-1' });
+  const attach = h('button', { type: 'button', class: 'composer-attach', 'aria-label': 'Attach files' }, chatIcon('paperclip', 17));
+  const picker = h('input', { type: 'file', multiple: true, hidden: true, tabindex: '-1' });
   const thumbs = h('div', { class: 'composer-attachments', hidden: true });
   const queueEl = h('div', { class: 'composer-queue', hidden: true, role: 'list', 'aria-label': 'Waiting to be read' });
   const hint = h('div', { class: 'composer-hint' });
@@ -176,7 +193,7 @@ export function createComposer(handlers: ComposerHandlers): Composer {
       onFail: (to, failed) => {
         for (const f of failed) {
           for (const a of f.msg.held) dropAttachment(a);
-          restore({ text: f.msg.send.text, images: f.msg.send.images }, to, false);
+          restore({ text: f.msg.send.text, images: f.msg.send.images, files: f.msg.send.files }, to, false);
         }
       },
       onChange: () => renderQueue(),
@@ -185,7 +202,8 @@ export function createComposer(handlers: ComposerHandlers): Composer {
 
   const notify = (level: 'info' | 'warn' | 'error', text: string) => handlers.notify?.(level, text);
   const uploading = () => attachments.filter((a) => a.status === 'working').length;
-  const ready = () => attachments.filter((a) => a.status === 'ready' && a.ref);
+  const readyImages = () => attachments.filter((a) => a.kind === 'image' && a.status === 'ready' && a.ref);
+  const readyFiles = () => attachments.filter((a) => a.kind === 'file' && a.status === 'ready' && a.file);
   const steerable = () => !!target?.busy && !!target.canSteer && !target.locked;
   /** Why the message can't go yet ('' → it can). */
   const blocker = (): string => {
@@ -194,9 +212,22 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     if (t.offline) return 'offline';
     if (t.wait) return 'wait';
     if (uploading()) return 'uploading';
-    if (ready().length && t.noImages) return 'images';
-    if (!input.value.trim() && !ready().length) return 'empty';
+    if (readyImages().length && t.noImages) return 'images';
+    if (readyFiles().length && t.noFiles) return 'files';
+    if (!input.value.trim() && !readyImages().length && !readyFiles().length) return 'empty';
     return '';
+  };
+  /** Why what is attached can't go to this person now ('' → it can). */
+  const attachmentWhy = (): string => {
+    const t = target;
+    if (t?.noImages && readyImages().length) return `${t.noImages} — remove the images to send.`;
+    if (t?.noFiles && readyFiles().length) return `${t.noFiles} — remove the files to send.`;
+    return '';
+  };
+  /** "the image" / "the file" / "3 attachments". */
+  const uploadingWhat = (n: number): string => {
+    if (n > 1) return `${n} attachments`;
+    return attachments.find((a) => a.status === 'working')?.kind === 'file' ? 'the file' : 'the image';
   };
 
   /** Something typed or attached: while busy, Stop shrinks to its icon to leave room for the words. */
@@ -213,6 +244,7 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     input.readOnly = !!target?.locked;
     const t = target;
     const n = uploading();
+    const why = attachmentWhy();
     setChildren(hint,
       // offline first: the other hints may be out of date until the server is back
       t?.offline
@@ -224,9 +256,9 @@ export function createComposer(handlers: ComposerHandlers): Composer {
             : t?.note
               ? t.note
               : n
-                ? h('span', null, `Uploading ${n === 1 ? 'the image' : `${n} images`}…`)
-                : t?.noImages && ready().length
-                  ? h('span', { class: 'composer-warn' }, `${t.noImages} — remove the images to send.`)
+                ? h('span', null, `Uploading ${uploadingWhat(n)}…`)
+                : why
+                  ? h('span', { class: 'composer-warn' }, why)
                   : t?.busy && steerable()
                     ? h('span', null, h('kbd', null, 'Enter'), ' to queue · ', h('kbd', null, modKey), h('kbd', null, 'Enter'), ' to send now')
                     : t?.busy
@@ -236,19 +268,25 @@ export function createComposer(handlers: ComposerHandlers): Composer {
                         : h('span', null, h('kbd', null, 'Enter'), ' to send, ', h('kbd', null, 'Shift'), h('kbd', null, 'Enter'), ' for a new line'),
     );
     // only the key tip: it gives way to the chips where the foot is narrow (chat.css)
-    hint.classList.toggle('is-idle', !!t && !t.locked && !t.offline && !t.wait && !t.note && !n && !(t.noImages && ready().length) && !t.busy && !t.helpers);
-    hint.classList.toggle('is-warn', !!t?.offline || (!t?.locked && !!(t?.noImages && ready().length) && !t.wait && !t.note));
+    hint.classList.toggle('is-idle', !!t && !t.locked && !t.offline && !t.wait && !t.note && !n && !why && !t.busy && !t.helpers);
+    hint.classList.toggle('is-warn', !!t?.offline || (!!t && !t.locked && !!why && !t.wait && !t.note));
   };
 
   // ── Drafts: one per person ──
-  const refsOf = (list: Attachment[]) => list.filter((a) => a.status === 'ready' && a.ref).map((a) => a.ref!);
-  const readyAttachment = (ref: ImageRef, owner: string | null): Attachment => ({ key: nextKey++, status: 'ready', ref, preview: uploadUrl(ref.id), owner });
+  const refsOf = (list: Attachment[]) => list.filter((a) => a.kind === 'image' && a.status === 'ready' && a.ref).map((a) => a.ref!);
+  const filesOf = (list: Attachment[]) => list.filter((a) => a.kind === 'file' && a.status === 'ready' && a.file).map((a) => a.file!);
+  const readyAttachment = (ref: ImageRef, owner: string | null): Attachment => ({ key: nextKey++, kind: 'image', status: 'ready', ref, name: '', size: 0, progress: 1, preview: uploadUrl(ref.id), owner });
+  const readyFile = (file: FileRef, owner: string | null): Attachment => ({ key: nextKey++, kind: 'file', status: 'ready', file, name: file.name, size: file.size, progress: 1, preview: '', owner });
+  const draftOf = (text: string, list: Attachment[]): ComposerDraft => {
+    const files = filesOf(list);
+    return { text, images: refsOf(list), ...(files.length ? { files } : {}) };
+  };
 
   /** The box's draft into storage (debounced while typing; at once on a switch, a send or a page hide). */
   function saveBox() {
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = null;
-    if (boxKey !== null) book.set(boxKey, { text: input.value, images: refsOf(attachments) });
+    if (boxKey !== null) book.set(boxKey, draftOf(input.value, attachments));
   }
   function saveSoon() {
     if (saveTimer) clearTimeout(saveTimer);
@@ -260,12 +298,12 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     const p = parked.get(key);
     if (p) return p;
     const d = book.get(key);
-    return { text: d?.text ?? '', attachments: (d?.images ?? []).map((ref) => readyAttachment(ref, key)) };
+    return { text: d?.text ?? '', attachments: [...(d?.images ?? []).map((ref) => readyAttachment(ref, key)), ...(d?.files ?? []).map((f) => readyFile(f, key))] };
   }
   function writeParked(key: string, p: Parked) {
     if (!p.text.trim() && !p.attachments.length) parked.delete(key);
     else parked.set(key, p);
-    book.set(key, { text: p.text, images: refsOf(p.attachments) });
+    book.set(key, draftOf(p.text, p.attachments));
   }
 
   /** Show `next`'s draft in the box; the one on show is put away first (with its uploads still running). */
@@ -289,18 +327,47 @@ export function createComposer(handlers: ComposerHandlers): Composer {
   // ── Attachments ──
   function renderThumbs() {
     thumbs.hidden = !attachments.length;
-    setChildren(thumbs,
-      ...attachments.map((a) =>
-        h(
-          'div',
-          { class: ['att', `is-${a.status}`, a.status === 'ready' && target?.noImages && 'is-blocked'], title: a.error ?? (a.status === 'working' ? 'Uploading…' : undefined) },
-          h('img', { src: a.preview, alt: '', decoding: 'async' }),
-          a.status === 'working' ? h('span', { class: 'att-over' }, h('span', { class: 'spinner spinner-sm' })) : null,
-          a.status === 'error' ? h('span', { class: 'att-over is-error' }, icon('alert', 16)) : null,
-          h('button', { type: 'button', class: 'att-x', 'aria-label': a.error ? `Remove image (${a.error})` : 'Remove image', onclick: () => removeAttachment(a) }, icon('x', 12)),
-        ),
-      ),
+    setChildren(thumbs, ...attachments.map((a) => (a.kind === 'file' ? fileChip(a) : imageThumb(a))));
+  }
+
+  function imageThumb(a: Attachment): HTMLElement {
+    return h(
+      'div',
+      { class: ['att', `is-${a.status}`, a.status === 'ready' && target?.noImages && 'is-blocked'], title: a.error ?? (a.status === 'working' ? 'Uploading…' : undefined) },
+      h('img', { src: a.preview, alt: '', decoding: 'async' }),
+      a.status === 'working' ? h('span', { class: 'att-over' }, h('span', { class: 'spinner spinner-sm' })) : null,
+      a.status === 'error' ? h('span', { class: 'att-over is-error' }, icon('alert', 16)) : null,
+      h('button', { type: 'button', class: 'att-x', 'aria-label': a.error ? `Remove image (${a.error})` : 'Remove image', onclick: () => removeAttachment(a) }, icon('x', 12)),
     );
+  }
+
+  /** A file's chip: icon by kind, name, size (or how far the upload is, or why it failed), and ×. */
+  function fileChip(a: Attachment): HTMLElement {
+    const pct = Math.round(a.progress * 100);
+    const meta = a.status === 'working' ? `${pct}%` : a.status === 'error' ? (a.error ?? 'Upload failed') : fmtBytes(a.size);
+    return h(
+      'div',
+      {
+        class: ['att-file', `is-${a.status}`, a.status === 'ready' && target?.noFiles && 'is-blocked'],
+        'data-key': String(a.key),
+        title: a.error ? `${a.name}: ${a.error}` : a.status === 'working' ? `Uploading ${a.name}…` : `${a.name} (${fmtBytes(a.size)})`,
+      },
+      h('span', { class: 'att-file-icon', 'aria-hidden': 'true' }, a.status === 'error' ? icon('alert', 15) : vIcon(kindIcon(fileKind(a.name)), 15)),
+      h('span', { class: 'att-file-text' }, h('span', { class: 'att-file-name' }, a.name), h('span', { class: 'att-file-meta num' }, meta)),
+      a.status === 'working' ? h('span', { class: 'att-file-bar', style: `--p:${pct}%`, role: 'progressbar', 'aria-label': `Uploading ${a.name}`, 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100' }) : null,
+      h('button', { type: 'button', class: 'att-x', 'aria-label': a.error ? `Remove ${a.name} (${a.error})` : `Remove ${a.name}`, onclick: () => removeAttachment(a) }, icon('x', 12)),
+    );
+  }
+
+  /** Move a file chip's progress without drawing every chip again (progress events come many times a second). */
+  function showProgress(a: Attachment) {
+    const chip = thumbs.querySelector<HTMLElement>(`.att-file[data-key="${a.key}"]`);
+    if (!chip) return;
+    const pct = Math.round(a.progress * 100);
+    chip.querySelector<HTMLElement>('.att-file-bar')?.style.setProperty('--p', `${pct}%`);
+    chip.querySelector('.att-file-bar')?.setAttribute('aria-valuenow', String(pct));
+    const meta = chip.querySelector('.att-file-meta');
+    if (meta) meta.textContent = `${pct}%`;
   }
 
   function dropAttachment(a: Attachment) {
@@ -320,17 +387,31 @@ export function createComposer(handlers: ComposerHandlers): Composer {
   /** Still part of a draft (on show, or parked for its owner). */
   const alive = (a: Attachment) => attachments.includes(a) || (a.owner !== null && !!parked.get(a.owner)?.attachments.includes(a));
 
+  /** Upload what was attached: a picture shrunk and sent as an image, anything else as a file (with progress). */
   async function processFile(a: Attachment, file: File) {
     try {
-      const { blob, mimeType } = await shrinkImage(file);
-      if (!alive(a)) return;
-      a.ref = await uploadImage(blob, mimeType, a.ctrl?.signal);
+      if (a.kind === 'file') {
+        a.file = await uploadFile(
+          file,
+          (p) => {
+            a.progress = p;
+            if (attachments.includes(a)) showProgress(a);
+          },
+          a.ctrl?.signal,
+        );
+        a.name = a.file.name;
+        a.size = a.file.size;
+      } else {
+        const { blob, mimeType } = await shrinkImage(file);
+        if (!alive(a)) return;
+        a.ref = await uploadImage(blob, mimeType, a.ctrl?.signal);
+      }
       a.status = 'ready';
     } catch (err) {
       if (!alive(a) || (err as Error).name === 'AbortError') return;
       a.status = 'error';
       a.error = (err as Error).message;
-      notify('error', a.error);
+      notify('error', a.kind === 'file' ? `Couldn’t attach ${a.name}: ${a.error}` : a.error);
     }
     if (attachments.includes(a)) {
       renderThumbs();
@@ -346,23 +427,48 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     if (!all.length) return;
     if (t.locked) {
       // a drop or paste on a closed box: say why instead of swallowing it
-      notify('info', `Can’t attach images now — ${t.locked.why ?? t.locked.placeholder.replace(/…$/, '')}.`);
+      notify('info', `Can’t attach files now — ${t.locked.why ?? t.locked.placeholder.replace(/…$/, '')}.`);
       return;
     }
-    if (t.noImages) {
-      notify('warn', t.noImages);
-      return;
+    // Pictures go as images while the person can see them and there is room; the rest of the pictures go as files.
+    const images: File[] = [];
+    const others: File[] = [];
+    let imageRoom = MAX_PROMPT_IMAGES - attachments.filter((a) => a.kind === 'image').length;
+    let overflow = false;
+    for (const f of all) {
+      if (isImageFile(f) && !t.noImages && imageRoom > 0) {
+        images.push(f);
+        imageRoom--;
+      } else {
+        if (isImageFile(f) && !t.noImages) overflow = true;
+        others.push(f);
+      }
     }
-    let list = all.filter(isImageFile);
-    if (list.length < all.length) notify('warn', 'Only PNG, JPEG, GIF and WebP images can be attached.');
-    const room = MAX_PROMPT_IMAGES - attachments.length;
-    if (list.length > room) {
-      notify('warn', `Up to ${MAX_PROMPT_IMAGES} images per message.`);
-      list = list.slice(0, Math.max(0, room));
+    if (others.some(isImageFile) && t.noImages && !t.noFiles) notify('info', `${t.noImages} — the pictures are attached as files.`);
+    else if (overflow && !t.noFiles) notify('info', `Up to ${MAX_PROMPT_IMAGES} pictures per message — the rest are attached as files.`);
+    let fileList = others;
+    if (fileList.length && t.noFiles) {
+      notify('warn', t.noFiles);
+      fileList = [];
     }
-    for (const file of list) {
+    const tooBig = fileList.filter((f) => f.size > MAX_FILE_UPLOAD_BYTES);
+    if (tooBig.length) {
+      notify('warn', `${tooBig.length === 1 ? `“${tooBig[0]!.name}” is` : `${tooBig.length} files are`} too big to attach (at most ${MAX_FILE_UPLOAD_BYTES / 1048576} MB each).`);
+      fileList = fileList.filter((f) => f.size <= MAX_FILE_UPLOAD_BYTES);
+    }
+    const fileRoom = MAX_PROMPT_FILES - attachments.filter((a) => a.kind === 'file').length;
+    if (fileList.length > fileRoom) {
+      notify('warn', `Up to ${MAX_PROMPT_FILES} files per message.`);
+      fileList = fileList.slice(0, Math.max(0, fileRoom));
+    }
+    for (const file of images) {
       const objectUrl = URL.createObjectURL(file);
-      const a: Attachment = { key: nextKey++, status: 'working', preview: objectUrl, objectUrl, ctrl: new AbortController(), owner: boxKey };
+      const a: Attachment = { key: nextKey++, kind: 'image', status: 'working', name: file.name, size: file.size, progress: 0, preview: objectUrl, objectUrl, ctrl: new AbortController(), owner: boxKey };
+      attachments.push(a);
+      void processFile(a, file);
+    }
+    for (const file of fileList) {
+      const a: Attachment = { key: nextKey++, kind: 'file', status: 'working', name: file.name || 'file', size: file.size, progress: 0, preview: '', ctrl: new AbortController(), owner: boxKey };
       attachments.push(a);
       void processFile(a, file);
     }
@@ -399,8 +505,9 @@ export function createComposer(handlers: ComposerHandlers): Composer {
         o.sending ? h('span', { class: 'spinner spinner-sm' }) : icon('clock', 11),
         o.sending ? 'Sending…' : 'Next',
       ),
-      h('span', { class: 'qchip-text', title: m.text }, m.text || (m.images.length ? 'Images' : '…')),
+      h('span', { class: 'qchip-text', title: m.text }, m.text || (m.files?.length ? 'Files' : m.images.length ? 'Images' : '…')),
       m.images.length ? h('span', { class: 'qchip-img', title: `${m.images.length} image${m.images.length === 1 ? '' : 's'}` }, chatIcon('image', 12), String(m.images.length)) : null,
+      m.files?.length ? h('span', { class: 'qchip-img', title: `${m.files.length} file${m.files.length === 1 ? '' : 's'}` }, chatIcon('paperclip', 12), String(m.files.length)) : null,
       o.sending
         ? null
         : h('button', {
@@ -412,7 +519,7 @@ export function createComposer(handlers: ComposerHandlers): Composer {
               const back = outbox.cancel(o.key);
               if (!back) return;
               for (const a of back.msg.held) dropAttachment(a);
-              restore({ text: back.msg.send.text, images: back.msg.send.images }, back.to);
+              restore({ text: back.msg.send.text, images: back.msg.send.images, files: back.msg.send.files }, back.to);
             },
           }, icon('x', 12)),
     );
@@ -445,8 +552,9 @@ export function createComposer(handlers: ComposerHandlers): Composer {
             kind === 'steer' ? chatIcon('bolt', 11) : kind === 'rlt' ? icon('users', 11) : icon('clock', 11),
             QUEUE_LABEL[kind],
           ),
-          h('span', { class: 'qchip-text', title: q.text }, q.text || (q.images ? 'Images' : '…')),
+          h('span', { class: 'qchip-text', title: q.text }, q.text || (q.files ? 'Files' : q.images ? 'Images' : '…')),
           q.images ? h('span', { class: 'qchip-img', title: `${q.images} image${q.images === 1 ? '' : 's'}` }, chatIcon('image', 12), String(q.images)) : null,
+          q.files ? h('span', { class: 'qchip-img', title: `${q.files} file${q.files === 1 ? '' : 's'}` }, chatIcon('paperclip', 12), String(q.files)) : null,
           busy ? h('span', { class: 'spinner spinner-sm' }) : null,
           q.by === 'user' && q.mode === 'queue' && handlers.onQueueAction
             ? h('button', { type: 'button', class: 'qchip-btn', disabled: busy, title: `${name} reads it at the next step instead of when the turn ends`, onclick: () => void queueAction(q, 'steer') }, 'Send now')
@@ -462,15 +570,16 @@ export function createComposer(handlers: ComposerHandlers): Composer {
 
   // ── Sending ──
   const submit = (now: boolean) => {
-    if (blocker()) {
-      if (blocker() === 'images' && target?.noImages) notify('warn', `${target.noImages} — remove the images to send.`);
+    const block = blocker();
+    if (block) {
+      if (block === 'images' || block === 'files') notify('warn', attachmentWhy());
       return;
     }
     if (handlers.hold?.(() => submit(now))) return;
     const t = target!;
     const to = t.id ?? '';
     const text = input.value.trim();
-    const sent = ready();
+    const sent = [...readyImages(), ...readyFiles()];
     const mode = steerable() ? (now ? 'steer' : 'queue') : undefined;
     // Send / Send now pressed from the keyboard: they are disabled once the box is empty, which would drop focus to
     // the page (and the next keys to the global shortcuts: A approves, D denies…). The box takes it instead.
@@ -482,7 +591,8 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     fit();
     renderThumbs();
     saveBox();
-    outbox.push(to, { send: { text, images: sent.map((a) => a.ref!), to, ...(mode ? { mode } : {}) }, held: sent });
+    const files = filesOf(sent);
+    outbox.push(to, { send: { text, images: refsOf(sent), ...(files.length ? { files } : {}), to, ...(mode ? { mode } : {}) }, held: sent });
     refresh();
   };
 
@@ -490,12 +600,13 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     const key = id ?? boxKey;
     if (key === null) return false;
     if (key === boxKey) {
-      const left = removeFromDraft({ text: input.value, images: refsOf(attachments) }, draft);
+      const left = removeFromDraft(draftOf(input.value, attachments), draft);
       if (!left) return false;
       input.value = left.text;
-      const gone = new Set(draft.images.map((r) => r.id));
-      for (const a of attachments) if (a.ref && gone.has(a.ref.id)) dropAttachment(a);
-      attachments = attachments.filter((a) => !(a.ref && gone.has(a.ref.id)));
+      const gone = new Set([...draft.images.map((r) => r.id), ...(draft.files ?? []).map((f) => f.id)]);
+      const isGone = (a: Attachment) => gone.has(a.ref?.id ?? a.file?.id ?? '');
+      for (const a of attachments) if (isGone(a)) dropAttachment(a);
+      attachments = attachments.filter((a) => !isGone(a));
       fit();
       renderThumbs();
       refresh();
@@ -503,10 +614,10 @@ export function createComposer(handlers: ComposerHandlers): Composer {
       return true;
     }
     const p = readParked(key);
-    const left = removeFromDraft({ text: p.text, images: refsOf(p.attachments) }, draft);
+    const left = removeFromDraft(draftOf(p.text, p.attachments), draft);
     if (!left) return false;
-    const keep = new Set(left.images.map((r) => r.id));
-    writeParked(key, { text: left.text, attachments: p.attachments.filter((a) => !a.ref || keep.has(a.ref.id)) });
+    const keep = new Set([...left.images.map((r) => r.id), ...(left.files ?? []).map((f) => f.id)]);
+    writeParked(key, { text: left.text, attachments: p.attachments.filter((a) => (!a.ref && !a.file) || keep.has(a.ref?.id ?? a.file?.id ?? '')) });
     return true;
   }
 
@@ -516,20 +627,33 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     if (key === null) return;
     if (key !== boxKey) {
       const p = readParked(key);
-      const { draft: next, dropped } = appendDraft({ text: p.text, images: refsOf(p.attachments) }, { text: draft.text, images: draft.images ?? [] }, MAX_PROMPT_IMAGES);
-      if (dropped) notify('warn', `${dropped} image${dropped === 1 ? '' : 's'} didn’t fit — up to ${MAX_PROMPT_IMAGES} per message.`);
-      const have = new Set(p.attachments.map((a) => a.ref?.id));
-      writeParked(key, { text: next.text, attachments: [...p.attachments, ...next.images.filter((r) => !have.has(r.id)).map((r) => readyAttachment(r, key))] });
+      const { draft: next, dropped, droppedFiles } = appendDraft(draftOf(p.text, p.attachments), { text: draft.text, images: draft.images ?? [], files: draft.files }, MAX_PROMPT_IMAGES);
+      notifyDropped(dropped, droppedFiles ?? 0);
+      const have = new Set(p.attachments.map((a) => a.ref?.id ?? a.file?.id));
+      writeParked(key, {
+        text: next.text,
+        attachments: [
+          ...p.attachments,
+          ...next.images.filter((r) => !have.has(r.id)).map((r) => readyAttachment(r, key)),
+          ...(next.files ?? []).filter((f) => !have.has(f.id)).map((f) => readyFile(f, key)),
+        ],
+      });
       return;
     }
     input.value = appendDraft({ text: input.value, images: [] }, { text: draft.text, images: [] }, MAX_PROMPT_IMAGES).draft.text;
     let dropped = 0;
+    let droppedFiles = 0;
     for (const ref of draft.images ?? []) {
       if (attachments.some((a) => a.ref?.id === ref.id)) continue;
-      if (attachments.length >= MAX_PROMPT_IMAGES) dropped++;
+      if (attachments.filter((a) => a.kind === 'image').length >= MAX_PROMPT_IMAGES) dropped++;
       else attachments.push(readyAttachment(ref, key));
     }
-    if (dropped) notify('warn', `${dropped} image${dropped === 1 ? '' : 's'} didn’t fit — up to ${MAX_PROMPT_IMAGES} per message.`);
+    for (const f of draft.files ?? []) {
+      if (attachments.some((a) => a.file?.id === f.id)) continue;
+      if (attachments.filter((a) => a.kind === 'file').length >= MAX_PROMPT_FILES) droppedFiles++;
+      else attachments.push(readyFile(f, key));
+    }
+    notifyDropped(dropped, droppedFiles);
     fit();
     renderThumbs();
     refresh();
@@ -541,13 +665,19 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     }
   }
 
+  /** Attachments a taken-back message brought that the box had no room for. */
+  function notifyDropped(images: number, files: number) {
+    if (images) notify('warn', `${images} image${images === 1 ? '' : 's'} didn’t fit — up to ${MAX_PROMPT_IMAGES} per message.`);
+    if (files) notify('warn', `${files} file${files === 1 ? '' : 's'} didn’t fit — up to ${MAX_PROMPT_FILES} per message.`);
+  }
+
   function dropDraft(id: string): ComposerDraft | null {
     if (id === boxKey) return null; // on show: it stays in the box (the chat tab moves the box to someone else first)
     const p = readParked(id);
     parked.delete(id);
     book.clear(id);
     for (const a of p.attachments) dropAttachment(a);
-    const d = { text: p.text, images: refsOf(p.attachments) };
+    const d = draftOf(p.text, p.attachments);
     return isEmptyDraft(d) ? null : d;
   }
 
@@ -593,9 +723,9 @@ export function createComposer(handlers: ComposerHandlers): Composer {
       ev.stopPropagation();
     }
   });
-  // A screenshot pasted into the box rides along; the text part of a paste still lands as usual.
+  // A screenshot or a file pasted into the box rides along; the text part of a paste still lands as usual.
   input.addEventListener('paste', (ev) => {
-    const files = [...(ev.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'));
+    const files = [...(ev.clipboardData?.files ?? [])];
     if (!files.length) return;
     if (!ev.clipboardData?.getData('text/plain')) ev.preventDefault();
     addFiles(files);
@@ -608,7 +738,7 @@ export function createComposer(handlers: ComposerHandlers): Composer {
   stopHelpers.addEventListener('click', () => handlers.onAbort());
   attach.addEventListener('click', () => {
     if (!target || target.locked) return;
-    if (target.noImages) notify('info', target.noImages);
+    if (target.noImages && target.noFiles) notify('info', target.noFiles);
     else picker.click();
   });
   picker.addEventListener('change', () => {
@@ -655,9 +785,10 @@ export function createComposer(handlers: ComposerHandlers): Composer {
       send.title = next && now ? sendTitle : '';
       send.setAttribute('aria-label', sendTitle);
       attach.hidden = !next || locked;
-      attach.classList.toggle('is-off', !!next?.noImages);
-      attach.setAttribute('aria-disabled', String(!!next?.noImages));
-      attach.title = next?.noImages ?? 'Attach images — or paste or drop them here';
+      const noAttach = !!next?.noImages && !!next.noFiles;
+      attach.classList.toggle('is-off', noAttach);
+      attach.setAttribute('aria-disabled', String(noAttach));
+      attach.title = noAttach ? (next?.noFiles ?? '') : 'Attach files — or paste or drop them here';
       el.classList.toggle('is-busy', busy);
       el.classList.toggle('is-helpers', helpers);
       el.classList.toggle('is-locked', locked);

@@ -1,5 +1,6 @@
 // Approval cards: the floating stack (bottom-right), plus the same card reused inline in Chat/Inbox.
 import { askQuestionsOf, isQuestion } from '../../../shared/ask';
+import { autoRuleAllowable, autoRuleLabel } from '../../../shared/auto-rules';
 import type { ApprovalChange, ApprovalRequest, AskQuestion, Job } from '../../../shared/protocol';
 import { originLabel } from './approval-text';
 import { askState, draftFor, dropDraft, isPicked, ownWords, pick, setOwnWords, toggleOwnWords, type AskDraft } from './ask-draft';
@@ -41,10 +42,10 @@ export function goToRequest(shell: Shell, a: Pick<ApprovalRequest, 'projectId' |
 /** Pending answers, so a card dims immediately instead of waiting for approval_resolved. */
 const answering = new Set<string>();
 
-export function answerApproval(shell: Shell, a: ApprovalRequest, value: string) {
+export function answerApproval(shell: Shell, a: ApprovalRequest, value: string, alwaysAllow = false) {
   if (answering.has(a.id)) return;
   answering.add(a.id);
-  shell.store.send({ t: 'approve', approvalId: a.id, value });
+  shell.store.send({ t: 'approve', approvalId: a.id, value, ...(alwaysAllow ? { alwaysAllow: true } : {}) });
   setTimeout(() => answering.delete(a.id), 15_000);
 }
 
@@ -330,11 +331,28 @@ export function approvalCard(shell: Shell, a: ApprovalRequest, opts: { showProje
   // an agent's question (ask, an extension's choice or confirm) shows what it asks, in full
   const question = isQuestion(a);
   const ask = a.tool === 'ask';
-  const answer = (opt: string) => {
-    answerApproval(shell, a, opt);
+  const answer = (opt: string, alwaysAllow = false) => {
+    answerApproval(shell, a, opt, alwaysAllow);
     card.classList.add('is-answering');
     card.querySelectorAll('button').forEach((b) => ((b as HTMLButtonElement).disabled = true));
   };
+  // Auto stopped it for a rule the house may always allow (Claude Code's autoMode.allow): approve and keep the rule
+  const approve = approveOption(a);
+  const allowRule = a.autoRule && autoRuleAllowable(a.autoRule) && approve && project ? a.autoRule : undefined;
+  const alwaysButton = allowRule
+    ? h(
+        'button',
+        {
+          type: 'button',
+          class: 'btn btn-sm btn-soft approval-always',
+          title: `Approve this, and from now on Auto lets steps through in ${project!.name} that only this rule would stop. Remove it again in the permission menu.`,
+          disabled: pending,
+          onclick: () => answer(approve!, true),
+        },
+        icon('check', 13),
+        `Always allow in ${project!.name}: ${autoRuleLabel(allowRule)}`,
+      )
+    : null;
 
   const optionButton = (opt: string) => {
     const kind = optionKind(opt);
@@ -378,7 +396,7 @@ export function approvalCard(shell: Shell, a: ApprovalRequest, opts: { showProje
             : null,
           !detail && !a.from && !a.change ? h('p', { class: 'approval-none' }, 'No details came with this request.') : null,
           a.change ? changeBlock(shell, a, a.change, who) : null,
-          h('div', { class: 'approval-actions' }, buttons),
+          h('div', { class: 'approval-actions' }, buttons, alwaysButton),
         ];
 
   const card: HTMLElement = h(
