@@ -1,13 +1,13 @@
 // Uploading into a folder from the Files viewer (POST FOLDER_UPLOAD_PATH → server/folder-upload.ts → files.ts upload):
 // it lands in the house folder or the job's own copy, and is refused exactly where the viewer refuses to show — dot
 // segments, a symlink leading out, CAST's data folder or one like it, secret-looking names — never writes over a
-// folder or a link, asks before replacing a file (409 'exists', then replace=1), is capped, leaves no temp file, and
+// folder or a link, asks before replacing a file (409 'exists', then replace=1), has no size cap, leaves no temp file, and
 // tells the town once per burst. Signed-in and same-origin are the server's job: tests/security/server.test.ts.
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { FOLDER_UPLOAD_PATH, MAX_FILE_UPLOAD_BYTES, type ServerMsg } from '../../shared/protocol';
+import { FOLDER_UPLOAD_PATH, type ServerMsg } from '../../shared/protocol';
 import { createFileViewer } from '../../server/files';
 import { createFolderUpload, type FolderUploadRoute } from '../../server/folder-upload';
 
@@ -152,23 +152,23 @@ describe('a name that is taken', () => {
 });
 
 describe('size', () => {
-  test('over the cap is refused (declared or streamed), and leaves nothing behind', async () => {
-    const declared = await up({ name: 'big.bin' }, 'x', { 'content-length': String(MAX_FILE_UPLOAD_BYTES + 1) });
-    expect(declared.status).toBe(413);
-    const chunk = new Uint8Array(1024 * 1024);
+  test('no cap: a streamed file past the old 50 MB limit lands whole, and leaves no temp file', async () => {
+    const chunk = new Uint8Array(1024 * 1024).fill(3);
+    const chunks = 60;
     let n = 0;
     const body = new ReadableStream<Uint8Array>({
       pull(c) {
-        if (n > MAX_FILE_UPLOAD_BYTES + chunk.length) return c.close();
-        n += chunk.length;
+        if (n === chunks) return c.close();
+        n++;
         c.enqueue(chunk);
       },
     });
     const url = new URL(`http://127.0.0.1:1${FOLDER_UPLOAD_PATH}?projectId=p1&dir=&name=big.bin`);
-    const streamed = await route.handle(new Request(url, { method: 'POST', body, duplex: 'half' } as RequestInit), url);
-    expect(streamed.status).toBe(413);
-    expect(existsSync(join(house, 'big.bin'))).toBe(false);
+    const res = await route.handle(new Request(url, { method: 'POST', body, duplex: 'half' } as RequestInit), url);
+    expect(res.status).toBe(200);
+    expect(statSync(join(house, 'big.bin')).size).toBe(chunks * chunk.length);
     noTemp(house);
+    rmSync(join(house, 'big.bin'));
   });
 
   test('only POST', async () => {

@@ -233,6 +233,25 @@ describe('uploads, signed in from the page itself', () => {
     expect((await fetch(url, { method: 'POST', body: 'no session' })).status).toBe(403);
     expect(readFileSync(join(house, 'hello.txt'), 'utf8')).toBe('hello');
   });
+
+  test('a file over Bun’s default 128 MB body limit goes in whole: uploads have no size cap', async () => {
+    // chunked (no Content-Length), as a browser streams a big File
+    const chunk = new Uint8Array(1024 * 1024).fill(9);
+    const chunks = 130;
+    let sent = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(c) {
+        if (sent === chunks) return c.close();
+        sent++;
+        c.enqueue(chunk);
+      },
+    });
+    const res = await fetch(`${base}/api/uploads/files?name=big.bin`, { method: 'POST', headers: { cookie, origin: base }, body, duplex: 'half' } as RequestInit);
+    expect(res.status).toBe(200);
+    const ref = (await res.json()) as { id: string; size: number };
+    expect(ref.size).toBe(chunks * chunk.length);
+    rmSync(join(dataDir, 'uploads', 'files', ref.id.split('/')[0]!), { recursive: true, force: true });
+  }, 60_000);
 });
 
 describe('keyed city files (answered before sign-in)', () => {

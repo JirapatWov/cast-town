@@ -48,37 +48,28 @@ export async function readTextCapped(req: Request, max: number): Promise<string 
   return Buffer.concat(parts).toString('utf8');
 }
 
-/** A request body over its cap (receiveToFile). */
-export class BodyTooLarge extends Error {}
-
-/** Stream a request body into a NEW file `tmp` (O_EXCL: never an existing file, never through a symlink there), at most
- *  `max` bytes, hashing it on the way (nothing is held in memory). The file gets exactly `mode` (umask aside). On any
- *  failure the partial file is removed and the error rethrown (BodyTooLarge when over the cap). */
-export async function receiveToFile(req: Request, max: number, tmp: string, mode: number): Promise<{ size: number; sha256: string }> {
-  const declared = Number(req.headers.get('content-length') ?? NaN);
-  if (Number.isFinite(declared) && declared > max) throw new BodyTooLarge();
+/** Stream a request body into a NEW file `tmp` (O_EXCL: never an existing file, never through a symlink there), of any
+ *  size, hashing it on the way (nothing is held in memory). The file gets exactly `mode` (umask aside). On any failure
+ *  (the disk full: ENOSPC, the upload cut off) the partial file is removed and the error rethrown. */
+export async function receiveToFile(req: Request, tmp: string, mode: number): Promise<{ size: number; sha256: string }> {
   const fh = await open(tmp, 'wx', mode);
   const hash = createHash('sha256');
+  const reader = req.body?.getReader();
   let size = 0;
   try {
-    if (req.body) {
-      const reader = req.body.getReader();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        size += value.byteLength;
-        if (size > max) {
-          void reader.cancel().catch(() => {});
-          throw new BodyTooLarge();
-        }
-        hash.update(value);
-        let at = 0;
-        while (at < value.byteLength) at += (await fh.write(value, at, value.byteLength - at)).bytesWritten;
-      }
+    for (;;) {
+      const chunk = await reader?.read();
+      if (!chunk || chunk.done) break;
+      const value = chunk.value;
+      size += value.byteLength;
+      hash.update(value);
+      let at = 0;
+      while (at < value.byteLength) at += (await fh.write(value, at, value.byteLength - at)).bytesWritten;
     }
     await fh.chmod(mode);
     await fh.close();
   } catch (err) {
+    void reader?.cancel().catch(() => {}); // stop taking the rest (a full disk)
     await fh.close().catch(() => {});
     await unlink(tmp).catch(() => {});
     throw err;

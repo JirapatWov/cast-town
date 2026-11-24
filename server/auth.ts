@@ -497,7 +497,13 @@ export function createAuth(opts: AuthOptions): Auth {
       }
       const rest = path.slice('/api/devices/'.length);
       if (rest === 'rotate-token' && req.method === 'POST') {
-        const body = (await req.json().catch(() => ({}))) as { revokeAll?: unknown };
+        const text = await readTextCapped(req, PAIR_BODY_MAX).catch(() => null);
+        let body: { revokeAll?: unknown } = {};
+        try {
+          body = text ? (JSON.parse(text) as { revokeAll?: unknown }) : {};
+        } catch {
+          /* not JSON: nothing asked for */
+        }
         rotateToken();
         let revoked: string[] = [];
         if (body?.revokeAll === true) {

@@ -172,6 +172,9 @@ async function main(): Promise<void> {
     server = Bun.serve<WsData>({
       hostname: cfg.host,
       port: cfg.port,
+      // No server-wide body cap (Bun's default is 128 MB): file uploads stream to disk at any size (receiveToFile). Every
+      // other route that reads a body caps its own read (readTextCapped, the image uploads' readCapped).
+      maxRequestBodySize: Number.MAX_SAFE_INTEGER,
       fetch(req, srv) {
         const url = new URL(req.url);
         if (url.pathname === '/api/health') {

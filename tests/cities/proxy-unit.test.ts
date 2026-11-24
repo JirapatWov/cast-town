@@ -263,4 +263,35 @@ describe('uploads through a hub', () => {
     expect(res.headers.get('content-disposition')).toContain("filename*=UTF-8''a%20b.pdf");
     expect(hasSandbox(res.headers.get('content-security-policy'))).toBe(true);
   });
+
+  test('an upload may take longer than the answer timeout; a city that never answers after the last byte is cut off', async () => {
+    // Real (short) timers: what is pinned is when the timeout starts — after the whole body went to the city.
+    const slowBody = () => {
+      let i = 0;
+      return new ReadableStream<Uint8Array>({
+        async pull(c) {
+          if (i === 4) return c.close();
+          i++;
+          await Bun.sleep(30);
+          c.enqueue(new TextEncoder().encode('x'));
+        },
+      });
+    };
+    const proxy = (answer: boolean) =>
+      createCityProxy({
+        cities: { get: (id: string) => (id === 'beta' ? city : undefined), note() {}, adoptCookie() {} } as unknown as Cities,
+        headersTimeoutMs: 40,
+        fetch: async (_input, init) => {
+          await new Response(init?.body as BodyInit).text(); // the city reads all of it…
+          if (answer) return new Response('{"ok":true}', { headers: { 'content-type': 'application/json' } });
+          const { promise, reject } = Promise.withResolvers<Response>(); // …then never answers
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          return promise;
+        },
+      });
+    const slow = await proxy(true).http(...req('/city/beta/api/uploads/files?name=big.bin', { method: 'POST', body: slowBody(), duplex: 'half' } as RequestInit));
+    expect(slow.status).toBe(200); // 120 ms of body against a 40 ms timeout
+    const hung = await proxy(false).http(...req('/city/beta/api/folder-upload?projectId=p1&dir=&name=x', { method: 'POST', body: slowBody(), duplex: 'half' } as RequestInit));
+    expect(hung.status).toBe(502);
+  });
 });

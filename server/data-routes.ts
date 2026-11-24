@@ -8,7 +8,7 @@ import type { CoreCityStore } from './city-store';
 import type { ServerConfig } from './config';
 import { removeHouseArtifacts, wipeDataDir, WIPE_CONFIRM_TEXT } from './data-wipe';
 import { respawn } from './startup';
-import { log } from './util';
+import { log, readTextCapped } from './util';
 
 const JSON_HEADERS = { 'content-type': 'application/json', 'cache-control': 'no-store' };
 const json = (data: unknown, status = 200) => new Response(JSON.stringify(data), { status, headers: JSON_HEADERS });
@@ -29,7 +29,13 @@ export function createDataRoutes(d: DataRouteDeps): (req: Request, url: URL) => 
     return (async () => {
       if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405);
       if (!originAllowed(req, d.cfg.allowedOrigins)) return json({ error: 'Forbidden: cross-origin request' }, 403);
-      const body = (await req.json().catch(() => null)) as { confirm?: unknown } | null;
+      const text = await readTextCapped(req, 4096).catch(() => null);
+      let body: { confirm?: unknown } | null = null;
+      try {
+        body = text ? (JSON.parse(text) as { confirm?: unknown }) : null;
+      } catch {
+        /* not JSON: no confirmation */
+      }
       if (typeof body?.confirm !== 'string' || body.confirm.trim().toLowerCase() !== WIPE_CONFIRM_TEXT) {
         return json({ error: `Type “${WIPE_CONFIRM_TEXT}” to confirm.` }, 400);
       }

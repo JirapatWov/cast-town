@@ -204,12 +204,12 @@ the dmg made on the Mac with the Command Line Tools (`xcode-select --install`; n
 ```bash
 # 1. the kit, in the cast folder (after bun install)
 scripts/mac/build-kit.sh dist/mac
-#    → dist/mac/cast-mac-kit-0.2.2.tar.gz
+#    → dist/mac/cast-mac-kit-0.2.3.tar.gz
 
 # 2. on the Mac
-tar xzf cast-mac-kit-0.2.2.tar.gz && cd cast-mac-kit
+tar xzf cast-mac-kit-0.2.3.tar.gz && cd cast-mac-kit
 shasum -a 256 -c SHA256SUMS      # optional: nothing was damaged on the way
-./build-dmg.sh                   # → CAST-0.2.2-arm64.dmg (CAST.app and a link to Applications)
+./build-dmg.sh                   # → CAST-0.2.3-arm64.dmg (CAST.app and a link to Applications)
 ./build-dmg.sh --run             # or: build CAST.app and start it, without a dmg
 ```
 
@@ -298,14 +298,15 @@ Developer, Writer or Researcher, depending on the job). You can attach files, st
 or reopen an older one from the bar above the chat. Every chat survives a server restart, and the model remembers a
 chat you reopen.
 
-**Attaching files.** The paperclip, a paste or a drop on the chat attaches any file: up to 10 files of at most 50 MB
-each per message, plus up to 5 pictures. Pictures (PNG, JPEG, GIF, WebP) are shrunk and go to the model as images, as
+**Attaching files.** The paperclip, a paste or a drop on the chat attaches any file, of any size: up to 10 files per
+message, plus up to 5 pictures. Pictures (PNG, JPEG, GIF, WebP) are shrunk and go to the model as images, as
 before; every other file (a PDF, a spreadsheet, a zip, a notebook…) is uploaded with a progress bar and shows as a chip
 with its name and size. The person gets your text plus a short list of where each attached file is on the CAST
 machine and reads them with its own tools (text, PDFs, office documents, notebooks, archives and SQLite); reading
 needs no approval in any permission mode. The chat shows your message as you typed it with the files as chips; a chip
 downloads the file again. Attached files are kept in the data folder (`uploads/files/`), never in your project, and
-go away with the chats that name them (see [Where CAST keeps things](#where-cast-keeps-things)). A model that can't see images gets pictures as
+go away with the chats that name them (see [Where CAST keeps things](#where-cast-keeps-things)); big ones take that
+much room on the CAST machine's disk until then. A model that can't see images gets pictures as
 files instead; helpers take text only.
 
 **Permission modes** (the chip under the message box; `Alt+M` in the message box cycles the first three):
@@ -365,7 +366,8 @@ phone, the terminal and your data (below).
 **Changes and files.** The **Changes** tab and the TV show the project's `git diff`. **Browse files** opens the file
 viewer, which also shows `.html` files as live pages (sandboxed; see SECURITY.md). **Upload** at the top of its file
 list (or a drop of files anywhere on the viewer) puts files into the folder on show: the house folder, or the job's
-own copy when it has one. Several at a time, at most 50 MB each, with progress for each; a name that is already there
+own copy when it has one. Several at a time, of any size (they stream to disk: only the free space limits them), with
+progress for each; a name that is already there
 asks **Replace**, **Skip** or **Replace all** (a folder or a link of that name is never replaced). The list marks the
 new files, the Changes tab of a git house shows them, and the Inbox notes "N files uploaded to <house>/<folder>".
 Uploads follow the viewer's rules: never into hidden folders (`.git`, …), CAST's data folder or a folder a link leads

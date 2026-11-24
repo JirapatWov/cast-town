@@ -38,10 +38,9 @@ export const CITY_CONTENT_SANDBOX = 'sandbox allow-scripts allow-popups allow-fo
 /** A request that has already crossed this many hubs is a loop (a city whose address leads back into a hub). */
 export const MAX_HOPS = 4;
 const HOP_HEADER = 'x-cast-hops';
+/** How long a city may take to answer. An upload of any size gets its answer only once the city has read all of it, so
+ *  for an upload this starts when the last byte has gone to the city: a big file over a slow link is never cut off. */
 const HEADERS_TIMEOUT_MS = 20_000;
-/** An upload (up to MAX_FILE_UPLOAD_BYTES) gets its answer only once the city has read all of it: over a slow link
- *  that takes minutes, not seconds. */
-const UPLOAD_HEADERS_TIMEOUT_MS = 10 * 60_000;
 const WS_CONNECT_TIMEOUT_MS = 10_000;
 /** Above this many bytes queued towards either side, the bridge is closed (the app reconnects and resyncs). */
 const MAX_WS_BUFFER = 64 * 1024 * 1024;
@@ -292,13 +291,19 @@ export function createCityProxy(opts: CityProxyOptions): CityProxy {
     req.signal?.addEventListener('abort', onAbort, { once: true });
     const hasBody = req.method !== 'GET' && req.method !== 'HEAD' && req.body !== null;
     const upload = hasBody && (path.rest.startsWith(UPLOAD_PATH) || path.rest.startsWith(FOLDER_UPLOAD_PATH));
-    const timer = setTimeout(() => ctl.abort(), upload ? Math.max(headersMs, UPLOAD_HEADERS_TIMEOUT_MS) : headersMs);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
+      timer = setTimeout(() => ctl.abort(), headersMs);
+    };
+    let body: ReadableStream<Uint8Array> | null = hasBody ? req.body : null;
+    if (upload && body) body = body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({ flush: arm }));
+    else arm();
     let res: Response;
     try {
       res = await doFetch(cityTarget(city.url, path.rest, url.search), {
         method: req.method,
         headers,
-        body: hasBody ? req.body : undefined,
+        body: body ?? undefined,
         duplex: hasBody ? 'half' : undefined,
         redirect: 'manual',
         decompress: false, // pass the city's gzip through untouched (Content-Encoding stays true)

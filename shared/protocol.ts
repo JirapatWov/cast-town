@@ -587,7 +587,7 @@ export interface FileRef {
 }
 
 export const FILE_UPLOAD_PATH = '/api/uploads/files';
-export const MAX_FILE_UPLOAD_BYTES = 50 * 1024 * 1024; // per file, chat attachments and folder uploads alike
+/** Files per message. Their size has no cap: they stream to disk (chat attachments and folder uploads alike). */
 export const MAX_PROMPT_FILES = 10;
 
 /** The URL path of an attached file (its name segment encoded). */
@@ -596,7 +596,7 @@ export function fileUploadPath(id: string): string {
   return `${FILE_UPLOAD_PATH}/${id.slice(0, at)}/${encodeURIComponent(id.slice(at + 1))}`;
 }
 
-/** POST FOLDER_UPLOAD_PATH?projectId=&jobId=&dir=&name=[&replace=1] (raw body, ≤ MAX_FILE_UPLOAD_BYTES): one file into
+/** POST FOLDER_UPLOAD_PATH?projectId=&jobId=&dir=&name=[&replace=1] (raw body, any size): one file into
  *  a folder the viewer shows (the house folder, or the job's own copy). Signed in and same-origin, like chat uploads —
  *  never under FILES_PATH, whose key a page in the viewer can read. Answers the new FileEntry; 409 when the name is
  *  taken and replace isn't set (a folder or anything but a regular file is never replaced). */

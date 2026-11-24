@@ -10,7 +10,7 @@
 // swaps the box's contents, so text typed for one person can never be sent to another. Send empties the box at once;
 // the message goes out in the background, one at a time per person (send-queue.ts), and shows as a "Sending…" chip
 // until the server has it. If it fails it goes back into that person's draft — never into whoever's box is open.
-import { MAX_FILE_UPLOAD_BYTES, MAX_PROMPT_FILES, MAX_PROMPT_IMAGES, type FileRef, type ImageRef, type QueuedMessage } from '../../../shared/protocol';
+import { MAX_PROMPT_FILES, MAX_PROMPT_IMAGES, type FileRef, type ImageRef, type QueuedMessage } from '../../../shared/protocol';
 import { uploadFile, uploadImage, uploadUrl } from '../net/uploads';
 import { isImageFile, shrinkImage } from './attachments';
 import { chatIcon } from './chat-icons';
@@ -450,11 +450,6 @@ export function createComposer(handlers: ComposerHandlers): Composer {
     if (fileList.length && t.noFiles) {
       notify('warn', t.noFiles);
       fileList = [];
-    }
-    const tooBig = fileList.filter((f) => f.size > MAX_FILE_UPLOAD_BYTES);
-    if (tooBig.length) {
-      notify('warn', `${tooBig.length === 1 ? `“${tooBig[0]!.name}” is` : `${tooBig.length} files are`} too big to attach (at most ${MAX_FILE_UPLOAD_BYTES / 1048576} MB each).`);
-      fileList = fileList.filter((f) => f.size <= MAX_FILE_UPLOAD_BYTES);
     }
     const fileRoom = MAX_PROMPT_FILES - attachments.filter((a) => a.kind === 'file').length;
     if (fileList.length > fileRoom) {

@@ -4,8 +4,8 @@
 // shows the picture from GET UPLOAD_PATH/<id>. Raster types only (never SVG): the bytes must match the type.
 // Images in tool results (generate_image, a read of a picture) are kept the same way (storeImage, via normalize.ts).
 //
-// Any other file attached to a message: POST FILE_UPLOAD_PATH?name=<name> (raw body) streams it (≤
-// MAX_FILE_UPLOAD_BYTES) to <dataDir>/uploads/files/<sha256>/<safe name> — the data folder, never the house folder,
+// Any other file attached to a message: POST FILE_UPLOAD_PATH?name=<name> (raw body) streams it (any size) to
+// <dataDir>/uploads/files/<sha256>/<safe name> — the data folder, never the house folder,
 // so no stray files land in the user's repo. Its id "<sha256>/<name>" is all a FileRef needs (size from the file,
 // type from the name). The agent system hands the model the absolute paths (attachmentNote) and the person reads them
 // with its own read tool. GET FILE_UPLOAD_PATH/<sha256>/<name> always answers as a download: generic type, nosniff,
@@ -13,8 +13,8 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { FILE_UPLOAD_PATH, MAX_FILE_UPLOAD_BYTES, MAX_UPLOAD_BYTES, UPLOAD_PATH, type FileRef, type ImageRef } from '../shared/protocol';
-import { BodyTooLarge, contentDisposition, log, receiveToFile, writeFileAtomic } from './util';
+import { FILE_UPLOAD_PATH, MAX_UPLOAD_BYTES, UPLOAD_PATH, type FileRef, type ImageRef } from '../shared/protocol';
+import { contentDisposition, log, receiveToFile, writeFileAtomic } from './util';
 
 /** "<sha256>.<ext>" — the only names RLT writes or serves. */
 export const UPLOAD_ID = /^[0-9a-f]{64}\.(png|jpg|gif|webp)$/;
@@ -199,7 +199,7 @@ async function storeFileBody(dataDir: string, req: Request, rawName: string): Pr
   const root = fileUploadsDir(dataDir);
   mkdirSync(root, { recursive: true, mode: 0o700 });
   const tmp = join(root, `.tmp-${process.pid}-${randomBytes(6).toString('hex')}`);
-  const { size, sha256 } = await receiveToFile(req, MAX_FILE_UPLOAD_BYTES, tmp, 0o600);
+  const { size, sha256 } = await receiveToFile(req, tmp, 0o600);
   const name = safeFileName(rawName);
   const dir = join(root, sha256);
   const file = join(dir, name);
@@ -218,7 +218,6 @@ const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' } });
 
 const MAX_MB = Math.round(MAX_UPLOAD_BYTES / (1024 * 1024));
-const MAX_FILE_MB = Math.round(MAX_FILE_UPLOAD_BYTES / (1024 * 1024));
 
 export interface Uploads {
   /** True for UPLOAD_PATH and UPLOAD_PATH/<anything> — FILE_UPLOAD_PATH included (the caller authenticates first —
@@ -283,7 +282,7 @@ export function createUploads(opts: { dataDir: string }): Uploads {
     try {
       return json(await storeFileBody(opts.dataDir, req, name));
     } catch (err) {
-      if (err instanceof BodyTooLarge) return json({ error: `That file is too large (at most ${MAX_FILE_MB} MB).` }, 413);
+      if ((err as NodeJS.ErrnoException)?.code === 'ENOSPC') return json({ error: 'The disk of the CAST machine is full — free some space, then attach it again.' }, 507);
       if (req.signal?.aborted) return json({ error: 'The upload was interrupted — try again.' }, 400);
       log('http', 'could not store an attached file:', err);
       return json({ error: "CAST couldn't store the file — try again." }, 500);

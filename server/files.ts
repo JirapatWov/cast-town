@@ -34,10 +34,10 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypt
 import { closeSync, existsSync, linkSync, lstatSync, openSync, readdirSync, readFileSync, readSync, realpathSync, renameSync, rmSync, statSync, type Dirent, type Stats } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, extname, join, relative, sep } from 'node:path';
-import { FILES_KEY_TTL_MS, FILES_PATH, MAX_FILE_UPLOAD_BYTES, MAX_FIND_FILES, MAX_LIST_FILES, type FileEntry, type FilesKey } from '../shared/protocol';
+import { FILES_KEY_TTL_MS, FILES_PATH, MAX_FIND_FILES, MAX_LIST_FILES, type FileEntry, type FilesKey } from '../shared/protocol';
 import type { CityStore, JobStore } from './contracts';
 import { exec } from './exec';
-import { BodyTooLarge, contentDisposition, isInside, log, receiveToFile, UserError } from './util';
+import { contentDisposition, isInside, log, receiveToFile, UserError } from './util';
 
 /** Hosts a page may load scripts, styles, fonts, images, media and data (fetch) from: public CDNs and read-only data
  *  hosts whose request logs only their operators see. Extend with RLT_VIEWER_HOSTS (comma or space separated, e.g.
@@ -1026,12 +1026,11 @@ export function createFileViewer(o: FileViewerOptions): FileViewer {
     // Hidden while it arrives (never listed), in the same folder so the move is a rename on one file system.
     const tmp = join(real, `.cast-upload-${randomBytes(6).toString('hex')}`);
     try {
-      await receiveToFile(req, MAX_FILE_UPLOAD_BYTES, tmp, 0o644);
+      await receiveToFile(req, tmp, 0o644);
     } catch (err) {
-      if (err instanceof BodyTooLarge) throw new UploadRefused(413, `That file is too large (at most ${Math.round(MAX_FILE_UPLOAD_BYTES / 1048576)} MB).`);
       const code = (err as NodeJS.ErrnoException)?.code;
       if (code === 'EACCES' || code === 'EPERM' || code === 'EROFS') throw new UploadRefused(403, 'CAST may not write to that folder (permission denied).');
-      if (code === 'ENOSPC') throw new UploadRefused(507, 'The disk is full.');
+      if (code === 'ENOSPC') throw new UploadRefused(507, 'The disk of the CAST machine is full — free some space, then upload it again.');
       if (req.signal?.aborted) throw new UploadRefused(400, 'The upload was interrupted — try again.');
       log('files', `upload into ${real} failed:`, err);
       throw new UploadRefused(500, 'CAST couldn’t save the file — try again.');

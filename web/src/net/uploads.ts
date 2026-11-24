@@ -1,7 +1,7 @@
 // Chat images and attached files go over plain HTTP (POST UPLOAD_PATH / FILE_UPLOAD_PATH, raw body), not the
-// WebSocket: the prompt then only names them. Files (up to 50 MB) go through XMLHttpRequest, the one browser API that
-// reports upload progress; the cookie and the page's Origin ride along like with fetch.
-import { FILE_UPLOAD_PATH, fileUploadPath, MAX_FILE_UPLOAD_BYTES, MAX_UPLOAD_BYTES, UPLOAD_PATH, type FileRef, type ImageRef } from '../../../shared/protocol';
+// WebSocket: the prompt then only names them. Files (any size: they stream to disk) go through XMLHttpRequest, the one
+// browser API that reports upload progress; the cookie and the page's Origin ride along like with fetch.
+import { FILE_UPLOAD_PATH, fileUploadPath, MAX_UPLOAD_BYTES, UPLOAD_PATH, type FileRef, type ImageRef } from '../../../shared/protocol';
 import { apiUrl } from './base';
 
 export const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'] as const;
@@ -111,7 +111,6 @@ export async function uploadImage(blob: Blob, mimeType: string, signal?: AbortSi
 
 /** Attach one file to a chat message: resolves with its ref, rejects with a sentence for the user. */
 export async function uploadFile(file: File, onProgress?: (fraction: number) => void, signal?: AbortSignal): Promise<FileRef> {
-  if (file.size > MAX_FILE_UPLOAD_BYTES) throw new Error(`“${file.name}” is too big (${Math.round(file.size / 1048576)} MB; at most ${MAX_FILE_UPLOAD_BYTES / 1048576} MB).`);
   const ref = await postWithProgress<Partial<FileRef>>(apiUrl(`${FILE_UPLOAD_PATH}?name=${encodeURIComponent(file.name || 'file')}`), file, 'application/octet-stream', onProgress, signal);
   if (typeof ref?.id !== 'string' || typeof ref.name !== 'string' || typeof ref.size !== 'number') throw new Error('The server sent an odd answer to the upload.');
   return { id: ref.id, name: ref.name, size: ref.size, mimeType: typeof ref.mimeType === 'string' ? ref.mimeType : 'application/octet-stream' };

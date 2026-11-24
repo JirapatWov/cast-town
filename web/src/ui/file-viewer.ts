@@ -10,7 +10,7 @@
 // Files can be uploaded into the folder on show (Upload in the files column, or a drop on the viewer): one at a time
 // through FOLDER_UPLOAD_PATH with progress; a name that is taken asks Replace / Skip / Replace all.
 import './css/viewer.css';
-import { fileUrl, MAX_FILE_UPLOAD_BYTES, type FileEntry, type FilesKey, type ImageRef } from '../../../shared/protocol';
+import { fileUrl, type FileEntry, type FilesKey, type ImageRef } from '../../../shared/protocol';
 import { filesKey, findFiles, forgetFound, listFiles, sameFolder, uploadToFolder, type FolderRef } from '../net/files';
 import { UploadError, uploadUrl } from '../net/uploads';
 import { copyText, deviceStorage, droppedFiles, escapeHtml, h, setChildren, storage } from './dom';
@@ -1220,18 +1220,12 @@ function createViewer(shell: Shell): Viewer {
     if (!files.length) return;
     const why = uploadBlocked();
     if (!s || why) return void shell.toast('warn', `Can’t upload here: ${why || 'no folder is open'}.`);
-    const tooBig = files.filter((f) => f.size > MAX_FILE_UPLOAD_BYTES);
-    if (tooBig.length) {
-      shell.toast('warn', `${tooBig.length === 1 ? `“${tooBig[0]!.name}” is` : `${tooBig.length} files are`} too big to upload (at most ${MAX_FILE_UPLOAD_BYTES / 1048576} MB each).`);
-    }
-    const ok = files.filter((f) => f.size <= MAX_FILE_UPLOAD_BYTES);
-    if (!ok.length) return;
     // a new batch: the finished rows of the last one go
     if (!uploads.some(active)) {
       uploads = [];
       replaceAll = false;
     }
-    for (const file of ok) uploads.push({ key: ++uploadSeq, file, folder: s.folder, dir: s.dir, name: file.name, status: 'waiting', progress: 0 });
+    for (const file of files) uploads.push({ key: ++uploadSeq, file, folder: s.folder, dir: s.dir, name: file.name, status: 'waiting', progress: 0 });
     if (isPhone()) setDrawer(true);
     else if (navHidden) toggleNav();
     renderTray();

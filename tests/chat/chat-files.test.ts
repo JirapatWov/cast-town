@@ -1,5 +1,5 @@
 // Files attached to a chat message (server/uploads.ts, FILE_UPLOAD_PATH): kept once per content and name in the data
-// folder, served back only as a download (never rendered on CAST's origin), names made safe, the size cap, the note
+// folder, served back only as a download (never rendered on CAST's origin), names made safe, no size cap, the note
 // the model gets, the prompt's validation, and pruning (a file no chat names goes after the grace period, its
 // <sha256> folder with it). The prompt hand-off itself is in tests/rv-server/prompt-files.test.ts.
 import { afterAll, describe, expect, test } from 'bun:test';
@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { FILE_UPLOAD_PATH, fileUploadPath, MAX_FILE_UPLOAD_BYTES, MAX_PROMPT_FILES, type FileRef } from '../../shared/protocol';
+import { FILE_UPLOAD_PATH, fileUploadPath, MAX_PROMPT_FILES, type FileRef } from '../../shared/protocol';
 import { pruneUploads, UPLOAD_GRACE_MS } from '../../server/data-wipe';
 import { attachmentNote, createUploads, fileUploadsDir, readFileRef, safeFileName, stripAttachmentNote } from '../../server/uploads';
 import { parseClientMsg } from '../../server/validate';
@@ -83,25 +83,27 @@ describe('storing and serving an attached file', () => {
     expect(readFileRef(d, `${sha}/../../token`)).toBeNull();
   });
 
-  test('over the cap: refused from Content-Length before reading, and while streaming without it', async () => {
+  test('no size cap: a streamed body past the old 50 MB limit is kept whole, with no temp file left', async () => {
     const d = tmp();
-    const declared = await post(d, 'big.bin', 'x', { 'content-length': String(MAX_FILE_UPLOAD_BYTES + 1) });
-    expect(declared.status).toBe(413);
-    const chunk = new Uint8Array(1024 * 1024);
+    const chunk = new Uint8Array(1024 * 1024).fill(7);
+    const chunks = 60;
+    const hash = createHash('sha256');
     let sent = 0;
     const body = new ReadableStream<Uint8Array>({
       pull(c) {
-        if (sent > MAX_FILE_UPLOAD_BYTES + chunk.length) return c.close();
-        sent += chunk.length;
+        if (sent === chunks) return c.close();
+        sent++;
+        hash.update(chunk);
         c.enqueue(chunk);
       },
     });
     const url = new URL(`${BASE}${FILE_UPLOAD_PATH}?name=big.bin`);
-    const streamed = await createUploads({ dataDir: d }).handle(new Request(url, { method: 'POST', body, duplex: 'half' } as RequestInit), url);
-    expect(streamed.status).toBe(413);
-    expect(((await streamed.json()) as { error: string }).error).toContain('50 MB');
-    // nothing left behind: no temp file, no kept file
-    expect(readdirSync(fileUploadsDir(d))).toEqual([]);
+    const res = await createUploads({ dataDir: d }).handle(new Request(url, { method: 'POST', body, duplex: 'half' } as RequestInit), url);
+    expect(res.status).toBe(200);
+    const ref = (await res.json()) as FileRef;
+    expect(ref.size).toBe(chunks * chunk.length);
+    expect(ref.id).toBe(`${hash.digest('hex')}/big.bin`);
+    expect(readdirSync(fileUploadsDir(d))).toEqual([ref.id.split('/')[0]]); // no .tmp- left beside it
   });
 
   test('a POST without a name is refused', async () => {
